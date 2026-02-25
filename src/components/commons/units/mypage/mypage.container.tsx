@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Global, css } from '@emotion/react';
+import  { useState } from 'react';
+
 import * as S from './mypage.style';
 import Head from 'next/head';
 
