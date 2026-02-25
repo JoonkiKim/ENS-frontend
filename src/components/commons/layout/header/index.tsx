@@ -85,7 +85,7 @@ export default function LayoutHeader(): JSX.Element {
           <Link href="#" passHref>
             <NavItem>자유 게시판</NavItem>
           </Link>
-          <Link href="#" passHref>
+          <Link href="/mypage" passHref>
             <NavItem>마이페이지</NavItem>
           </Link>
         </Navigation>

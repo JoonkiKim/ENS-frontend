@@ -1,6 +1,9 @@
-
+import React from 'react';
 import { Global, css } from '@emotion/react';
+import Head from 'next/head';
 import * as S from './mainPage.style';
+
+import { DisclosureButtonIcon } from '../../../commons/libraries/DisclosureButtonIcon';
 
 // Global Styles
 const globalStyles = css`
@@ -27,7 +30,7 @@ const svgPaths = {
     'M19 0H5C2.239 0 0 2.239 0 5V19C0 21.761 2.239 24 5 24H19C21.762 24 24 21.761 24 19V5C24 2.239 21.762 0 19 0ZM8 19H5V8H8V19ZM6.5 6.732C5.534 6.732 4.75 5.942 4.75 4.968C4.75 3.994 5.534 3.204 6.5 3.204C7.466 3.204 8.25 3.994 8.25 4.968C8.25 5.942 7.467 6.732 6.5 6.732ZM20 19H17V13.396C17 10.028 13 10.283 13 13.396V19H10V8H13V9.765C14.396 7.179 20 6.988 20 12.241V19Z',
 };
 
-export default function MainPage() {
+export default function Dashboard() {
   const boardItems = [
     {
       title: '[채용 공고] 네이버웹툰에서 채용 연계형 인턴을 모집합니다',
@@ -45,30 +48,19 @@ export default function MainPage() {
 
   return (
     <>
+      <Head>
+        <link
+          rel="preload"
+          href="/images/log-in-bg.png"
+          as="image"
+        />
+      </Head>
       <Global styles={globalStyles} />
       <S.Container>
-        {/* Header */}
-        <S.Header>
-          <S.Logo>
-            <S.LogoENS>ENS</S.LogoENS>
-            <S.LogoIntranet>Intranet</S.LogoIntranet>
-          </S.Logo>
-          <S.Navigation>
-            <S.NavItem href="#">알럼나이 찾기</S.NavItem>
-            <S.NavItem href="#">자유 게시판</S.NavItem>
-            <S.NavItem href="#">마이페이지</S.NavItem>
-          </S.Navigation>
-        </S.Header>
+
 
         {/* Hero Section */}
         <S.Hero>
-          <S.HeroBackground>
-            {/* Background pattern image - using placeholder for demonstration */}
-            <img
-              src="data:image/svg+xml,%3Csvg width='1600' height='1878' viewBox='0 0 1600 1878' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='800' cy='939' r='800' stroke='%23FFB700' stroke-width='2' stroke-dasharray='10 10' opacity='0.3'/%3E%3C/svg%3E"
-              alt=""
-            />
-          </S.HeroBackground>
           <S.HeroContent>
             <S.HeroTitle>SNU ENS Intranet</S.HeroTitle>
             <S.HeroDescription>ENS 학회원을 위한 네트워킹을 지원합니다.</S.HeroDescription>
@@ -89,7 +81,12 @@ export default function MainPage() {
           <S.CardGrid>
             {/* Alumni Search Card */}
             <S.Card>
+            <S.BoardCardTitleWrapper>
               <S.CardTitle>알럼나이 찾기</S.CardTitle>
+              <S.DisclosureButton>
+                <DisclosureButtonIcon />
+              </S.DisclosureButton>
+            </S.BoardCardTitleWrapper>
               <S.AvatarBlock>
                 <S.Avatar>
                   <img
@@ -106,7 +103,12 @@ export default function MainPage() {
 
             {/* Profile Edit Card */}
             <S.Card>
-              <S.CardTitle>내 정보 수정</S.CardTitle>
+              <S.BoardCardTitleWrapper>
+                <S.CardTitle>내 정보 수정</S.CardTitle>
+                <S.DisclosureButton>
+                  <DisclosureButtonIcon />
+                </S.DisclosureButton>
+              </S.BoardCardTitleWrapper>
               <S.CardDescription>
                 개인정보 및 경력을 수정할 수 있습니다.
               </S.CardDescription>
@@ -115,7 +117,12 @@ export default function MainPage() {
 
           {/* Board Card */}
           <S.BoardCard>
-            <S.CardTitle>자유 게시판</S.CardTitle>
+            <S.BoardCardTitleWrapper>
+              <S.CardTitle>자유 게시판</S.CardTitle>
+              <S.DisclosureButton>
+                <DisclosureButtonIcon />
+              </S.DisclosureButton>
+            </S.BoardCardTitleWrapper>
             <S.BoardItems>
               {boardItems.map((item, index) => (
                 <S.BoardItem key={index}>
@@ -124,55 +131,13 @@ export default function MainPage() {
                     {item.title}
                   </S.BoardTitle>
                   <S.BoardDate>{item.date}</S.BoardDate>
+            
                 </S.BoardItem>
               ))}
             </S.BoardItems>
           </S.BoardCard>
         </S.QuickViewSection>
 
-        {/* Footer */}
-        <S.Footer>
-          <S.FooterContent>
-            <S.FooterLeft>
-              <S.FooterLogo>ENS</S.FooterLogo>
-              <S.SocialIcons>
-                <S.SocialIcon href="#" aria-label="Instagram">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <g clipPath="url(#clip0)">
-                      <path d={svgPaths.instagram} fill="currentColor" />
-                    </g>
-                    <defs>
-                      <clipPath id="clip0">
-                        <rect width="24" height="24" fill="white" />
-                      </clipPath>
-                    </defs>
-                  </svg>
-                </S.SocialIcon>
-                <S.SocialIcon href="#" aria-label="LinkedIn">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <g clipPath="url(#clip1)">
-                      <path d={svgPaths.linkedin} fill="currentColor" />
-                    </g>
-                    <defs>
-                      <clipPath id="clip1">
-                        <rect width="24" height="24" fill="white" />
-                      </clipPath>
-                    </defs>
-                  </svg>
-                </S.SocialIcon>
-              </S.SocialIcons>
-            </S.FooterLeft>
-            <S.FooterRight>
-              <S.ContactTitle>Contact Us</S.ContactTitle>
-              <S.ContactInfo>
-                <S.ContactText>서울대학교 문화산업 경영전략학회 ENS</S.ContactText>
-                <S.ContactText>
-                  회장 김재연 010-6519-5758 ㅣ E-mail. snuens@gmail.com
-                </S.ContactText>
-              </S.ContactInfo>
-            </S.FooterRight>
-          </S.FooterContent>
-        </S.Footer>
       </S.Container>
     </>
   );

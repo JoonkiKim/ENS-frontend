@@ -1,4 +1,6 @@
+import { RightCircleFilled } from '@ant-design/icons';
 import styled from '@emotion/styled';
+import { DisclosureButtonIcon } from '../../../commons/libraries/DisclosureButtonIcon';
 
 export const Container = styled.div`
   width: 100%;
@@ -70,8 +72,10 @@ export const NavItem = styled.a`
 export const Hero = styled.section`
   position: relative;
   height: 586px;
-  background: linear-gradient(90deg, rgba(255, 183, 0, 0) 0%, rgba(255, 183, 0, 0.8) 100%),
-    linear-gradient(90deg, rgb(245, 245, 245) 0%, rgb(245, 245, 245) 100%);
+  background-image: url('/images/log-in-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -85,15 +89,10 @@ export const HeroBackground = styled.div`
   opacity: 0.15;
   overflow: hidden;
   pointer-events: none;
-
-  img {
-    position: absolute;
-    height: 321.24%;
-    left: -31.5%;
-    max-width: none;
-    top: -85.09%;
-    width: 133.58%;
-  }
+  background-image: url('/images/log-in-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 `;
 
 export const HeroContent = styled.div`
@@ -140,7 +139,7 @@ export const ButtonGroup = styled.div`
   display: flex;
   gap: 16px;
   align-items: center;
-  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.1);
+  
 `;
 
 export const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
@@ -151,6 +150,7 @@ export const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
   cursor: pointer;
   transition: opacity 0.2s;
   min-width: 112px;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.1);
 
   ${({ variant }) =>
     variant === 'primary'
@@ -291,6 +291,14 @@ export const BoardCard = styled(Card)`
   min-height: 193px;
 `;
 
+export const BoardCardTitleWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  // margin-bottom: 16px;
+`;
+
 export const BoardItem = styled.div`
   display: flex;
   justify-content: space-between;
@@ -417,21 +425,73 @@ export const ContactText = styled.p`
 
 // Arrow Button Styles
 export const ArrowButton = styled.button`
-  width: 24px;
-  height: 24px;
+  width: 2vw;
+  height: 2vw;
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.05);
   border: none;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: background 0.2s;
-  font-size: 10px;
-  color: rgba(0, 0, 0, 0.85);
-  transform: rotate(-90deg);
+
 
   &:hover {
     background: rgba(0, 0, 0, 0.1);
+  }
+`;
+
+export const ArrowIcon = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  line-height: 1;
+  font-size: 18px;
+  color: rgba(0, 0, 0, 0.85);
+`;
+
+export const StyledRightCircleFilled = styled(RightCircleFilled)`
+  font-size: 2vw;
+  color: rgba(0, 0, 0);
+  cursor: pointer;
+  transition: color 0.2s;
+
+  &:hover {
+    color: rgba(0, 0, 0, 1);
+  }
+`;
+
+// mainPage.style.tsx에 추가
+
+export const DisclosureButton = styled.div`
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    opacity: 0.7;
+  }
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  path {
+    fill: rgba(0, 0, 0, 0.85);
+    transition: fill 0.2s;
+  }
+
+  &:hover path {
+    fill: rgba(0, 0, 0, 1);
   }
 `;

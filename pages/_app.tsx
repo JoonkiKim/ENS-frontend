@@ -119,10 +119,10 @@ const globalStyles = css`
   return (
     <>
       <Head>
-        <title>GDR</title>
-        <meta name="description" content="가드레일 다이어리" />
+        <title>ENS Intranet</title>
+   
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/images/GDR.png" />
+   
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#000000" />
     
@@ -130,7 +130,7 @@ const globalStyles = css`
       <Global styles={globalStyles} />
       <RecoilRoot>
         <ApolloProvider client={apolloClient}>
-          <TokenInitializer />
+          {/* <TokenInitializer /> */}
           <LoadingOverlay visible={loadingRoute}>
             <LoadingIcon spin fontSize={48} />
           </LoadingOverlay>
