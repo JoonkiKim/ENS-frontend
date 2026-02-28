@@ -299,12 +299,101 @@ export const ResultsSection = styled.section`
   }
 `;
 
+export const FilterResultsWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+`;
+
+export const FilterIconWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  button {
+    width: 24px;
+    height: 24px;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: default;
+    
+    &:hover {
+      background: transparent;
+      border: none;
+    }
+    
+    &:active {
+      background: transparent;
+    }
+    
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
+`;
+
+export const FilterTagsContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+`;
+
+export const FilterTag = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: #2c2c2c;
+  border-radius: 100px;
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+  letter-spacing: -0.26px;
+`;
+
+export const FilterTagText = styled.div`
+  color: white;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1;  // 추가: FilterTagRemove와 동일하게
+`;
+
+export const FilterTagRemove = styled.button`
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 14px;
+  line-height: 1;
+  
+  &:hover {
+    opacity: 0.7;
+  }
+`;
+
 export const ResultsCount = styled.div`
   font-size: 13px;
   font-weight: 500;
   color: #2c2c2c;
-  margin-bottom: 20px;
   letter-spacing: -0.26px;
+  margin-left: auto;
 `;
 
 export const CountNumber = styled.span`

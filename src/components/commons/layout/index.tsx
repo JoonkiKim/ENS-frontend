@@ -17,6 +17,9 @@ export default function Layout(props: ILayoutProps): JSX.Element {
 
   console.log(router.asPath);
 
+  // admin 경로인지 확인
+  const isAdminPath = pathname?.startsWith('/admin');
+
   // 기본값 설정
   // const defaultNav = "entry";
   // const defaultSetNav = () => {};
@@ -28,7 +31,7 @@ export default function Layout(props: ILayoutProps): JSX.Element {
 
   return (
     <>
-    <LayoutHeader />
+      {!isAdminPath && <LayoutHeader />}
       <div
         style={{
           backgroundColor: "white",
@@ -36,7 +39,7 @@ export default function Layout(props: ILayoutProps): JSX.Element {
       >
         {props.children}
       </div>
-      <LayoutNavigation />
+      {!isAdminPath && <LayoutNavigation />}
     </>
   );
 }

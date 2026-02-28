@@ -1,10 +1,77 @@
-
+import { useState } from 'react';
 import * as S from './findAlumni.style';
 import Head from 'next/head';
+import ProfileModal from '../../modals/profileModal';
+import SearchFilterModal from '../../modals/searchFilterModal';
+import Filter from '../../../../commons/libraries/filter';
 
-
+interface FilterState {
+  generationMin: number;
+  generationMax: number;
+  industries: string[];
+  positions: string[];
+}
 
 export default function AlumniSearch() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [appliedFilters, setAppliedFilters] = useState<FilterState | null>(null);
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleOpenFilterModal = () => {
+    setIsFilterModalOpen(true);
+  };
+
+  const handleCloseFilterModal = () => {
+    setIsFilterModalOpen(false);
+  };
+
+  const handleApplyFilters = (filters: FilterState) => {
+    setAppliedFilters(filters);
+  };
+
+  const handleRemoveGenerationFilter = () => {
+    if (appliedFilters) {
+      setAppliedFilters({
+        ...appliedFilters,
+        generationMin: 1,
+        generationMax: 40,
+      });
+    }
+  };
+
+  const handleRemoveIndustryFilter = (industry: string) => {
+    if (appliedFilters) {
+      setAppliedFilters({
+        ...appliedFilters,
+        industries: appliedFilters.industries.filter((i) => i !== industry),
+      });
+    }
+  };
+
+  const handleRemovePositionFilter = (position: string) => {
+    if (appliedFilters) {
+      setAppliedFilters({
+        ...appliedFilters,
+        positions: appliedFilters.positions.filter((p) => p !== position),
+      });
+    }
+  };
+
+  const hasActiveFilters = appliedFilters && (
+    appliedFilters.generationMin !== 1 ||
+    appliedFilters.generationMax !== 40 ||
+    appliedFilters.industries.length > 0 ||
+    appliedFilters.positions.length > 0
+  );
+
   return (
     <>
       <Head>
@@ -49,7 +116,12 @@ export default function AlumniSearch() {
                   <S.FilterSubtitle>기수, 산업군, 직무</S.FilterSubtitle>
                 </S.FilterLabel>
               </S.SearchFilter>
-              <S.SearchButton>
+              <S.SearchButton
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleOpenFilterModal();
+                }}
+              >
                 <S.SearchIcon viewBox="0 0 16 16" fill="none">
                   <circle cx="8" cy="8" r="7.25" stroke="white" strokeWidth="1.5"/>
                   <line x1="13.5" y1="13.5" x2="15.5" y2="15.5" stroke="white" strokeWidth="1.5"/>
@@ -65,9 +137,52 @@ export default function AlumniSearch() {
 
         {/* Results Section */}
         <S.ResultsSection>
-          <S.ResultsCount>
-            총 <S.CountNumber>450</S.CountNumber>명
-          </S.ResultsCount>
+          <S.FilterResultsWrapper>
+            {hasActiveFilters && (
+              <>
+                <S.FilterIconWrapper>
+                  <Filter onClick={handleOpenFilterModal} />
+                </S.FilterIconWrapper>
+                <S.FilterTagsContainer>
+                  {appliedFilters &&
+                    (appliedFilters.generationMin !== 1 ||
+                      appliedFilters.generationMax !== 40) && (
+                      <S.FilterTag>
+                        <S.FilterTagText>
+                          {appliedFilters.generationMin}기~{appliedFilters.generationMax}기
+                        </S.FilterTagText>
+                        <S.FilterTagRemove onClick={handleRemoveGenerationFilter}>
+                        ⨉
+                        </S.FilterTagRemove>
+                      </S.FilterTag>
+                    )}
+                  {appliedFilters?.industries.map((industry) => (
+                    <S.FilterTag key={`industry-${industry}`}>
+                      <S.FilterTagText>산업군: {industry}</S.FilterTagText>
+                      <S.FilterTagRemove
+                        onClick={() => handleRemoveIndustryFilter(industry)}
+                      >
+                       ⨉
+                      </S.FilterTagRemove>
+                    </S.FilterTag>
+                  ))}
+                  {appliedFilters?.positions.map((position) => (
+                    <S.FilterTag key={`position-${position}`}>
+                      <S.FilterTagText>직무: {position}</S.FilterTagText>
+                      <S.FilterTagRemove
+                        onClick={() => handleRemovePositionFilter(position)}
+                      >
+                        ⨉
+                      </S.FilterTagRemove>
+                    </S.FilterTag>
+                  ))}
+                </S.FilterTagsContainer>
+              </>
+            )}
+            <S.ResultsCount>
+              총 <S.CountNumber>450</S.CountNumber>명
+            </S.ResultsCount>
+          </S.FilterResultsWrapper>
 
           {/* Table Header */}
           <S.TableHeader>
@@ -92,7 +207,15 @@ export default function AlumniSearch() {
               <S.TableCell>T1</S.TableCell>
               <S.TableCell>미드라이너</S.TableCell>
               <S.TableCell>
-                <S.ProfileLink href="#">더보기</S.ProfileLink>
+                <S.ProfileLink
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleOpenModal();
+                  }}
+                >
+                  더보기
+                </S.ProfileLink>
               </S.TableCell>
             </S.TableRow>
           ))}
@@ -112,9 +235,18 @@ export default function AlumniSearch() {
             <S.PageNav>&gt;</S.PageNav>
           </S.Pagination>
         </S.ResultsSection>
-
-    
       </S.Container>
+
+      {/* Profile Modal */}
+      <ProfileModal isOpen={isModalOpen} onClose={handleCloseModal} />
+
+      {/* Search Filter Modal */}
+      <SearchFilterModal
+        isOpen={isFilterModalOpen}
+        onClose={handleCloseFilterModal}
+        onApply={handleApplyFilters}
+        initialFilters={appliedFilters || undefined}
+      />
     </>
   );
 }

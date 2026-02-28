@@ -79,6 +79,12 @@ export const Section = styled.section`
   padding: 40px 53px;
 `;
 
+export const AdminNotesSection = styled.section`
+  width: 100%;
+  padding: 40px 53px;
+  box-sizing: border-box;
+`;
+
 export const SectionHeader = styled.div`
   display: flex;
   align-items: center;
@@ -95,12 +101,46 @@ export const SectionTitle = styled.h2`
 
 `;
 
+export const ContactSectionTitle = styled(SectionTitle)`
+  margin-bottom: 25px;
+`;
+
 export const CareerSectionTitle = styled.h2`
-  font-size: 20px;
+  font-size: 27px;
   font-weight: 600;
   color: black;
   margin-bottom: 20px;
 
+`;
+
+export const AdminNotesSectionTitle = styled.h2`
+  font-size: 27px;
+  font-weight: 600;
+  color: black;
+  margin-bottom: 20px;
+`;
+
+export const AdminNotesTextarea = styled.textarea`
+  width: 100%;
+  min-height: 200px;
+  padding: 18px;
+  border: 1px solid #d9d9d9;
+  border-radius: 3px;
+  font-size: 14px;
+  color: #2c2c2c;
+  letter-spacing: -0.28px;
+  outline: none;
+  background: white;
+  font-family: inherit;
+  resize: vertical;
+  
+  &::placeholder {
+    color: #b3b3b3;
+  }
+  
+  &:focus {
+    border-color: #ffb700;
+  }
 `;
 
 export const RequiredNote = styled.p`
@@ -469,14 +509,62 @@ export const CareerRowSpan = styled.div`
   }
 `;
 
-export const CareerField = styled.div<{ isCurrentJob?: boolean }>`
+export const CareerField = styled.div<{ isCurrentJob?: boolean; isClickable?: boolean }>`
   padding: 0 18px;
   display: flex;
   align-items: center;
   gap: 8px;
   position: relative;
+  min-width: 0;
   background-color: ${({ isCurrentJob }) => 
     isCurrentJob ? 'rgba(217, 217, 217, 0.33)' : 'transparent'};
+  cursor: ${({ isClickable }) => (isClickable ? 'pointer' : 'default')};
+`;
+
+export const GenerationSelectField = styled.div<{ isClickable?: boolean }>`
+  width: 413px;
+  height: 51px;
+  padding: 0 18px;
+  border: 1px solid #d9d9d9;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  background: white;
+  cursor: ${({ isClickable }) => (isClickable ? 'pointer' : 'default')};
+  
+  &:focus-within {
+    border-color: #ffb700;
+  }
+`;
+
+export const EmailDomainSelectField = styled.div<{ isClickable?: boolean }>`
+  width: 199px;
+  height: 51px;
+  padding: 0 18px;
+  border: 1px solid #d9d9d9;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  background: white;
+  cursor: ${({ isClickable }) => (isClickable ? 'pointer' : 'default')};
+  
+  &:focus-within {
+    border-color: #ffb700;
+  }
+`;
+
+export const GenerationValue = styled.span`
+  font-size: 14px;
+  color: #2c2c2c;
+  letter-spacing: -0.28px;
+`;
+
+export const GenerationPlaceholder = styled.span`
+  font-size: 14px;
+  color: #b3b3b3;
+  letter-spacing: -0.28px;
 `;
 
 export const CareerDivider = styled.div`
@@ -488,13 +576,232 @@ export const CareerLabel = styled.span`
   font-size: 14px;
   color: #b3b3b3;
   letter-spacing: -0.28px;
+  white-space: nowrap;
+  flex-shrink: 0;
 `;
+
+
 
 export const CareerValue = styled.span`
   font-size: 14px;
   color: #2c2c2c;
   letter-spacing: -0.28px;
   opacity: 0.77;
+`;
+
+export const CareerInput = styled.input`
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: #2c2c2c;
+  letter-spacing: -0.28px;
+  padding: 0;
+  
+  &::placeholder {
+    color: #b3b3b3;
+  }
+  
+  &:focus {
+    outline: none;
+  }
+`;
+
+export const SpecificPositionLabel = styled(CareerLabel)`
+  width: 80px; /* 원하는 width로 변경 */
+  flex: none;
+`;
+
+export const CareerFieldContent = styled.div`
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+`;
+
+export const IndustryDropdown = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-radius: 3px;
+  margin-top: 4px;
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+`;
+
+export const IndustryDropdownItem = styled.div`
+  padding: 12px 18px;
+  font-size: 14px;
+  color: #2c2c2c;
+  letter-spacing: -0.28px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background-color: #e5e5e5;
+  }
+  
+  &:first-of-type {
+    border-radius: 3px 3px 0 0;
+  }
+  
+  &:last-of-type {
+    border-radius: 0 0 3px 3px;
+  }
+`;
+
+// Date Picker Styles
+export const DatePickerPopover = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  width: 100%;
+  background: white;
+  border-radius: 3px;
+  margin-top: 4px;
+  padding: 20px;
+  z-index: 100;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+`;
+
+export const DatePickerTitle = styled.div`
+  font-size: 14px;
+  font-weight: 500;
+  color: #2c2c2c;
+  letter-spacing: -0.28px;
+  margin-bottom: 16px;
+`;
+
+export const DateSelectorWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+export const DateSelector = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+export const DateInput = styled.input<{ hasValue?: boolean; isDropdownOpen?: boolean }>`
+  width: 100%;
+  height: 51px;
+  padding: 0 18px;
+  border: 1px solid #d9d9d9;
+  border-radius: 3px;
+  background: ${({ hasValue, isDropdownOpen }) => 
+    (hasValue || isDropdownOpen)
+      ? 'rgba(255, 208, 0, 0.07)' // #FFD000 with 7% opacity
+      : '#ffffff'};
+  font-size: 14px;
+  color: #2c2c2c;
+  letter-spacing: -0.28px;
+  cursor: pointer;
+  
+  &::placeholder {
+    color: #b3b3b3;
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: #ffb700;
+  }
+`;
+
+export const YearDropdown = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 3px;
+  margin-top: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 101;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #d9d9d9;
+`;
+
+export const YearDropdownItem = styled.div`
+  padding: 12px 18px;
+  font-size: 14px;
+  color: #2c2c2c;
+  letter-spacing: -0.28px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background-color: #f5f5f5;
+  }
+  
+  &:first-of-type {
+    border-radius: 3px 3px 0 0;
+  }
+  
+  &:last-of-type {
+    border-radius: 0 0 3px 3px;
+  }
+`;
+
+export const MonthDropdown = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 3px;
+  margin-top: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 101;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #d9d9d9;
+`;
+
+export const MonthDropdownItem = styled.div`
+  padding: 12px 18px;
+  font-size: 14px;
+  color: #2c2c2c;
+  letter-spacing: -0.28px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background-color: #f5f5f5;
+  }
+  
+  &:first-of-type {
+    border-radius: 3px 3px 0 0;
+  }
+  
+  &:last-of-type {
+    border-radius: 0 0 3px 3px;
+  }
+`;
+
+export const CareerFieldWrapper = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+`;
+
+export const DateErrorText = styled.div`
+  font-size: 12px;
+  color: #ff0000;
+  letter-spacing: -0.24px;
+  margin-top: 4px;
+  padding: 0 18px;
 `;
 
 export const RequiredDot = styled.span`
@@ -545,14 +852,15 @@ export const CheckboxBox = styled.div<{ checked?: boolean; disabled?: boolean }>
 
 // Buttons
 export const ButtonWrapper = styled.div`
-  padding: 0 53px;
+  // padding: 0 53px;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 15px;
 `;
 
 export const AddCareerButton = styled.button`
-  width: 100%;
+  width: calc(100% - 106px);
   height: 45px;
   display: block;
   border: 1px solid #ffb700;
@@ -564,6 +872,7 @@ export const AddCareerButton = styled.button`
   letter-spacing: -0.28px;
   cursor: pointer;
   transition: background 0.2s;
+
   
   &:hover {
     background: #fff8e5;
@@ -571,7 +880,7 @@ export const AddCareerButton = styled.button`
 `;
 
 export const SaveButton = styled.button`
-  width: 100%;
+  width: calc(100% - 106px);
   height: 45px;
   display: block;
   border: none;
@@ -583,6 +892,7 @@ export const SaveButton = styled.button`
   letter-spacing: -0.28px;
   cursor: pointer;
   transition: background 0.2s;
+  margin: 0 53px;
   
   &:hover {
     background: #e6a500;
