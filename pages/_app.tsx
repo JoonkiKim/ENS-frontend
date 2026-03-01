@@ -131,16 +131,7 @@ const globalStyles = css`
         </Head>
         <Global styles={globalStyles} />
         <LoadingOverlay visible={true}>
-          <div style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center', 
-            gap: '16px',
-            color: '#2c2c2c'
-          }}>
-            <LoadingIcon spin fontSize={48} />
-            <div>이미지 로딩 중... {Math.round(loadingProgress)}%</div>
-          </div>
+          <LoadingIcon spin fontSize={48} />
         </LoadingOverlay>
       </>
     );
