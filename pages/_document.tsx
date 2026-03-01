@@ -25,6 +25,12 @@ export default function Document() {
           href="/images/mypage-bg.png"
           as="image"
         />
+        <link
+          rel="preload"
+          href="/images/board-main-bg.png"
+          as="image"
+        />
+        
       </Head>
       <body>
         <Main />
