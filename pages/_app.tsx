@@ -15,7 +15,10 @@ import {
 
 import { ApolloProvider } from "@apollo/client";
 import { apolloClient } from "../src/commons/apis/apollo-client";
+import { useImagePreload } from "../src/commons/hooks/useImagePreload";
+
 function MyApp({ Component, pageProps }) {
+  const { imagesLoaded, loadingProgress } = useImagePreload();
 
 
   // console.log("분기 합침 테스트");
@@ -115,6 +118,33 @@ const globalStyles = css`
       Router.events.off("routeChangeError", handleComplete);
     };
   }, []);
+
+  // 이미지가 로드되지 않았으면 로딩 화면 표시
+  if (!imagesLoaded) {
+    return (
+      <>
+        <Head>
+          <title>ENS Intranet</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <link rel="manifest" href="/manifest.json" />
+          <meta name="theme-color" content="#000000" />
+        </Head>
+        <Global styles={globalStyles} />
+        <LoadingOverlay visible={true}>
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            gap: '16px',
+            color: '#2c2c2c'
+          }}>
+            <LoadingIcon spin fontSize={48} />
+            <div>이미지 로딩 중... {Math.round(loadingProgress)}%</div>
+          </div>
+        </LoadingOverlay>
+      </>
+    );
+  }
 
   return (
     <>
