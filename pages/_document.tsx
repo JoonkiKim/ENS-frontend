@@ -27,7 +27,7 @@ export default function Document() {
         />
         <link
           rel="preload"
-          href="/images/board-main-bg.png"
+          href="/images/freeboard-bg.png"
           as="image"
         />
         
