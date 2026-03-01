@@ -621,13 +621,7 @@ export default function MyPage() {
 
   return (
     <>
-    <Head>
-      <link
-        rel="preload"
-        href="/images/mypage-bg.png"
-        as="image"
-      />
-    </Head>
+  
       <S.Container>
 
 

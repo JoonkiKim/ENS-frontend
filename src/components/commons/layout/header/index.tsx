@@ -82,7 +82,7 @@ export default function LayoutHeader(): JSX.Element {
           <Link href="/findAlumni" passHref>
             <NavItem>알럼나이 찾기</NavItem>
           </Link>
-          <Link href="#" passHref>
+          <Link href="/boardMain" passHref>
             <NavItem>자유 게시판</NavItem>
           </Link>
           <Link href="/mypage" passHref>

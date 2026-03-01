@@ -1,8 +1,12 @@
 
+import { useState } from 'react';
 import Head from 'next/head';
 import * as S from './mainPage.style';
 
 import { DisclosureButtonIcon } from '../../../commons/libraries/DisclosureButtonIcon';
+import LoginModal from '../modals/loginModal';
+import AgreeModal from '../modals/agreeModal';
+import SignUpModal from '../modals/signUpModal';
 
 // Global Styles
 
@@ -10,6 +14,10 @@ import { DisclosureButtonIcon } from '../../../commons/libraries/DisclosureButto
 
 
 export default function Dashboard() {
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isAgreeModalOpen, setIsAgreeModalOpen] = useState(false);
+  const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
+
   const boardItems = [
     {
       title: '[채용 공고] 네이버웹툰에서 채용 연계형 인턴을 모집합니다',
@@ -27,13 +35,7 @@ export default function Dashboard() {
 
   return (
     <>
-      <Head>
-        <link
-          rel="preload"
-          href="/images/log-in-bg.png"
-          as="image"
-        />
-      </Head>
+ 
      
       <S.Container>
 
@@ -44,8 +46,8 @@ export default function Dashboard() {
             <S.HeroTitle>SNU ENS Intranet</S.HeroTitle>
             <S.HeroDescription>ENS 학회원을 위한 네트워킹을 지원합니다.</S.HeroDescription>
             <S.ButtonGroup>
-              <S.Button variant="secondary">로그인</S.Button>
-              <S.Button variant="primary">회원가입</S.Button>
+              <S.Button variant="secondary" onClick={() => setIsLoginModalOpen(true)}>로그인</S.Button>
+              <S.Button variant="primary" onClick={() => setIsAgreeModalOpen(true)}>회원가입</S.Button>
             </S.ButtonGroup>
           </S.HeroContent>
         </S.Hero>
@@ -118,6 +120,43 @@ export default function Dashboard() {
         </S.QuickViewSection>
 
       </S.Container>
+
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onLogin={(username, password, keepLoggedIn) => {
+          // 로그인 처리 로직 추가 가능
+          console.log('Login:', { username, password, keepLoggedIn });
+        }}
+        onSignUp={() => {
+          // 회원가입 처리 로직 추가 가능
+          console.log('Sign up clicked');
+        }}
+        onForgotPassword={() => {
+          // 비밀번호 찾기 처리 로직 추가 가능
+          console.log('Forgot password clicked');
+        }}
+      />
+
+      <AgreeModal
+        isOpen={isAgreeModalOpen}
+        onClose={() => setIsAgreeModalOpen(false)}
+        onSubmit={() => {
+          // 약관 동의 완료 후 회원가입 모달 열기
+          setIsAgreeModalOpen(false);
+          setIsSignUpModalOpen(true);
+        }}
+      />
+
+      <SignUpModal
+        isOpen={isSignUpModalOpen}
+        onClose={() => setIsSignUpModalOpen(false)}
+        onSubmit={(formData) => {
+          // 회원가입 제출 처리 로직 추가 가능
+          console.log('Sign up submitted:', formData);
+          setIsSignUpModalOpen(false);
+        }}
+      />
     </>
   );
 }

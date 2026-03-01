@@ -74,13 +74,7 @@ export default function AlumniSearch() {
 
   return (
     <>
-      <Head>
-        <link
-          rel="preload"
-          href="/images/findalumni-background-real.png"
-          as="image"
-        />
-      </Head>
+ 
 
       <S.Container>
     
