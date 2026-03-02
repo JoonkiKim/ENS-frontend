@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
 import * as S from './mainPage.style';
 
 import { DisclosureButtonIcon } from '../../../commons/libraries/DisclosureButtonIcon';
@@ -61,62 +62,74 @@ export default function Dashboard() {
 
           <S.CardGrid>
             {/* Alumni Search Card */}
-            <S.Card>
-            <S.BoardCardTitleWrapper>
-              <S.CardTitle>알럼나이 찾기</S.CardTitle>
-              <S.DisclosureButton>
-                <DisclosureButtonIcon />
-              </S.DisclosureButton>
-            </S.BoardCardTitleWrapper>
-              <S.AvatarBlock>
-                <S.Avatar>
-                  <img
-                    src="data:image/svg+xml,%3Csvg width='48' height='48' viewBox='0 0 48 48' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='24' cy='24' r='24' fill='%23E5E5E5'/%3E%3Cpath d='M24 24C27.3137 24 30 21.3137 30 18C30 14.6863 27.3137 12 24 12C20.6863 12 18 14.6863 18 18C18 21.3137 20.6863 24 24 24Z' fill='%23999'/%3E%3Cpath d='M24 27C17.3726 27 12 29.6863 12 33V36H36V33C36 29.6863 30.6274 27 24 27Z' fill='%23999'/%3E%3C/svg%3E"
-                    alt="Profile"
-                  />
-                </S.Avatar>
-                <S.UserInfo>
-                  <S.UserName>홍길동</S.UserName>
-                  <S.UserDetails>ENS 00기 · 00 재직 중</S.UserDetails>
-                </S.UserInfo>
-              </S.AvatarBlock>
-            </S.Card>
+            <Link href="/findAlumni">
+              <a style={{ textDecoration: 'none', color: 'inherit', display: 'flex', height: '100%' }}>
+                <S.Card>
+                  <S.BoardCardTitleWrapper>
+                    <S.CardTitle>알럼나이 찾기</S.CardTitle>
+                    <S.DisclosureButton>
+                      <DisclosureButtonIcon />
+                    </S.DisclosureButton>
+                  </S.BoardCardTitleWrapper>
+                  <S.AvatarBlock>
+                    <S.Avatar>
+                      <img
+                        src="data:image/svg+xml,%3Csvg width='48' height='48' viewBox='0 0 48 48' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='24' cy='24' r='24' fill='%23E5E5E5'/%3E%3Cpath d='M24 24C27.3137 24 30 21.3137 30 18C30 14.6863 27.3137 12 24 12C20.6863 12 18 14.6863 18 18C18 21.3137 20.6863 24 24 24Z' fill='%23999'/%3E%3Cpath d='M24 27C17.3726 27 12 29.6863 12 33V36H36V33C36 29.6863 30.6274 27 24 27Z' fill='%23999'/%3E%3C/svg%3E"
+                        alt="Profile"
+                      />
+                    </S.Avatar>
+                    <S.UserInfo>
+                      <S.UserName>홍길동</S.UserName>
+                      <S.UserDetails>ENS 00기 · 00 재직 중</S.UserDetails>
+                    </S.UserInfo>
+                  </S.AvatarBlock>
+                </S.Card>
+              </a>
+            </Link>
 
             {/* Profile Edit Card */}
-            <S.Card>
-              <S.BoardCardTitleWrapper>
-                <S.CardTitle>내 정보 수정</S.CardTitle>
-                <S.DisclosureButton>
-                  <DisclosureButtonIcon />
-                </S.DisclosureButton>
-              </S.BoardCardTitleWrapper>
-              <S.CardDescription>
-                개인정보 및 경력을 수정할 수 있습니다.
-              </S.CardDescription>
-            </S.Card>
+            <Link href="/mypage">
+              <a style={{ textDecoration: 'none', color: 'inherit', display: 'flex', height: '100%' }}>
+                <S.Card>
+                  <S.BoardCardTitleWrapper>
+                    <S.CardTitle>내 정보 수정</S.CardTitle>
+                    <S.DisclosureButton>
+                      <DisclosureButtonIcon />
+                    </S.DisclosureButton>
+                  </S.BoardCardTitleWrapper>
+                  <S.CardDescription>
+                    개인정보 및 경력을 수정할 수 있습니다.
+                  </S.CardDescription>
+                </S.Card>
+              </a>
+            </Link>
           </S.CardGrid>
 
           {/* Board Card */}
-          <S.BoardCard>
-            <S.BoardCardTitleWrapper>
-              <S.CardTitle>자유 게시판</S.CardTitle>
-              <S.DisclosureButton>
-                <DisclosureButtonIcon />
-              </S.DisclosureButton>
-            </S.BoardCardTitleWrapper>
-            <S.BoardItems>
-              {boardItems.map((item, index) => (
-                <S.BoardItem key={index}>
-                  <S.BoardTitle>
-                    <span className="arrow">&gt;</span>
-                    {item.title}
-                  </S.BoardTitle>
-                  <S.BoardDate>{item.date}</S.BoardDate>
-            
-                </S.BoardItem>
-              ))}
-            </S.BoardItems>
-          </S.BoardCard>
+          <Link href="/boardMain">
+            <a style={{ textDecoration: 'none', color: 'inherit', display: 'flex', height: '100%' }}>
+              <S.BoardCard>
+                <S.BoardCardTitleWrapper>
+                  <S.CardTitle>자유 게시판</S.CardTitle>
+                  <S.DisclosureButton>
+                    <DisclosureButtonIcon />
+                  </S.DisclosureButton>
+                </S.BoardCardTitleWrapper>
+                <S.BoardItems>
+                  {boardItems.map((item, index) => (
+                    <S.BoardItem key={index}>
+                      <S.BoardTitle>
+                        <span className="arrow">&gt;</span>
+                        {item.title}
+                      </S.BoardTitle>
+                      <S.BoardDate>{item.date}</S.BoardDate>
+                
+                    </S.BoardItem>
+                  ))}
+                </S.BoardItems>
+              </S.BoardCard>
+            </a>
+          </Link>
         </S.QuickViewSection>
 
       </S.Container>

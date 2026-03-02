@@ -1,4 +1,6 @@
 import  { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 import * as S from './boardMain.style';
 
@@ -79,6 +81,7 @@ const posts: Post[] = [
 ];
 
 export default function FreeBoard() {
+  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = 9;
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
@@ -91,15 +94,7 @@ export default function FreeBoard() {
     ? posts.filter((post) => post.category === selectedCategory)
     : posts;
 
-  const handlePostClick = (postId: number) => {
-    console.log('게시물 클릭:', postId);
-    // 개별 게시물 페이지로 이동 로직
-  };
 
-  const handleWriteClick = () => {
-    console.log('글쓰기 클릭');
-    // 글쓰기 페이지로 이동 로직
-  };
 
   const handlePageClick = (page: number) => {
     setCurrentPage(page);
@@ -216,7 +211,11 @@ export default function FreeBoard() {
 
             {/* Table Rows */}
             {filteredPosts.map((post, index) => (
-              <S.TableRow key={`${post.id}-${index}`} clickable onClick={() => handlePostClick(post.id)}>
+              <S.TableRow 
+                key={`${post.id}-${index}`} 
+                clickable 
+                onClick={() => router.push('/boardMain/boardView')}
+              >
                 <S.TableCell>{post.id}</S.TableCell>
                 <S.TableCell>
                   <S.CategoryBadge>{post.category}</S.CategoryBadge>
@@ -240,7 +239,11 @@ export default function FreeBoard() {
           </S.Pagination>
 
           {/* Write Button */}
-          <S.WriteButton onClick={handleWriteClick}>글쓰기</S.WriteButton>
+          <Link href="/boardWrite">
+            <a>
+              <S.WriteButton>글쓰기</S.WriteButton>
+            </a>
+          </Link>
         </S.BoardSection>
       </S.Container>
     </>

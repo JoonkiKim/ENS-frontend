@@ -307,29 +307,36 @@ export default function SearchFilterModal({
     }
   }, [isOpen, initialFilters]);
 
-  // 모달이 열릴 때 body 스크롤 막기
+  // 모달이 열릴 때 body 스크롤 막기 (스크롤바 유지)
   useEffect(() => {
     if (isOpen) {
-      // 현재 스크롤 위치 저장
       const scrollY = window.scrollY;
+      document.body.style.overflowY = 'scroll';
       document.body.style.position = 'fixed';
       document.body.style.top = `-${scrollY}px`;
       document.body.style.width = '100%';
-      document.body.style.overflow = 'hidden';
+
+      const preventScroll = (e: Event) => {
+        e.preventDefault();
+        window.scrollTo(0, scrollY);
+      };
+
+      window.addEventListener('scroll', preventScroll, { passive: false });
+      document.addEventListener('wheel', preventScroll, { passive: false });
+      document.addEventListener('touchmove', preventScroll, { passive: false });
 
       return () => {
-        // 모달이 닫힐 때 스크롤 위치 복원
-        const bodyTop = document.body.style.top;
+        window.removeEventListener('scroll', preventScroll);
+        document.removeEventListener('wheel', preventScroll);
+        document.removeEventListener('touchmove', preventScroll);
         document.body.style.position = '';
         document.body.style.top = '';
         document.body.style.width = '';
-        document.body.style.overflow = '';
-        window.scrollTo(0, parseInt(bodyTop || '0') * -1);
+        document.body.style.overflowY = '';
+        window.scrollTo(0, scrollY);
       };
     }
   }, [isOpen]);
-
-  if (!isOpen) return null;
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -384,94 +391,95 @@ export default function SearchFilterModal({
 
   return (
     <>
+      {isOpen && (
+        <ModalOverlay onClick={handleOverlayClick}>
+          <ModalContainer>
+            {/* Header */}
+            <ModalHeader>
+              <ModalTitle>검색 필터</ModalTitle>
+              <CloseButton onClick={onClose} aria-label="Close" />
+            </ModalHeader>
 
-      <ModalOverlay onClick={handleOverlayClick}>
-        <ModalContainer>
-          {/* Header */}
-          <ModalHeader>
-            <ModalTitle>검색 필터</ModalTitle>
-            <CloseButton onClick={onClose} aria-label="Close" />
-          </ModalHeader>
+            {/* Body */}
+            <ModalBody>
+              {/* 기수 */}
+              <Section>
+                <SectionTitle>기수</SectionTitle>
+                <RangeDisplay>
+                  <RangeText>
+                    {generationMin}기 ~ {generationMax}기
+                  </RangeText>
+                </RangeDisplay>
+                <RangeSliderWrapper>
+                  <SliderContainer>
+                    <SliderTrack />
+                    <SliderRange min={minPercent} max={maxPercent} />
+                    <SliderInput
+                      type="range"
+                      min={1}
+                      max={40}
+                      value={generationMin}
+                      onChange={handleMinChange}
+                      style={{ zIndex: generationMin > 20 ? 5 : 3 }}
+                    />
+                    <SliderInput
+                      type="range"
+                      min={1}
+                      max={40}
+                      value={generationMax}
+                      onChange={handleMaxChange}
+                      style={{ zIndex: generationMax <= 20 ? 4 : 2 }}
+                    />
+                  </SliderContainer>
+                  <SliderLabels>
+                    <SliderLabel>1기</SliderLabel>
+                    <SliderLabel>40기</SliderLabel>
+                  </SliderLabels>
+                </RangeSliderWrapper>
+              </Section>
 
-          {/* Body */}
-          <ModalBody>
-            {/* 기수 */}
-            <Section>
-              <SectionTitle>기수</SectionTitle>
-              <RangeDisplay>
-                <RangeText>
-                  {generationMin}기 ~ {generationMax}기
-                </RangeText>
-              </RangeDisplay>
-              <RangeSliderWrapper>
-                <SliderContainer>
-                  <SliderTrack />
-                  <SliderRange min={minPercent} max={maxPercent} />
-                  <SliderInput
-                    type="range"
-                    min={1}
-                    max={40}
-                    value={generationMin}
-                    onChange={handleMinChange}
-                    style={{ zIndex: generationMin > 20 ? 5 : 3 }}
-                  />
-                  <SliderInput
-                    type="range"
-                    min={1}
-                    max={40}
-                    value={generationMax}
-                    onChange={handleMaxChange}
-                    style={{ zIndex: generationMax <= 20 ? 4 : 2 }}
-                  />
-                </SliderContainer>
-                <SliderLabels>
-                  <SliderLabel>1기</SliderLabel>
-                  <SliderLabel>40기</SliderLabel>
-                </SliderLabels>
-              </RangeSliderWrapper>
-            </Section>
+              <Divider />
 
-            <Divider />
+              {/* 산업군 */}
+              <Section>
+                <SectionTitle>산업군</SectionTitle>
+                <FilterTags>
+                  {industries.map((industry) => (
+                    <FilterTag
+                      key={industry}
+                      active={selectedIndustries.includes(industry)}
+                      onClick={() => toggleIndustry(industry)}
+                    >
+                      {industry}
+                    </FilterTag>
+                  ))}
+                </FilterTags>
+              </Section>
 
-            {/* 산업군 */}
-            <Section>
-              <SectionTitle>산업군</SectionTitle>
-              <FilterTags>
-                {industries.map((industry) => (
-                  <FilterTag
-                    key={industry}
-                    active={selectedIndustries.includes(industry)}
-                    onClick={() => toggleIndustry(industry)}
-                  >
-                    {industry}
-                  </FilterTag>
-                ))}
-              </FilterTags>
-            </Section>
+              <Divider />
 
-            <Divider />
+              {/* 직무 */}
+              <Section>
+                <SectionTitle>직무</SectionTitle>
+                <FilterTags>
+                  {positions.map((position) => (
+                    <FilterTag
+                      key={position}
+                      active={selectedPositions.includes(position)}
+                      onClick={() => togglePosition(position)}
+                    >
+                      {position}
+                    </FilterTag>
+                  ))}
+                </FilterTags>
+              </Section>
 
-            {/* 직무 */}
-            <Section>
-              <SectionTitle>직무</SectionTitle>
-              <FilterTags>
-                {positions.map((position) => (
-                  <FilterTag
-                    key={position}
-                    active={selectedPositions.includes(position)}
-                    onClick={() => togglePosition(position)}
-                  >
-                    {position}
-                  </FilterTag>
-                ))}
-              </FilterTags>
-            </Section>
-
-            {/* 적용 버튼 */}
-            <ApplyButton onClick={handleApply}>적용</ApplyButton>
-          </ModalBody>
-        </ModalContainer>
-      </ModalOverlay>
+              {/* 적용 버튼 */}
+              <ApplyButton onClick={handleApply}>적용</ApplyButton>
+            </ModalBody>
+          </ModalContainer>
+        </ModalOverlay>
+      )}
     </>
   );
 }

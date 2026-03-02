@@ -365,23 +365,36 @@ export default function AgreeModal({
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
 
-  // 모달이 열릴 때 body 스크롤 막기
+  // 모달이 열릴 때 body 스크롤 막기 (스크롤바는 유지)
   useEffect(() => {
     if (isOpen) {
       // 현재 스크롤 위치 저장
       const scrollY = window.scrollY;
-      // body에 스크롤 방지 스타일 적용
+      // 스크롤바는 유지하되 스크롤만 막기
+      document.body.style.overflowY = 'scroll';
       document.body.style.position = 'fixed';
       document.body.style.top = `-${scrollY}px`;
       document.body.style.width = '100%';
-      document.body.style.overflow = 'hidden';
+      
+      // 스크롤 이벤트 막기
+      const preventScroll = (e: Event) => {
+        e.preventDefault();
+        window.scrollTo(0, scrollY);
+      };
+      
+      window.addEventListener('scroll', preventScroll, { passive: false });
+      document.addEventListener('wheel', preventScroll, { passive: false });
+      document.addEventListener('touchmove', preventScroll, { passive: false });
       
       return () => {
         // 모달이 닫힐 때 스크롤 복원
+        window.removeEventListener('scroll', preventScroll);
+        document.removeEventListener('wheel', preventScroll);
+        document.removeEventListener('touchmove', preventScroll);
         document.body.style.position = '';
         document.body.style.top = '';
         document.body.style.width = '';
-        document.body.style.overflow = '';
+        document.body.style.overflowY = '';
         window.scrollTo(0, scrollY);
       };
     }

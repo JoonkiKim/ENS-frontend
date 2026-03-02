@@ -220,7 +220,8 @@ export const Card = styled.div`
   border-radius: 8px;
   padding: 24px;
   flex: 1;
-  min-width: 300px;
+  min-width: 500px;
+  min-height: 150px;
   display: flex;
   flex-direction: column;
   gap: 24px;

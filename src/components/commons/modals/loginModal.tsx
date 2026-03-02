@@ -1,5 +1,11 @@
-import  { useState } from 'react';
+import  { useState, useEffect } from 'react';
 import styled from '@emotion/styled';
+import FindModal from './findModals/findModal';
+import FindIdModal from './findModals/findIdModal';
+import FindPasswordModal from './findModals/findPasswordModal';
+import ResetPasswordModal from './findModals/resetPasswordModal';
+import AgreeModal from './agreeModal';
+import SignUpModal from './signUpModal';
 
 
 
@@ -244,8 +250,48 @@ export default function LoginModal({
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
+  const [isFindModalOpen, setIsFindModalOpen] = useState(false);
+  const [isFindIdModalOpen, setIsFindIdModalOpen] = useState(false);
+  const [isFindPasswordModalOpen, setIsFindPasswordModalOpen] = useState(false);
+  const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState(false);
+  const [resetPasswordEmail, setResetPasswordEmail] = useState('E**@snu.ac.kr');
+  const [isAgreeModalOpen, setIsAgreeModalOpen] = useState(false);
+  const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
 
-  if (!isOpen) return null;
+  // 모달이 열릴 때 body 스크롤 막기 (스크롤바는 유지)
+  useEffect(() => {
+    if (isOpen) {
+      // 현재 스크롤 위치 저장
+      const scrollY = window.scrollY;
+      // 스크롤바는 유지하되 스크롤만 막기
+      document.body.style.overflowY = 'scroll';
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      
+      // 스크롤 이벤트 막기
+      const preventScroll = (e: Event) => {
+        e.preventDefault();
+        window.scrollTo(0, scrollY);
+      };
+      
+      window.addEventListener('scroll', preventScroll, { passive: false });
+      document.addEventListener('wheel', preventScroll, { passive: false });
+      document.addEventListener('touchmove', preventScroll, { passive: false });
+      
+      return () => {
+        // 모달이 닫힐 때 스크롤 복원
+        window.removeEventListener('scroll', preventScroll);
+        document.removeEventListener('wheel', preventScroll);
+        document.removeEventListener('touchmove', preventScroll);
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.overflowY = '';
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [isOpen]);
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -267,58 +313,148 @@ export default function LoginModal({
     }
   };
 
+  const handleForgotPasswordClick = () => {
+    setIsFindModalOpen(true);
+    if (onForgotPassword) {
+      onForgotPassword();
+    }
+  };
+
+  const handleFindModalClose = () => {
+    setIsFindModalOpen(false);
+  };
+
+  const handleFindIdModalOpen = () => {
+    setIsFindIdModalOpen(true);
+  };
+
+  const handleFindIdModalClose = () => {
+    setIsFindIdModalOpen(false);
+  };
+
+  const handleFindPasswordModalOpen = () => {
+    setIsFindPasswordModalOpen(true);
+  };
+
+  const handleFindPasswordModalClose = () => {
+    setIsFindPasswordModalOpen(false);
+  };
+
+  const handleResetPasswordModalOpen = (email?: string) => {
+    if (email) {
+      setResetPasswordEmail(email);
+    }
+    setIsResetPasswordModalOpen(true);
+  };
+
+  const handleResetPasswordModalClose = () => {
+    setIsResetPasswordModalOpen(false);
+  };
+
+  const handleSignUpClick = () => {
+    setIsAgreeModalOpen(true);
+    onClose(); // loginModal 닫기
+    if (onSignUp) {
+      onSignUp();
+    }
+  };
+
+  const handleAgreeModalClose = () => {
+    setIsAgreeModalOpen(false);
+  };
+
+  const handleAgreeModalSubmit = () => {
+    setIsAgreeModalOpen(false);
+    setIsSignUpModalOpen(true);
+  };
+
+  const handleSignUpModalClose = () => {
+    setIsSignUpModalOpen(false);
+  };
+
   return (
     <>
+      {isOpen && (
+        <ModalOverlay onClick={handleOverlayClick}>
+          <ModalContainer>
+            {/* Header */}
+            <ModalHeader>
+              <ModalTitle>로그인</ModalTitle>
+              <CloseButton onClick={onClose} aria-label="Close" />
+            </ModalHeader>
 
-      <ModalOverlay onClick={handleOverlayClick}>
-        <ModalContainer>
-          {/* Header */}
-          <ModalHeader>
-            <ModalTitle>로그인</ModalTitle>
-            <CloseButton onClick={onClose} aria-label="Close" />
-          </ModalHeader>
+            {/* Body */}
+            <ModalBody>
+              <InputField
+                type="text"
+                placeholder="아이디 (ex. 00기_홍길동)"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                onKeyPress={handleKeyPress}
+              />
+              <InputField
+                type="password"
+                placeholder="비밀번호"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyPress={handleKeyPress}
+              />
+              
+              <CheckboxContainer>
+                <CheckboxWrapper>
+                  <CheckboxInput
+                    type="checkbox"
+                    id="keepLoggedIn"
+                    checked={keepLoggedIn}
+                    onChange={(e) => setKeepLoggedIn(e.target.checked)}
+                  />
+                  <CheckboxCustom />
+                </CheckboxWrapper>
+                <CheckboxLabel htmlFor="keepLoggedIn">
+                  로그인 상태 유지
+                </CheckboxLabel>
+              </CheckboxContainer>
 
-          {/* Body */}
-          <ModalBody>
-            <InputField
-              type="text"
-              placeholder="아이디 (ex. 00기_홍길동)"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              onKeyPress={handleKeyPress}
-            />
-            <InputField
-              type="password"
-              placeholder="비밀번호"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyPress={handleKeyPress}
-            />
-            
-            <CheckboxContainer>
-              <CheckboxWrapper>
-                <CheckboxInput
-                  type="checkbox"
-                  id="keepLoggedIn"
-                  checked={keepLoggedIn}
-                  onChange={(e) => setKeepLoggedIn(e.target.checked)}
-                />
-                <CheckboxCustom />
-              </CheckboxWrapper>
-              <CheckboxLabel htmlFor="keepLoggedIn">
-                로그인 상태 유지
-              </CheckboxLabel>
-            </CheckboxContainer>
+              <LoginButton onClick={handleLogin}>로그인</LoginButton>
 
-            <LoginButton onClick={handleLogin}>로그인</LoginButton>
-
-            <FooterLinks>
-              <FooterLink onClick={onSignUp}>회원가입</FooterLink>
-              <FooterLink onClick={onForgotPassword}>비밀번호 찾기</FooterLink>
-            </FooterLinks>
-          </ModalBody>
-        </ModalContainer>
-      </ModalOverlay>
+              <FooterLinks>
+                <FooterLink onClick={handleSignUpClick}>회원가입</FooterLink>
+                <FooterLink onClick={handleForgotPasswordClick}>비밀번호 찾기</FooterLink>
+              </FooterLinks>
+            </ModalBody>
+          </ModalContainer>
+        </ModalOverlay>
+      )}
+      <FindModal 
+        isOpen={isFindModalOpen} 
+        onClose={handleFindModalClose}
+        onFindIdModalOpen={handleFindIdModalOpen}
+        onFindPasswordModalOpen={handleFindPasswordModalOpen}
+      />
+      <FindIdModal 
+        isOpen={isFindIdModalOpen} 
+        onClose={handleFindIdModalClose}
+        onResetPassword={(email) => handleResetPasswordModalOpen(email)}
+      />
+      <FindPasswordModal 
+        isOpen={isFindPasswordModalOpen} 
+        onClose={handleFindPasswordModalClose}
+        onResetPassword={(email) => handleResetPasswordModalOpen(email)}
+      />
+      <ResetPasswordModal 
+        isOpen={isResetPasswordModalOpen} 
+        onClose={handleResetPasswordModalClose}
+        email={resetPasswordEmail}
+      />
+      <AgreeModal 
+        isOpen={isAgreeModalOpen} 
+        onClose={handleAgreeModalClose}
+        onSubmit={handleAgreeModalSubmit}
+      />
+      <SignUpModal 
+        isOpen={isSignUpModalOpen} 
+        onClose={handleSignUpModalClose}
+      />
     </>
   );
 }
