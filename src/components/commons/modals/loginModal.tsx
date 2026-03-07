@@ -1,11 +1,15 @@
 import  { useState, useEffect } from 'react';
 import styled from '@emotion/styled';
+import { useMutation, useApolloClient } from '@apollo/client';
+import { useRouter } from 'next/router';
 import FindModal from './findModals/findModal';
 import FindIdModal from './findModals/findIdModal';
 import FindPasswordModal from './findModals/findPasswordModal';
 import ResetPasswordModal from './findModals/resetPasswordModal';
 import AgreeModal from './agreeModal';
 import SignUpModal from './signUpModal';
+import { LOGIN, FETCH_LOGIN_USER } from '../../../commons/apis/graphql-queries';
+import { setAccessToken } from '../../../commons/libraries/token';
 
 
 
@@ -125,7 +129,7 @@ const CheckboxContainer = styled.div`
   align-items: center;
   gap: 8px;
   margin-top: 6px;
-  margin-bottom: 18px;
+  // margin-bottom: 18px;
 `;
 
 const CheckboxWrapper = styled.div`
@@ -247,7 +251,7 @@ export default function LoginModal({
   onSignUp,
   onForgotPassword,
 }: LoginModalProps) {
-  const [username, setUsername] = useState('');
+  const [customId, setCustomId] = useState('');
   const [password, setPassword] = useState('');
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
   const [isFindModalOpen, setIsFindModalOpen] = useState(false);
@@ -257,6 +261,11 @@ export default function LoginModal({
   const [resetPasswordEmail, setResetPasswordEmail] = useState('E**@snu.ac.kr');
   const [isAgreeModalOpen, setIsAgreeModalOpen] = useState(false);
   const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const router = useRouter();
+  const apolloClient = useApolloClient();
+
+  const [loginMutation, { loading: loginLoading }] = useMutation(LOGIN);
 
   // 모달이 열릴 때 body 스크롤 막기 (스크롤바는 유지)
   useEffect(() => {
@@ -293,18 +302,95 @@ export default function LoginModal({
     }
   }, [isOpen]);
 
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose();
+  const handleLogin = async () => {
+    // 입력값 검증
+    if (!customId.trim()) {
+      setLoginError('아이디를 입력해주세요.');
+      return;
     }
-  };
+    if (!password.trim()) {
+      setLoginError('비밀번호를 입력해주세요.');
+      return;
+    }
 
-  const handleLogin = () => {
-    if (onLogin) {
-      onLogin(username, password, keepLoggedIn);
+    setLoginError(null);
+
+    try {
+      const { data, errors } = await loginMutation({
+        variables: {
+          customId: customId.trim(),
+          password: password,
+          keepLoggedIn: keepLoggedIn,
+        },
+      });
+
+      // GraphQL errors 배열이 있는 경우 처리 (200 응답이지만 errors 포함)
+      if (errors && errors.length > 0) {
+        const errorMessage = errors[0]?.message || '로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.';
+        // 스택 트레이스 제거 (메시지에서 \n\nStack: 이후 부분 제거)
+        const cleanMessage = errorMessage.split('\n\nStack:')[0].trim();
+        setLoginError(cleanMessage);
+        return;
+      }
+
+      if (data?.login) {
+        // 액세스 토큰 저장
+        setAccessToken(data.login);
+        
+        // 사용자 정보 조회하여 이메일 확인
+        try {
+          const { data: userData } = await apolloClient.query({
+            query: FETCH_LOGIN_USER,
+            fetchPolicy: 'network-only', // 캐시 무시하고 최신 데이터 가져오기
+          });
+          
+          const user = userData?.fetchLoginUser;
+          
+          // 이메일이 없으면 마이페이지로 리다이렉트
+          if (user && !user.email) {
+            onClose();
+            setCustomId('');
+            setPassword('');
+            setKeepLoggedIn(false);
+            router.push('/mypage');
+            return;
+          }
+        } catch (error) {
+          console.error('사용자 정보 조회 실패:', error);
+        }
+        
+        // 로그인 성공 시 콜백 호출
+        if (onLogin) {
+          onLogin(customId, password, keepLoggedIn);
+        }
+        
+        // 모달 닫기
+        onClose();
+        
+        // 입력 필드 초기화
+        setCustomId('');
+        setPassword('');
+        setKeepLoggedIn(false);
+      }
+    } catch (error: any) {
+      console.error('로그인 실패:', error);
+      
+      // 에러 메시지 처리
+      let errorMessage = '';
+      
+      // GraphQL 에러가 있는 경우
+      if (error?.graphQLErrors && error.graphQLErrors.length > 0) {
+        errorMessage = error.graphQLErrors[0]?.message || '';
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else {
+        errorMessage = '로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.';
+      }
+      
+      // 스택 트레이스 제거 (메시지에서 \n\nStack: 이후 부분 제거)
+      const cleanMessage = errorMessage.split('\n\nStack:')[0].trim();
+      setLoginError(cleanMessage || '로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.');
     }
-    // 실제로는 여기서 로그인 처리
-    onClose();
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -375,7 +461,7 @@ export default function LoginModal({
   return (
     <>
       {isOpen && (
-        <ModalOverlay onClick={handleOverlayClick}>
+        <ModalOverlay>
           <ModalContainer>
             {/* Header */}
             <ModalHeader>
@@ -388,15 +474,21 @@ export default function LoginModal({
               <InputField
                 type="text"
                 placeholder="아이디 (ex. 00기_홍길동)"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={customId}
+                onChange={(e) => {
+                  setCustomId(e.target.value);
+                  setLoginError(null);
+                }}
                 onKeyPress={handleKeyPress}
               />
               <InputField
                 type="password"
                 placeholder="비밀번호"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setLoginError(null);
+                }}
                 onKeyPress={handleKeyPress}
               />
               
@@ -415,7 +507,28 @@ export default function LoginModal({
                 </CheckboxLabel>
               </CheckboxContainer>
 
-              <LoginButton onClick={handleLogin}>로그인</LoginButton>
+              <div style={{ 
+                color: '#ff4444', 
+                fontSize: '12px', 
+                marginTop: '5px', 
+                marginBottom: '5px',
+                paddingLeft: '4px',
+                minHeight: '16px',
+                lineHeight: '16px'
+              }}>
+                {loginError || '\u00A0'}
+              </div>
+
+              <LoginButton 
+                onClick={handleLogin}
+                disabled={loginLoading}
+                style={{ 
+                  opacity: loginLoading ? 0.6 : 1,
+                  cursor: loginLoading ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {loginLoading ? '로그인 중...' : '로그인'}
+              </LoginButton>
 
               <FooterLinks>
                 <FooterLink onClick={handleSignUpClick}>회원가입</FooterLink>
@@ -428,7 +541,7 @@ export default function LoginModal({
       <FindModal 
         isOpen={isFindModalOpen} 
         onClose={handleFindModalClose}
-        onFindIdModalOpen={handleFindIdModalOpen}
+        onFindEmailModalOpen={handleFindIdModalOpen}
         onFindPasswordModalOpen={handleFindPasswordModalOpen}
       />
       <FindIdModal 

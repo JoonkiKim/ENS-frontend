@@ -259,7 +259,28 @@ export const TableContainer = styled.div`
   display: flex;
   flex-direction: column;
   min-height: 0;
+  max-height: 700px;
   overflow-y: auto;
+  overflow-x: hidden;
+
+  /* 스크롤바 스타일링 */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #d9d9d9;
+    border-radius: 4px;
+
+    &:hover {
+      background: #b3b3b3;
+    }
+  }
 `;
 
 export const Table = styled.table`
@@ -270,6 +291,9 @@ export const Table = styled.table`
 export const TableHeader = styled.thead`
   background: #ffffff;
   border-bottom: 1px solid #e4e4e7;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 `;
 
 export const TableRow = styled.tr`
@@ -292,6 +316,7 @@ export const TableHeaderCell = styled.th<{ width?: string }>`
   color: #71717a;
   width: ${({ width }) => width || 'auto'};
   height: 40px;
+// vertical-align: middle; // 이 줄 추가
 `;
 
 export const TableBody = styled.tbody``;
@@ -308,7 +333,7 @@ export const MemoCell = styled.div`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 190px;
+  max-width: 5600px;
   cursor: pointer;
   position: relative;
 `;
@@ -472,6 +497,14 @@ export const TableCheckbox = styled.input`
     background: #ffb700;
     border-color: #ffb700;
   }
+`;
+
+export const CheckboxWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 `;
 
 export const EditButton = styled.button`

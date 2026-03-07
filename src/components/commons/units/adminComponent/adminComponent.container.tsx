@@ -1,8 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import { useQuery, useMutation } from '@apollo/client';
+import * as XLSX from 'xlsx';
 import ForceWithdrawModal from '../../modals/forceWithdrawModal';
 import ForceWithdrawSuccessModal from '../../modals/forceWithdrawSuccessModal';
+import MessageModal from '../../modals/messageModal';
+import ExportModal from '../../modals/exportModal';
+import { FETCH_ALL_USERS, UPDATE_USERS_BATCH, DELETE_USER } from '../../../../commons/apis/graphql-queries';
 import {
   PageContainer,
   Sidebar,
@@ -43,15 +48,10 @@ import {
   MemoModalCloseButton,
   MemoModalContent,
   TableCheckbox,
+  CheckboxWrapper,
   EditButton,
   Pagination,
   PaginationInfo,
-  PaginationControls,
-  RowsPerPage,
-  Select,
-  PageInfo,
-  PaginationButtons,
-  PaginationButton,
 } from './adminComponent.style';
 
 interface Member {
@@ -62,20 +62,18 @@ interface Member {
   email: string;
   grade: string;
   memo: string;
+  userId?: string; // 실제 유저 ID (변경사항 추적용)
 }
 
-const mockMembers: Member[] = [
-  { id: 1, generation: '1기', name: '○○○', phone: '010-0000-0000', email: 'ens@ens.com', grade: '운영진', memo: '37기 커리어세션 강의해주셨음. 33기 커리어세션 참여해주셨음. 그리고 00기업과 산학협력 주선해주심.' },
-  { id: 2, generation: '2기', name: '○○○', phone: '010-0000-0000', email: 'ens@ens.com', grade: '운영진', memo: '' },
-  { id: 3, generation: '2기', name: '○○○', phone: '010-0000-0000', email: 'ens@ens.com', grade: '학회원', memo: '' },
-  { id: 4, generation: '2기', name: '○○○', phone: '010-0000-0000', email: 'ens@ens.com', grade: '학회원', memo: '' },
-  { id: 5, generation: '2기', name: '○○○', phone: '010-0000-0000', email: 'ens@ens.com', grade: '학회원', memo: '커피챗' },
-  { id: 6, generation: '2기', name: '○○○', phone: '010-0000-0000', email: 'ens@ens.com', grade: '학회원', memo: '' },
-  { id: 7, generation: '2기', name: '○○○', phone: '010-0000-0000', email: 'ens@ens.com', grade: '학회원', memo: '' },
-  { id: 8, generation: '2기', name: '○○○', phone: '010-0000-0000', email: 'ens@ens.com', grade: '학회원', memo: '' },
-  { id: 9, generation: '10기', name: '○○○', phone: '010-0000-0000', email: 'ens@ens.com', grade: '학회원', memo: '' },
-  { id: 10, generation: '30기', name: '○○○', phone: '010-0000-0000', email: 'ens@ens.com', grade: '학회원', memo: '' },
-];
+interface User {
+  id: string;
+  name: string;
+  generation: number;
+  phone: string;
+  email: string;
+  role: 'MEMBER' | 'ADMIN';
+  memo: string | null;
+}
 
 const generations = Array.from({ length: 40 }, (_, i) => `${i + 1}기`);
 
@@ -84,21 +82,75 @@ export default function MembersList() {
   const [selectedMembers, setSelectedMembers] = useState<number[]>([]);
   const [selectedGenerations, setSelectedGenerations] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [displayCount, setDisplayCount] = useState(20); // 무한스크롤용 표시 개수
   const [selectedMemo, setSelectedMemo] = useState<{ id: number; memo: string; position: { top: number; left: number } } | null>(null);
   const memoCellRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
+  const tableContainerRef = useRef<HTMLDivElement>(null); // 스크롤 컨테이너 ref
   const [isEditMode, setIsEditMode] = useState(false);
-  const [members, setMembers] = useState<Member[]>(mockMembers);
   const [openGradeDropdowns, setOpenGradeDropdowns] = useState<{ [key: number]: boolean }>({});
   const [isForceWithdrawModalOpen, setIsForceWithdrawModalOpen] = useState(false);
   const [isForceWithdrawSuccessModalOpen, setIsForceWithdrawSuccessModalOpen] = useState(false);
+  const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
+  const [messageModalMessage, setMessageModalMessage] = useState('');
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+
+  // 사용자 데이터 조회
+  const { data, loading, error } = useQuery<{ fetchAllUsers: User[] }>(FETCH_ALL_USERS);
+
+  // Batch update mutation
+  const [updateUsersBatch] = useMutation(UPDATE_USERS_BATCH, {
+    refetchQueries: [{ query: FETCH_ALL_USERS }],
+  });
+
+  // Delete user mutation
+  const [deleteUser] = useMutation(DELETE_USER, {
+    refetchQueries: [{ query: FETCH_ALL_USERS }],
+  });
+
+  // 초기 데이터 저장 (변경사항 추적용)
+  const [initialMembers, setInitialMembers] = useState<Member[]>([]);
+  const [userMap, setUserMap] = useState<Map<number, User>>(new Map());
+
+  // 로컬 상태로 관리 (수정 시 사용)
+  const [members, setMembers] = useState<Member[]>([]);
+
+  // API 데이터가 변경되면 로컬 상태 업데이트
+  useEffect(() => {
+    if (data?.fetchAllUsers) {
+      const convertedMembers = data.fetchAllUsers.map((user, index) => ({
+        id: index + 1,
+        generation: `${user.generation}기`,
+        name: user.name,
+        phone: user.phone,
+        email: user.email,
+        grade: user.role === 'ADMIN' ? '운영진' : '학회원',
+        memo: user.memo || '',
+        userId: user.id, // 실제 유저 ID 저장
+      }));
+      
+      // 유저 ID 매핑 생성
+      const newUserMap = new Map<number, User>();
+      data.fetchAllUsers.forEach((user, index) => {
+        newUserMap.set(index + 1, user);
+      });
+      setUserMap(newUserMap);
+      
+      setMembers(convertedMembers);
+      setInitialMembers(convertedMembers); // 초기 데이터 저장
+    }
+  }, [data]);
 
   const handleSelectAll = () => {
-    if (selectedMembers.length === members.length) {
-      setSelectedMembers([]);
+    const displayedIds = displayedMembers.map(m => m.id);
+    const allSelected = displayedIds.length > 0 && displayedIds.every(id => selectedMembers.includes(id));
+    
+    if (allSelected) {
+      // 현재 표시된 항목들만 선택 해제
+      setSelectedMembers(selectedMembers.filter(id => !displayedIds.includes(id)));
     } else {
-      setSelectedMembers(members.map(m => m.id));
+      // 현재 표시된 항목들 모두 선택 (기존 선택 유지)
+      const newSelected = Array.from(new Set([...selectedMembers, ...displayedIds]));
+      setSelectedMembers(newSelected);
     }
   };
 
@@ -118,10 +170,109 @@ export default function MembersList() {
     }
   };
 
-  const totalPages = Math.ceil(members.length / rowsPerPage);
+  // 필터링된 멤버 계산
+  const filteredMembers = members.filter((member) => {
+    // 기수 필터링
+    if (selectedGenerations.length > 0 && !selectedGenerations.includes(member.generation)) {
+      return false;
+    }
+    // 검색 필터링
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      return (
+        member.name.toLowerCase().includes(query) ||
+        member.email.toLowerCase().includes(query) ||
+        member.phone.includes(query) ||
+        member.generation.includes(query)
+      );
+    }
+    return true;
+  });
+
+  // 표시할 멤버 계산
+  const displayedMembers = filteredMembers.slice(0, displayCount);
+  const hasMore = displayedMembers.length < filteredMembers.length;
+
+  // 필터 변경 시 displayCount 리셋
+  useEffect(() => {
+    setDisplayCount(20);
+  }, [selectedGenerations, searchQuery]);
+
+  // 저장하기 핸들러
+  const handleSave = async () => {
+    // 변경사항이 있는 유저만 찾기
+    const updates: Array<{ userId: string; updateUserInput: any }> = [];
+    
+    members.forEach((member, index) => {
+      const initial = initialMembers[index];
+      if (!initial) return;
+      
+      const hasChanges = 
+        member.grade !== initial.grade || 
+        member.memo !== initial.memo;
+      
+      if (hasChanges) {
+        const user = userMap.get(member.id);
+        if (!user) return;
+        
+        const updateUserInput: any = {};
+        
+        // 등급 변경
+        if (member.grade !== initial.grade) {
+          updateUserInput.role = member.grade === '운영진' ? 'ADMIN' : 'MEMBER';
+        }
+        
+        // 메모 변경
+        if (member.memo !== initial.memo) {
+          updateUserInput.memo = member.memo || null;
+        }
+        
+        updates.push({
+          userId: user.id,
+          updateUserInput,
+        });
+      }
+    });
+    
+    if (updates.length === 0) {
+      setMessageModalMessage('변경사항이 없습니다.');
+      setIsMessageModalOpen(true);
+      setIsEditMode(false);
+      return;
+    }
+    
+    try {
+      // 단일 요청으로 모든 변경사항 전송
+      const result = await updateUsersBatch({
+        variables: {
+          updates: {
+            updates,
+          },
+        },
+      });
+      
+      if (result.errors) {
+        throw new Error(result.errors[0].message);
+      }
+      
+      // 성공 처리
+      setIsEditMode(false);
+      setInitialMembers([...members]); // 초기 데이터 업데이트
+      setMessageModalMessage(`${updates.length}명의 변경사항이 저장되었습니다.`);
+      setIsMessageModalOpen(true);
+    } catch (error: any) {
+      console.error('저장 중 오류:', error);
+      setMessageModalMessage(error.message || '저장 중 오류가 발생했습니다.');
+      setIsMessageModalOpen(true);
+    }
+  };
 
   const handleEditAll = () => {
-    setIsEditMode(!isEditMode);
+    if (isEditMode) {
+      handleSave(); // 저장하기 버튼 클릭 시 저장 실행
+    } else {
+      setIsEditMode(true);
+    }
   };
 
   const handleGradeChange = (id: number, newGrade: string) => {
@@ -163,6 +314,91 @@ export default function MembersList() {
       };
     }
   }, [openGradeDropdowns]);
+
+  // 무한스크롤 로직
+  useEffect(() => {
+    const handleScroll = () => {
+      const container = tableContainerRef.current;
+      if (container && hasMore) {
+        const { scrollTop, scrollHeight, clientHeight } = container;
+        // 하단 100px 전에 도달하면 더 불러오기
+        if (scrollHeight - scrollTop - clientHeight < 100) {
+          setDisplayCount((prevCount) => prevCount + 20);
+        }
+      }
+    };
+
+    const container = tableContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, [hasMore]);
+
+  // 검색어 하이라이트 함수
+  const highlightText = (text: string, query: string): React.ReactNode => {
+    if (!query.trim()) {
+      return text;
+    }
+
+    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    const parts = text.split(regex);
+
+    return parts.map((part, index) => {
+      if (regex.test(part)) {
+        return (
+          <span key={index} style={{ color: '#ffb700', fontWeight: 600 }}>
+            {part}
+          </span>
+        );
+      }
+      return part;
+    });
+  };
+
+  // 엑셀 다운로드 함수
+  const handleExportToExcel = (selectedColumns: string[]) => {
+    // 필터링된 멤버들 전체를 다운로드
+    if (filteredMembers.length === 0) {
+      setMessageModalMessage('다운로드할 회원이 없습니다.');
+      setIsMessageModalOpen(true);
+      return;
+    }
+
+    // 선택된 열만 포함하는 데이터 생성
+    const columnLabels: { [key: string]: string } = {
+      generation: '그룹',
+      name: '이름',
+      phone: '연락처',
+      email: '메일',
+      memo: '메모',
+    };
+
+    const worksheetData = filteredMembers.map(member => {
+      const row: { [key: string]: string } = {};
+      selectedColumns.forEach(col => {
+        const value = member[col as keyof Member];
+        row[columnLabels[col]] = value ? String(value) : '';
+      });
+      return row;
+    });
+
+    // 워크북 생성
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(worksheetData);
+    XLSX.utils.book_append_sheet(wb, ws, '회원 목록');
+
+    // 파일 다운로드
+    const fileName = `회원목록_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+
+    setIsExportModalOpen(false);
+  };
 
   return (
     <PageContainer>
@@ -217,7 +453,16 @@ export default function MembersList() {
     variant={isEditMode ? 'danger' : undefined}
     onClick={() => {
       if (isEditMode) {
+        // 먼저 선택된 유저가 있는지 확인
+        if (selectedMembers.length === 0) {
+          setMessageModalMessage('삭제할 유저가 없습니다.');
+          setIsMessageModalOpen(true);
+          return;
+        }
         setIsForceWithdrawModalOpen(true);
+      } else {
+        // 내보내기 모달 열기
+        setIsExportModalOpen(true);
       }
     }}
   >
@@ -226,16 +471,19 @@ export default function MembersList() {
 </ButtonGroup>
             </SearchFilterBar>
 
-            <TableContainer>
+            <TableContainer ref={tableContainerRef}>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHeaderCell width="30px">
-                      <TableCheckbox
-                        type="checkbox"
-                        checked={selectedMembers.length === mockMembers.length}
-                        onChange={handleSelectAll}
-                      />
+                    <TableHeaderCell id="header-cell" width="30px">
+                      <CheckboxWrapper>
+                        <TableCheckbox
+                          type="checkbox"
+                          checked={selectedMembers.length === displayedMembers.length && displayedMembers.length > 0}
+                          onChange={handleSelectAll}
+                          id="header-checkbox"
+                        />
+                      </CheckboxWrapper>
                     </TableHeaderCell>
                     <TableHeaderCell width="80px">그룹</TableHeaderCell>
                     <TableHeaderCell width="100px">이름</TableHeaderCell>
@@ -247,19 +495,40 @@ export default function MembersList() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {members.map((member) => (
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={8} style={{ textAlign: 'center', padding: '40px' }}>
+                        로딩 중...
+                      </TableCell>
+                    </TableRow>
+                  ) : error ? (
+                    <TableRow>
+                      <TableCell colSpan={8} style={{ textAlign: 'center', padding: '40px', color: '#ff4444' }}>
+                        데이터를 불러오는 중 오류가 발생했습니다.
+                      </TableCell>
+                    </TableRow>
+                  ) : displayedMembers.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={8} style={{ textAlign: 'center', padding: '40px' }}>
+                        검색 결과가 없습니다.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    displayedMembers.map((member) => (
                     <TableRow key={member.id}>
                       <TableCell>
-                        <TableCheckbox
-                          type="checkbox"
-                          checked={selectedMembers.includes(member.id)}
-                          onChange={() => handleSelectMember(member.id)}
-                        />
+                        <CheckboxWrapper>
+                          <TableCheckbox
+                            type="checkbox"
+                            checked={selectedMembers.includes(member.id)}
+                            onChange={() => handleSelectMember(member.id)}
+                          />
+                        </CheckboxWrapper>
                       </TableCell>
-                      <TableCell>{member.generation}</TableCell>
-                      <TableCell>{member.name}</TableCell>
-                      <TableCell>{member.phone}</TableCell>
-                      <TableCell>{member.email}</TableCell>
+                      <TableCell>{highlightText(member.generation, searchQuery)}</TableCell>
+                      <TableCell>{highlightText(member.name, searchQuery)}</TableCell>
+                      <TableCell>{highlightText(member.phone, searchQuery)}</TableCell>
+                      <TableCell>{highlightText(member.email, searchQuery)}</TableCell>
                       <TableCell>
                         {isEditMode ? (
                           <GradeSelectField
@@ -360,54 +629,16 @@ export default function MembersList() {
                         </EditButton>
                       </TableCell>
                     </TableRow>
-                  ))}
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </TableContainer>
 
             <Pagination>
               <PaginationInfo>
-                {selectedMembers.length} of {members.length} row(s) selected.
+                {selectedMembers.length} of {filteredMembers.length} row(s) selected.
               </PaginationInfo>
-              <PaginationControls>
-                <RowsPerPage>
-                  <span>Rows per page</span>
-                  <Select value={rowsPerPage} onChange={(e) => setRowsPerPage(Number(e.target.value))}>
-                    <option value={10}>10</option>
-                    <option value={20}>20</option>
-                    <option value={50}>50</option>
-                  </Select>
-                </RowsPerPage>
-                <PageInfo>
-                  Page {currentPage} of {totalPages}
-                </PageInfo>
-                <PaginationButtons>
-                  <PaginationButton
-                    onClick={() => setCurrentPage(1)}
-                    disabled={currentPage === 1}
-                  >
-                    «
-                  </PaginationButton>
-                  <PaginationButton
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1}
-                  >
-                    ‹
-                  </PaginationButton>
-                  <PaginationButton
-                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                    disabled={currentPage === totalPages}
-                  >
-                    ›
-                  </PaginationButton>
-                  <PaginationButton
-                    onClick={() => setCurrentPage(totalPages)}
-                    disabled={currentPage === totalPages}
-                  >
-                    »
-                  </PaginationButton>
-                </PaginationButtons>
-              </PaginationControls>
             </Pagination>
           </TableSection>
         </ContentWrapper>
@@ -432,11 +663,43 @@ export default function MembersList() {
       <ForceWithdrawModal
         isOpen={isForceWithdrawModalOpen}
         onClose={() => setIsForceWithdrawModalOpen(false)}
-        onConfirm={() => {
-          // TODO: 강제 탈퇴 로직 구현
-          console.log('강제 탈퇴 실행:', selectedMembers);
-          setIsForceWithdrawModalOpen(false);
-          setIsForceWithdrawSuccessModalOpen(true);
+        onConfirm={async () => {
+          try {
+            // 선택된 멤버들의 userId 가져오기
+            const userIdsToDelete = selectedMembers
+              .map(memberId => {
+                const member = members.find(m => m.id === memberId);
+                return member?.userId;
+              })
+              .filter((userId): userId is string => userId !== undefined);
+
+            if (userIdsToDelete.length === 0) {
+              setIsForceWithdrawModalOpen(false);
+              setMessageModalMessage('삭제할 유저가 없습니다.');
+              setIsMessageModalOpen(true);
+              return;
+            }
+
+            // 모든 유저 삭제 요청 (병렬 처리)
+            const deletePromises = userIdsToDelete.map(userId =>
+              deleteUser({
+                variables: { userId },
+              })
+            );
+
+            await Promise.all(deletePromises);
+
+            // 성공 처리
+            setIsForceWithdrawModalOpen(false);
+            setSelectedMembers([]); // 선택 초기화
+            setIsEditMode(false); // edit 모드 종료
+            setIsForceWithdrawSuccessModalOpen(true);
+          } catch (error: any) {
+            console.error('강제 탈퇴 중 오류:', error);
+            setIsForceWithdrawModalOpen(false);
+            setMessageModalMessage(error.message || '강제 탈퇴 중 오류가 발생했습니다.');
+            setIsMessageModalOpen(true);
+          }
         }}
         selectedCount={selectedMembers.length}
       />
@@ -444,8 +707,26 @@ export default function MembersList() {
       {/* Force Withdraw Success Modal */}
       <ForceWithdrawSuccessModal
         isOpen={isForceWithdrawSuccessModalOpen}
-        onClose={() => setIsForceWithdrawSuccessModalOpen(false)}
+        onClose={() => {
+          setIsForceWithdrawSuccessModalOpen(false);
+          setIsEditMode(false); // edit 모드 종료
+        }}
         selectedCount={selectedMembers.length}
+      />
+
+      {/* Message Modal */}
+      <MessageModal
+        isOpen={isMessageModalOpen}
+        onClose={() => setIsMessageModalOpen(false)}
+        message={messageModalMessage}
+      />
+
+      {/* Export Modal */}
+      <ExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        onConfirm={handleExportToExcel}
+        selectedCount={filteredMembers.length}
       />
     </PageContainer>
   );

@@ -1,98 +1,81 @@
 import  { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useQuery } from '@apollo/client';
+import { FETCH_ALL_BOARDS } from '../../../../../commons/apis/graphql-queries';
 
 import * as S from './boardMain.style';
 
-
+interface Board {
+  id: string;
+  number: number;
+  title: string;
+  category: string;
+  content: string;
+  imageUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: string;
+    name: string;
+  };
+}
 
 interface Post {
-  id: number;
+  id: string;
+  number: number;
   category: string;
   title: string;
   date: string;
   author: string;
 }
 
-const posts: Post[] = [
-  {
-    id: 103,
-    category: '채용 공고',
-    title: '네이버웹툰에서 채용 연계형 인턴을 모집합니다',
-    date: '2026.02.07',
-    author: '정예진',
-  },
-  {
-    id: 102,
-    category: '기타',
-    title: '20XX.XX.XX 서울대학교 인문대학에서 주최하는 학술동아리 활동 공유...',
-    date: '2026.02.07',
-    author: '정예진',
-  },
-  {
-    id: 101,
-    category: '채용 공고',
-    title: '네이버웹툰에서 채용 연계형 인턴을 모집합니다',
-    date: '2026.02.07',
-    author: '정예진',
-  },
-  {
-    id: 100,
-    category: '채용 공고',
-    title: '네이버웹툰에서 채용 연계형 인턴을 모집합니다',
-    date: '2026.02.07',
-    author: '정예진',
-  },
-  {
-    id: 100,
-    category: '채용 공고',
-    title: '네이버웹툰에서 채용 연계형 인턴을 모집합니다',
-    date: '2026.02.07',
-    author: '정예진',
-  },
-  {
-    id: 99,
-    category: '학회 공지',
-    title: '2026 홈커밍 파티를 개최합니다',
-    date: '2026.02.07',
-    author: '정예진',
-  },
-  {
-    id: 98,
-    category: '채용 공고',
-    title: '네이버웹툰에서 채용 연계형 인턴을 모집합니다',
-    date: '2026.02.07',
-    author: '정예진',
-  },
-  {
-    id: 97,
-    category: '기타',
-    title: '20XX.XX.XX 서울대학교 인문대학에서 주최하는 학술동아리 활동 공유...',
-    date: '2026.02.07',
-    author: '정예진',
-  },
-  {
-    id: 96,
-    category: '학회 공지',
-    title: '2025 홈커밍 파티를 개최합니다',
-    date: '2025.06.30',
-    author: '정예진',
-  },
-];
-
 export default function FreeBoard() {
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = 9;
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
+  // GraphQL 쿼리로 게시판 데이터 가져오기
+  const { data, loading, error, refetch } = useQuery(FETCH_ALL_BOARDS, {
+    fetchPolicy: 'cache-and-network', // 캐시와 네트워크 모두 확인하여 최신 데이터 보장
+  });
+
   const categories = ['전체', '학회 공지', '채용 공고', '기타'];
+
+  // 카테고리 매핑 (백엔드 enum -> 프론트엔드 표시명)
+  const categoryMap: Record<string, string> = {
+    'NOTICE': '학회 공지',
+    'RECRUITMENT': '채용 공고',
+    'ETC': '기타',
+  };
+
+  // 날짜 포맷팅 함수
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Board 데이터를 Post 형식으로 변환
+  const posts: Post[] = data?.fetchAllBoards?.map((board: Board) => ({
+    id: board.id,
+    number: board.number,
+    category: categoryMap[board.category] || board.category,
+    title: board.title,
+    date: formatDate(board.createdAt),
+    author: board.user?.name || '',
+  })) || [];
 
   // 선택된 카테고리에 따라 게시물 필터링
   const filteredPosts = selectedCategory
     ? posts.filter((post) => post.category === selectedCategory)
     : posts;
+
+  const totalPages = Math.ceil(filteredPosts.length / 10) || 1;
 
 
 
@@ -135,6 +118,34 @@ export default function FreeBoard() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isCategoryDropdownOpen]);
+
+  // 로딩 중
+  if (loading) {
+    return (
+      <S.Container>
+        <S.HeroSection>
+          <S.HeroTitle>자유 게시판</S.HeroTitle>
+          <S.HeroDescription>
+            <p>로딩 중...</p>
+          </S.HeroDescription>
+        </S.HeroSection>
+      </S.Container>
+    );
+  }
+
+  // 에러 발생
+  if (error) {
+    return (
+      <S.Container>
+        <S.HeroSection>
+          <S.HeroTitle>자유 게시판</S.HeroTitle>
+          <S.HeroDescription>
+            <p>게시판을 불러오는 중 오류가 발생했습니다.</p>
+          </S.HeroDescription>
+        </S.HeroSection>
+      </S.Container>
+    );
+  }
 
   return (
     <>
@@ -214,9 +225,9 @@ export default function FreeBoard() {
               <S.TableRow 
                 key={`${post.id}-${index}`} 
                 clickable 
-                onClick={() => router.push('/boardMain/boardView')}
+                onClick={() => router.push(`/boardMain/boardView/${post.id}`)}
               >
-                <S.TableCell>{post.id}</S.TableCell>
+                <S.TableCell>{post.number}</S.TableCell>
                 <S.TableCell>
                   <S.CategoryBadge>{post.category}</S.CategoryBadge>
                 </S.TableCell>

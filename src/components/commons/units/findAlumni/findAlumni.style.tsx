@@ -293,6 +293,8 @@ export const ResultsSection = styled.section`
   margin-top: 5vh;
   padding: 0 50px 100px;
   background: white;
+  display: flex;
+  flex-direction: column;
 
   @media (max-width: 768px) {
     padding: 0 20px 60px;
@@ -401,6 +403,32 @@ export const CountNumber = styled.span`
   color: #ffb700;
 `;
 
+export const TableScrollContainer = styled.div`
+  max-height: 600px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: none;
+
+  /* 스크롤바 스타일링 */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #d9d9d9;
+   
+
+    &:hover {
+      background: #b3b3b3;
+    }
+  }
+`;
+
 export const TableHeader = styled.div`
   display: grid;
   grid-template-columns: 70px 140px 180px 200px 120px 140px 100px;
@@ -411,6 +439,9 @@ export const TableHeader = styled.div`
   color: rgba(44, 44, 44, 0.75);
   letter-spacing: -0.26px;
   border-bottom: 1px solid #d9d9d9;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 
   & > div {
     text-align: center;
@@ -588,4 +619,40 @@ export const ContactDetails = styled.div`
   gap: 5px;
   font-size: 14px;
   color: #666;
+`;
+
+export const ExcelDownloadButton = styled.button`
+  margin-top: 20px;
+  padding: 0;
+  background: transparent;
+  color: #71717a;
+  border: none;
+  font-size: 14px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: color 0.2s;
+  align-self: flex-end;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  &:hover {
+    color: #52525b;
+  }
+
+  &:active {
+    color: #3f3f46;
+  }
+
+  @media (max-width: 768px) {
+    margin-top: 16px;
+  }
+`;
+
+export const DownloadIcon = styled.svg`
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
 `;

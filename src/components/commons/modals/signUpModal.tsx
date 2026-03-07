@@ -726,21 +726,52 @@ export default function SignUpModal({
       document.body.style.top = `-${scrollY}px`;
       document.body.style.width = '100%';
       
-      // 스크롤 이벤트 막기
+      // 스크롤 이벤트 막기 (모달 외부만)
       const preventScroll = (e: Event) => {
         e.preventDefault();
         window.scrollTo(0, scrollY);
       };
       
+      // wheel 이벤트 처리 (모달 내부는 허용)
+      const preventWheel = (e: WheelEvent) => {
+        const target = e.target as HTMLElement;
+        const modalContainer = document.querySelector('[data-modal-container]') as HTMLElement;
+        
+        // 모달 내부인지 확인
+        if (modalContainer && modalContainer.contains(target)) {
+          // 모달 내부면 스크롤 허용
+          return;
+        }
+        
+        // 모달 외부면 스크롤 막기
+        e.preventDefault();
+        window.scrollTo(0, scrollY);
+      };
+      
+      // touchmove 이벤트 처리 (모달 내부는 허용)
+      const preventTouchMove = (e: TouchEvent) => {
+        const target = e.target as HTMLElement;
+        const modalContainer = document.querySelector('[data-modal-container]') as HTMLElement;
+        
+        // 모달 내부인지 확인
+        if (modalContainer && modalContainer.contains(target)) {
+          // 모달 내부면 스크롤 허용
+          return;
+        }
+        
+        // 모달 외부면 스크롤 막기
+        e.preventDefault();
+      };
+      
       window.addEventListener('scroll', preventScroll, { passive: false });
-      document.addEventListener('wheel', preventScroll, { passive: false });
-      document.addEventListener('touchmove', preventScroll, { passive: false });
+      document.addEventListener('wheel', preventWheel, { passive: false });
+      document.addEventListener('touchmove', preventTouchMove, { passive: false });
       
       return () => {
         // 모달이 닫힐 때 스크롤 복원
         window.removeEventListener('scroll', preventScroll);
-        document.removeEventListener('wheel', preventScroll);
-        document.removeEventListener('touchmove', preventScroll);
+        document.removeEventListener('wheel', preventWheel);
+        document.removeEventListener('touchmove', preventTouchMove);
         document.body.style.position = '';
         document.body.style.top = '';
         document.body.style.width = '';
@@ -816,7 +847,7 @@ export default function SignUpModal({
     <>
 
       <ModalOverlay onClick={handleOverlayClick}>
-        <ModalContainer>
+        <ModalContainer data-modal-container>
           {/* Header */}
           <ModalHeader>
             <ModalTitle>회원가입</ModalTitle>

@@ -153,7 +153,7 @@ export const TableHeader = styled.div`
   background-color: rgba(217, 217, 217, 0.3);
 `;
 
-export const TableHeaderCell = styled.p`
+export const TableHeaderCell = styled.div`
   font-size: 13px;
   color: #2C2C2C;
 //   opacity: 0.75;

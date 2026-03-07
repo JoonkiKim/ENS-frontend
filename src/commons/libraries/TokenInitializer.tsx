@@ -1,53 +1,50 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
-import { useSetRecoilState } from "recoil";
+import { useSetRecoilState, useResetRecoilState, useRecoilValue } from "recoil";
 import { accessTokenState, authCheckedState } from "../stores";
-import { useMutation, useQuery } from "@apollo/client";
+import { useMutation, useApolloClient } from "@apollo/client";
 import {
   registerAccessTokenSetter,
   setAccessToken,
   clearAccessToken,
 } from "./token";
-import {
-  RESTORE_ACCESS_TOKEN,
-  FETCH_LOGIN_USER,
-  CREATE_PUSH_SUBSCRIPTION,
-} from "../apis/graphql-queries";
+import { RESTORE_ACCESS_TOKEN } from "../apis/graphql-queries";
+import MessageModal from "../../components/commons/modals/messageModal";
 
 // ✅ 인증이 필요 없는 페이지 목록
-const PUBLIC_PATHS = ["/login", "/signUp", "/find-password"];
+const PUBLIC_PATHS = ["/", "/resetPassword"];
 
-// VAPID 키 변환 함수
-function urlBase64ToUint8Array(base64String: string) {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-  const rawData = atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
+// JWT 토큰 만료 시간 확인 함수
+const isTokenValid = (token: string | null): boolean => {
+  if (!token) return false;
+  
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const exp = payload.exp * 1000; // 초를 밀리초로 변환
+    const now = Date.now();
+    
+    // 만료 5분 전까지는 유효하다고 간주
+    return exp > now + 5 * 60 * 1000;
+  } catch {
+    return false;
   }
-  return outputArray;
-}
-
-// ArrayBuffer를 Base64로 변환하는 헬퍼 함수
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  const bytes = new Uint8Array(buffer);
-  let binary = "";
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
-}
+};
 
 export default function TokenInitializer() {
   const setToken = useSetRecoilState(accessTokenState);
   const setChecked = useSetRecoilState(authCheckedState);
+  const resetAccessToken = useResetRecoilState(accessTokenState);
+  const resetAuthChecked = useResetRecoilState(authCheckedState);
+  const accessToken = useRecoilValue(accessTokenState);
+  const authChecked = useRecoilValue(authCheckedState);
   const router = useRouter();
+  const apolloClient = useApolloClient();
 
-  // ✅ 초기화 완료 여부를 추적
-  const isInitialized = useRef(false);
-  // ✅ 푸시 구독 시도 여부를 추적 (중복 방지)
-  const pushSubscriptionAttempted = useRef(false);
+  // ✅ 각 경로별 초기화 완료 여부를 추적
+  const initializedPaths = useRef<Set<string>>(new Set());
+  
+  // 메시지 모달 상태
+  const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
 
   // GraphQL mutation hook
   const [restoreAccessToken] = useMutation(RESTORE_ACCESS_TOKEN, {
@@ -58,84 +55,6 @@ export default function TokenInitializer() {
     },
   });
 
-  // ✅ 푸시 구독 생성 mutation
-  const [createPushSubscription] = useMutation(CREATE_PUSH_SUBSCRIPTION);
-
-  // 사용자 정보 조회 쿼리 (토큰 갱신 성공 후 실행)
-  const { data: userData, refetch: refetchUser } = useQuery(FETCH_LOGIN_USER, {
-    skip: true, // 초기에는 실행하지 않음
-    fetchPolicy: "network-only",
-  });
-
-  // ✅ 푸시 구독 함수 (GraphQL mutation 사용)
-  const subscribeToPushNotifications = useCallback(async () => {
-    if (typeof window === "undefined") return;
-    if (!("serviceWorker" in navigator)) {
-      console.warn("Service Worker is not supported");
-      return;
-    }
-    if (!("Notification" in window)) {
-      console.warn("Notifications are not supported");
-      return;
-    }
-
-    const PUBLIC_VAPID_KEY = process.env.NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY || "";
-    if (!PUBLIC_VAPID_KEY) {
-      console.warn("Missing NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY");
-      return;
-    }
-
-    try {
-      const registration = await navigator.serviceWorker.ready;
-
-      if (Notification.permission === "denied") {
-        console.warn("알림 권한이 차단되어 있습니다.");
-        return;
-      }
-
-      // 이미 구독되어 있는지 확인
-      const existing = await registration.pushManager.getSubscription();
-      if (existing) {
-        console.log("이미 푸시 구독 중입니다.");
-        return;
-      }
-
-      // 알림 권한 요청
-      const permission = await Notification.requestPermission();
-      if (permission !== "granted") {
-        console.warn("알림 권한이 허용되지 않았습니다.");
-        return;
-      }
-
-      // VAPID 키 변환 및 구독
-      const convertedKey = urlBase64ToUint8Array(PUBLIC_VAPID_KEY);
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: convertedKey,
-      });
-
-      // ✅ GraphQL mutation으로 백엔드에 구독 정보 저장
-      await createPushSubscription({
-        variables: {
-          input: {
-            endpoint: subscription.endpoint,
-            expirationTime: subscription.expirationTime
-              ? subscription.expirationTime.toString()
-              : null,
-            keys: {
-              p256dh: arrayBufferToBase64(subscription.getKey("p256dh")!),
-              auth: arrayBufferToBase64(subscription.getKey("auth")!),
-            },
-          },
-        },
-      });
-
-      console.log("✅ 푸시 구독 완료 (자동 구독)");
-    } catch (error) {
-      console.error("❌ 푸시 구독 실패:", error);
-    }
-  }, [createPushSubscription]);
-
   // ① RecoilRoot 안에서만 registerAccessTokenSetter를 호출
   useEffect(() => {
     registerAccessTokenSetter(setToken);
@@ -144,39 +63,53 @@ export default function TokenInitializer() {
     };
   }, [setToken]);
 
-  // ② 앱 시작 시 한 번만 토큰 갱신 (페이지 이동 시 재실행 안 됨)
+  // ② 각 페이지 접근 시마다 인증 검증
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // ✅ 이미 초기화되었으면 실행 안 함
-    if (isInitialized.current) {
-      return;
-    }
+    const currentPath = router.pathname;
 
     // ✅ 공개 페이지면 토큰 갱신 스킵
-    const isPublicPath = PUBLIC_PATHS.some((path) =>
-      router.pathname.startsWith(path)
-    );
+    const isPublicPath = PUBLIC_PATHS.includes(currentPath);
 
     if (isPublicPath) {
       console.log("🔓 공개 페이지: 토큰 갱신 스킵");
       setChecked(true);
-      isInitialized.current = true; // ✅ 초기화 완료 표시
+      return;
+    }
+
+    // ✅ 이미 이 경로에서 검증했으면 실행 안 함 (중복 방지)
+    if (initializedPaths.current.has(currentPath)) {
+      console.log("✅ 이미 검증된 경로:", currentPath);
+      return;
+    }
+
+    // ✅ 액세스 토큰이 있고 유효하면 리프레시 토큰 체크 스킵
+    if (accessToken && isTokenValid(accessToken)) {
+      console.log("✅ 유효한 액세스 토큰 존재: 리프레시 토큰 체크 스킵");
+      initializedPaths.current.add(currentPath);
+      setChecked(true);
       return;
     }
 
     console.log("🔄 TokenInitializer: 토큰 갱신 시도...");
+    console.log("🍪 현재 쿠키:", document.cookie);
+    console.log("🌐 현재 환경:", process.env.NODE_ENV);
+    console.log("📍 현재 경로:", currentPath);
 
-    // ✅ 초기화 시작 표시
-    isInitialized.current = true;
+    // ✅ 이 경로 검증 시작 표시
+    initializedPaths.current.add(currentPath);
 
     // ✅ 브라우저가 완전히 준비될 때까지 기다림 (인위적 지연 대신)
     // requestIdleCallback이 지원되지 않으면 requestAnimationFrame 사용
     const executeRestore = () => {
+      console.log("🚀 restoreAccessToken 호출 시작...");
+      console.log("📤 요청 헤더:", { authorization: "" });
+      
       restoreAccessToken({
         context: {
           headers: {
-            authorization: "",
+            authorization: "", // 쿠키로만 인증
           },
         },
       })
@@ -184,7 +117,7 @@ export default function TokenInitializer() {
           console.log("✅ 리프레시 응답:", res);
 
           const newToken = res.data?.restoreAccessToken;
-          console.log("newToken", newToken);
+          console.log("📝 받은 토큰:", newToken ? `${newToken.substring(0, 20)}...` : "없음");
 
           if (newToken) {
             // ✅ 토큰 갱신 성공
@@ -194,52 +127,38 @@ export default function TokenInitializer() {
               "📝 새 액세스 토큰:",
               newToken.substring(0, 20) + "..."
             );
-
-            // ✅ 토큰 갱신 성공 후 사용자 정보 조회 및 푸시 구독 처리
-            refetchUser()
-              .then((userRes) => {
-                const marketingAgreed =
-                  userRes.data?.fetchLoginUser?.marketingAgreed;
-                const pushNotificationEnabled =
-                  userRes.data?.fetchLoginUser?.pushNotificationEnabled;
-
-                console.log("📧 마케팅 동의 여부:", marketingAgreed);
-                console.log(
-                  "🔔 푸시 알림 활성화 여부:",
-                  pushNotificationEnabled
-                );
-
-                // ✅ 마케팅 동의 + 푸시 알림 활성화 + 아직 구독 시도 안 함
-                if (
-                  marketingAgreed &&
-                  pushNotificationEnabled &&
-                  !pushSubscriptionAttempted.current
-                ) {
-                  pushSubscriptionAttempted.current = true;
-                  setTimeout(() => {
-                    subscribeToPushNotifications();
-                  }, 1000);
-                }
-              })
-              .catch((error) => {
-                console.error("❌ 사용자 정보 조회 실패:", error);
-              });
           } else {
-            // ❌ 토큰이 없음 → 로그인 필요
+            // ❌ 토큰이 없음 → 상태 초기화 후 메시지 모달 표시
             console.warn(
-              "⚠️ 리프레시 응답에 토큰이 없습니다 → 로그인 페이지 이동"
+              "⚠️ 리프레시 응답에 토큰이 없습니다 → 메시지 모달 표시"
             );
             clearAccessToken();
+            resetAccessToken();
+            resetAuthChecked();
+            apolloClient.clearStore();
+            
+            setChecked(true);
 
-            if (
-              !PUBLIC_PATHS.some((path) => router.pathname.startsWith(path))
-            ) {
-              router.push("/login");
-            }
+            // 메시지 모달 표시
+            setIsMessageModalOpen(true);
           }
         })
         .catch((error) => {
           console.error("❌ 리프레시 실패:", error);
+          console.error("📋 에러 상세 정보:", {
+            graphQLErrors: error.graphQLErrors,
+            networkError: error.networkError,
+            message: error.message,
+            stack: error.stack,
+          });
+
+          // 네트워크 에러 확인 (404 등)
+          const isNetworkError = error.networkError !== null;
+          const is404Error = 
+            error.networkError?.statusCode === 404 ||
+            error.message?.includes("404") ||
+            error.networkError?.message?.includes("404") ||
+            error.networkError?.statusCode === 404;
 
           // 인증 에러 확인
           const isAuthError =
@@ -255,37 +174,57 @@ export default function TokenInitializer() {
             error.message.includes("Token expired") ||
             error.message.includes("No refresh token");
 
-          const isNetworkError = error.networkError !== null;
-
           const isServerError = error.graphQLErrors?.some(
             (e: any) =>
               e.extensions?.statusCode >= 500 ||
               e.extensions?.code === "INTERNAL_SERVER_ERROR"
           );
 
-          if (isAuthError) {
-            console.log("🔐 인증 실패 → 로그인 페이지 이동");
-            clearAccessToken();
+          console.log("🔍 에러 타입 분석:", {
+            is404Error,
+            isAuthError,
+            isNetworkError,
+            isServerError,
+          });
 
-            if (
-              !PUBLIC_PATHS.some((path) => router.pathname.startsWith(path))
-            ) {
-              const returnUrl = encodeURIComponent(router.asPath);
-              router.push(`/login?returnUrl=${returnUrl}`);
-            }
-          } else if (isNetworkError) {
+          if (is404Error) {
+            console.error("❌ 404 에러: 백엔드 엔드포인트를 찾을 수 없습니다");
+            console.error("💡 확인 사항:");
+            console.error("   - 백엔드가 http://localhost:3001에서 실행 중인지 확인");
+            console.error("   - GraphQL 엔드포인트가 /graphql인지 확인");
+            console.error("   - 네트워크 탭에서 실제 요청 URL 확인");
+            // 404는 네트워크/설정 문제이므로 로그인 페이지로 이동하지 않음
+            // 대신 사용자에게 알림을 표시하거나 재시도 로직 추가 가능
+          } else if (isAuthError) {
+            console.log("🔐 인증 실패 → 상태 초기화 후 메시지 모달 표시");
+            console.log("💡 리프레시 토큰이 만료되었거나 유효하지 않습니다");
+            clearAccessToken();
+            resetAccessToken();
+            resetAuthChecked();
+            apolloClient.clearStore();
+            
+            setChecked(true);
+
+            // 메시지 모달 표시
+            setIsMessageModalOpen(true);
+          } else if (isNetworkError && !is404Error) {
             console.warn("🌐 네트워크 오류 → 토큰 유지, 오프라인 모드");
+            console.warn("💡 네트워크 연결을 확인해주세요");
           } else if (isServerError) {
             console.warn("🔧 서버 오류 → 토큰 유지, 나중에 재시도");
+            console.warn("💡 서버에 일시적인 문제가 있습니다");
           } else {
-            console.error("❌ 알 수 없는 오류 → 로그인 페이지 이동");
+            console.error("❌ 알 수 없는 오류 → 상태 초기화 후 메시지 모달 표시");
+            console.error("💡 예상치 못한 오류가 발생했습니다");
             clearAccessToken();
+            resetAccessToken();
+            resetAuthChecked();
+            apolloClient.clearStore();
+            
+            setChecked(true);
 
-            if (
-              !PUBLIC_PATHS.some((path) => router.pathname.startsWith(path))
-            ) {
-              router.push("/login");
-            }
+            // 메시지 모달 표시
+            setIsMessageModalOpen(true);
           }
         })
         .finally(() => {
@@ -305,7 +244,23 @@ export default function TokenInitializer() {
       // 폴백: 즉시 실행
       executeRestore();
     }
-  }, []); // ✅ 빈 배열 - 마운트 시 한 번만 실행!
+  }, [router.pathname, accessToken, authChecked]); // ✅ 경로, 토큰, 체크 상태 변경 시 실행
 
-  return null;
+  // 메시지 모달 확인 핸들러
+  const handleMessageModalConfirm = () => {
+    setIsMessageModalOpen(false);
+    // 현재 경로를 초기화된 경로에서 제거하여 다시 접근 시 검증 가능하도록
+    initializedPaths.current.delete(router.pathname);
+    router.replace("/");
+  };
+
+  return (
+    <>
+      <MessageModal
+        isOpen={isMessageModalOpen}
+        onClose={handleMessageModalConfirm}
+        message="로그인 후 이용가능합니다"
+      />
+    </>
+  );
 }

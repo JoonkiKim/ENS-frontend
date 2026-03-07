@@ -280,6 +280,7 @@ export const FormField = styled.div`
 
 export const FormLabelWrapper = styled.div`
   min-width: 167px;
+
   display: flex;
   align-items: flex-start;
   padding-top: 15px;
@@ -308,10 +309,11 @@ export const FormInputWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 16px;
+  max-width: 413px;
 `;
 
 export const Input = styled.input<{ active?: boolean }>`
-  width: 413px;
+  width: 100%;
   height: 51px;
   padding: 0 18px;
   border: 1px solid ${({ active }) => (active ? '#ffb700' : '#d9d9d9')};
@@ -350,7 +352,8 @@ export const EmailField = styled.div`
 `;
 
 export const EmailInput = styled(Input)`
-  width: 169px;
+  width: 200px;
+  height: 49px;
 `;
 
 export const EmailAt = styled.span`
@@ -373,7 +376,7 @@ export const EmailDomain = styled(Input)`
 `;
 export const SelectWrapper = styled.div`
   position: relative;
-  width: 413px;
+  width: 100%;
 `;
 
 export const Select = styled.select`
@@ -483,7 +486,7 @@ export const CareerItem = styled.div`
 `;
 
 export const CareerCard = styled.div`
-  width: 842px;
+  width: 900px;
   border: 1px solid #d9d9d9;
   border-radius: 3px;
   background: white;

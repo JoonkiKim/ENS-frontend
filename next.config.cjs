@@ -43,30 +43,28 @@ const nextConfig = {
   },
 
   // ── 여기에만 추가했습니다 ──
-  async redirects() {
-    return [
-      {
-        source: "/:path*",
-        destination: "/tournament-end.html",
-        permanent: false,
-      },
-    ];
-  },
+  // async redirects() {
+  //   return [
+  //     {
+  //       source: "/:path((?!api|_next|manifest|sw\\.js|tournament-end).*)",
+  //       destination: "/tournament-end.html",
+  //       permanent: false,
+  //     },
+  //   ];
+  // },
   // ────────────────────────
 
   // API 프록시 설정: /api/* 경로를 환경변수로 지정된 백엔드 주소로 리다이렉트
   rewrites: async () => [
-    {
-      source: "/api/:path*",
-      destination: `${process.env.NEXT_PUBLIC_API_URL}/:path*`,
-    },
-    // ✅ GraphQL 프록시 추가 (개발 환경용)
+    // ✅ GraphQL 프록시를 먼저 처리 (더 구체적인 경로가 우선)
     // 프로덕션에서는 vercel.json의 rewrites가 우선 적용됨
     {
       source: "/api/graphql",
-      destination:
-        process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
-        "https://guardrail-backend.onrender.com/graphql",
+      destination: "http://localhost:3001/graphql", // 개발 환경: 로컬 백엔드로 프록시
+    },
+    {
+      source: "/api/:path*",
+      destination: `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/:path*`,
     },
   ],
 

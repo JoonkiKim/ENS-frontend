@@ -107,9 +107,9 @@ export const ContentSection = styled.section`
 export const PostHeader = styled.div`
 
 display: flex;
-flex-direction: row;
+flex-direction: column;
 align-items: center;
-justify-content: space-between;
+// justify-content: space-between;
   margin-bottom: 32px;
   padding-bottom: 24px;
   border-bottom: 1px solid #f0f0f0;
@@ -142,6 +142,15 @@ export const PostTitle = styled.h1`
   flex: 1;
 `;
 
+export const PostMetaWrapper = styled.div`
+width: 100%;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+`;
+
 export const PostMeta = styled.div`
   display: flex;
   flex-direction: column;
@@ -163,6 +172,54 @@ export const PostAuthor = styled.p`
   color: rgba(44, 44, 44, 0.6);
   letter-spacing: -0.3px;
   margin: 0;
+`;
+
+export const ActionButtons = styled.div`
+width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+`;
+
+export const EditButton = styled.a`
+  display: inline-block;
+  padding: 8px 16px;
+  background: white;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(44, 44, 44, 0.6);
+  letter-spacing: -0.28px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+  
+  &:hover {
+    background: #f5f5f5;
+    border-color: #b3b3b3;
+  }
+`;
+
+export const DeleteButton = styled.button`
+  display: inline-block;
+  padding: 8px 16px;
+  background: #ffb700;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+  letter-spacing: -0.28px;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover {
+    background: #e6a500;
+  }
 `;
 
 export const PostBody = styled.div`

@@ -121,16 +121,29 @@ export default function MessageModal({ isOpen, onClose, message }: MessageModalP
   // 모달이 열릴 때 body 스크롤 막기 (스크롤바 유지)
   useEffect(() => {
     if (isOpen) {
+      // 현재 스크롤 위치 저장
+      const scrollY = window.scrollY;
+      
       // 스크롤바 너비 계산
       const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
       
-      // body에 padding을 추가해서 스크롤바 너비만큼 공간 확보
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-      document.body.style.overflow = 'hidden';
+      // body에 스타일 적용 (스크롤바 유지하면서 스크롤 방지)
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+
+      document.body.style.overflowY = 'scroll'; // 스크롤바는 보이게
 
       return () => {
+        // 스타일 제거
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
         document.body.style.paddingRight = '';
-        document.body.style.overflow = '';
+        document.body.style.overflowY = '';
+        
+        // 원래 스크롤 위치로 복원
+        window.scrollTo(0, scrollY);
       };
     }
   }, [isOpen]);

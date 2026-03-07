@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useQuery } from '@apollo/client';
+import * as XLSX from 'xlsx';
 import * as S from './findAlumni.style';
 import Head from 'next/head';
 import ProfileModal from '../../modals/profileModal';
 import SearchFilterModal from '../../modals/searchFilterModal';
 import Filter from '../../../../commons/libraries/filter';
+import { FETCH_ALL_USERS, FETCH_LOGIN_USER } from '../../../../commons/apis/graphql-queries';
 
 interface FilterState {
   generationMin: number;
@@ -12,17 +15,62 @@ interface FilterState {
   positions: string[];
 }
 
+interface User {
+  id: string;
+  customId?: string;
+  name: string;
+  generation: number;
+  phone: string;
+  email: string;
+  entrance?: number;
+  imageUrl?: string;
+  linkedin?: string;
+  noCoffeeChat?: boolean;
+  abroad?: boolean;
+  memo?: string;
+  role?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  deletedAt?: Date;
+  careers?: Array<{
+    id: string;
+    company: string;
+    position: string;
+    isCurrent: boolean;
+    positionCategory?: {
+      id: string;
+      name: string;
+    };
+    industry?: {
+      id: string;
+      name: string;
+    };
+  }>;
+}
+
 export default function AlumniSearch() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [appliedFilters, setAppliedFilters] = useState<FilterState | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [displayCount, setDisplayCount] = useState(20); // 초기 표시 개수
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+  
+  // 사용자 데이터 조회
+  const { data, loading, error } = useQuery<{ fetchAllUsers: User[] }>(FETCH_ALL_USERS);
+  
+  // 로그인한 유저 정보 조회 (운영진 확인용)
+  const { data: loginUserData } = useQuery(FETCH_LOGIN_USER);
+  const isAdmin = loginUserData?.fetchLoginUser?.role === 'ADMIN';
 
-  const handleOpenModal = () => {
+  const handleOpenModal = (userId: string) => {
+    setSelectedUserId(userId);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    setSelectedUserId(null);
   };
 
   const handleOpenFilterModal = () => {
@@ -71,6 +119,137 @@ export default function AlumniSearch() {
     appliedFilters.industries.length > 0 ||
     appliedFilters.positions.length > 0
   );
+
+  // 현재 직장 정보 가져오기
+  const getCurrentCompany = (user: User): string => {
+    const currentCareer = user.careers?.find(career => career.isCurrent);
+    return currentCareer?.company || '-';
+  };
+
+  // 소속/직무 정보 가져오기
+  const getPositionInfo = (user: User): string => {
+    const currentCareer = user.careers?.find(career => career.isCurrent);
+    if (!currentCareer) return '-';
+    
+    return currentCareer.position || '-';
+  };
+
+  // 필터링된 사용자 목록
+  const users = data?.fetchAllUsers || [];
+  const filteredUsers = appliedFilters
+    ? users.filter((user) => {
+        // 기수 필터
+        if (
+          user.generation < appliedFilters.generationMin ||
+          user.generation > appliedFilters.generationMax
+        ) {
+          return false;
+        }
+        
+        // 산업군 필터
+        if (appliedFilters.industries.length > 0) {
+          const userIndustries = user.careers
+            ?.map((career) => career.industry?.name)
+            .filter(Boolean) || [];
+          const hasMatchingIndustry = appliedFilters.industries.some((industry) =>
+            userIndustries.includes(industry)
+          );
+          if (!hasMatchingIndustry) return false;
+        }
+        
+        // 직무 필터
+        if (appliedFilters.positions.length > 0) {
+          const userPositions = user.careers
+            ?.map((career) => career.positionCategory?.name)
+            .filter(Boolean) || [];
+          const hasMatchingPosition = appliedFilters.positions.some((position) =>
+            userPositions.includes(position)
+          );
+          if (!hasMatchingPosition) return false;
+        }
+        
+        return true;
+      })
+    : users;
+
+  // 표시할 사용자 목록 (무한 스크롤용)
+  const displayedUsers = filteredUsers.slice(0, displayCount);
+  const hasMore = displayedUsers.length < filteredUsers.length;
+
+  // 필터 변경 시 표시 개수 리셋
+  useEffect(() => {
+    setDisplayCount(20);
+  }, [appliedFilters]);
+
+  // 엑셀 다운로드 함수
+  const handleExportToExcel = () => {
+    if (filteredUsers.length === 0) {
+      alert('다운로드할 데이터가 없습니다.');
+      return;
+    }
+
+    // password를 제외한 모든 필드를 포함한 데이터 생성
+    const worksheetData = filteredUsers.map(user => {
+      const row: { [key: string]: string | number | boolean | null } = {};
+      
+      // 기본 필드들
+      if (user.id) row['ID'] = user.id;
+      if (user.customId) row['아이디'] = user.customId;
+      if (user.name) row['이름'] = user.name;
+      if (user.generation) row['기수'] = user.generation;
+      if (user.phone) row['전화번호'] = user.phone;
+      if (user.email) row['이메일'] = user.email;
+      if (user.entrance) row['입학년도'] = user.entrance;
+      if (user.imageUrl) row['프로필 이미지'] = user.imageUrl;
+      if (user.linkedin) row['링크드인'] = user.linkedin;
+      if (user.noCoffeeChat !== undefined) row['커피챗 불가'] = user.noCoffeeChat;
+      if (user.abroad !== undefined) row['해외 거주'] = user.abroad;
+      if (user.memo) row['메모'] = user.memo;
+      if (user.role) row['역할'] = user.role === 'ADMIN' ? '운영진' : '학회원';
+      if (user.createdAt) row['생성일'] = new Date(user.createdAt).toLocaleDateString('ko-KR');
+      if (user.updatedAt) row['수정일'] = new Date(user.updatedAt).toLocaleDateString('ko-KR');
+      if (user.deletedAt) row['삭제일'] = new Date(user.deletedAt).toLocaleDateString('ko-KR');
+      
+      // 경력 정보 (현재 직장)
+      const currentCareer = user.careers?.find(c => c.isCurrent);
+      if (currentCareer) {
+        row['현재 회사'] = currentCareer.company || '';
+        row['현재 직무'] = currentCareer.position || '';
+        row['직무 카테고리'] = currentCareer.positionCategory?.name || '';
+        row['산업군'] = currentCareer.industry?.name || '';
+      }
+      
+      return row;
+    });
+
+    // 워크북 생성
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(worksheetData);
+    XLSX.utils.book_append_sheet(wb, ws, '알럼나이 목록');
+
+    // 파일 다운로드
+    const fileName = `알럼나이목록_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+  };
+
+  // 무한 스크롤 처리
+  useEffect(() => {
+    const tableContainer = tableContainerRef.current;
+    if (!tableContainer || !hasMore) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = tableContainer;
+      // 하단에서 100px 전에 도달하면 다음 데이터 로드
+      if (scrollHeight - scrollTop - clientHeight < 100) {
+        setDisplayCount((prev) => Math.min(prev + 20, filteredUsers.length));
+      }
+    };
+
+    tableContainer.addEventListener('scroll', handleScroll);
+    return () => {
+      tableContainer.removeEventListener('scroll', handleScroll);
+    };
+  }, [hasMore, filteredUsers.length, displayCount]);
 
   return (
     <>
@@ -174,65 +353,85 @@ export default function AlumniSearch() {
               </>
             )}
             <S.ResultsCount>
-              총 <S.CountNumber>450</S.CountNumber>명
+              총 <S.CountNumber>{filteredUsers.length}</S.CountNumber>명
             </S.ResultsCount>
           </S.FilterResultsWrapper>
 
-          {/* Table Header */}
-          <S.TableHeader>
-            <div>기수</div>
-            <div>성명</div>
-            <div>전화번호</div>
-            <div>이메일</div>
-            <div>현 직장</div>
-            <div>소속/직무</div>
-            <div>프로필</div>
-          </S.TableHeader>
+          {/* Table Container with Infinite Scroll */}
+          <S.TableScrollContainer ref={tableContainerRef}>
+            {/* Table Header */}
+            <S.TableHeader>
+              <div>기수</div>
+              <div>성명</div>
+              <div>전화번호</div>
+              <div>이메일</div>
+              <div>현 직장</div>
+              <div>직무</div>
+              <div>프로필</div>
+            </S.TableHeader>
 
-          {/* Table Rows */}
-          {[...Array(9)].map((_, index) => (
-            <S.TableRow key={index}>
-              <S.TableCell>1</S.TableCell>
-              <S.TableCell>이상혁</S.TableCell>
-              <S.TableCell>010-1111-1111</S.TableCell>
-              <S.TableCell>
-                <S.EmailLink href="mailto:faker@gmail.com">faker@gmail.com</S.EmailLink>
-              </S.TableCell>
-              <S.TableCell>T1</S.TableCell>
-              <S.TableCell>미드라이너</S.TableCell>
-              <S.TableCell>
-                <S.ProfileLink
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleOpenModal();
-                  }}
-                >
-                  더보기
-                </S.ProfileLink>
-              </S.TableCell>
-            </S.TableRow>
-          ))}
+            {/* Table Rows */}
+            {loading ? (
+              <S.TableRow>
+                <S.TableCell style={{ textAlign: 'center', padding: '40px', gridColumn: '1 / -1' }}>
+                  로딩 중...
+                </S.TableCell>
+              </S.TableRow>
+            ) : error ? (
+              <S.TableRow>
+                <S.TableCell style={{ textAlign: 'center', padding: '40px', color: '#ff4444', gridColumn: '1 / -1' }}>
+                  데이터를 불러오는 중 오류가 발생했습니다.
+                </S.TableCell>
+              </S.TableRow>
+            ) : displayedUsers.length === 0 ? (
+              <S.TableRow>
+                <S.TableCell style={{ textAlign: 'center', padding: '40px', gridColumn: '1 / -1' }}>
+                  검색 결과가 없습니다.
+                </S.TableCell>
+              </S.TableRow>
+            ) : (
+              displayedUsers.map((user) => (
+                <S.TableRow key={user.id}>
+                  <S.TableCell>{user.generation}</S.TableCell>
+                  <S.TableCell>{user.name}</S.TableCell>
+                  <S.TableCell>{user.phone}</S.TableCell>
+                  <S.TableCell>
+                    <S.EmailLink href={`mailto:${user.email}`}>{user.email}</S.EmailLink>
+                  </S.TableCell>
+                  <S.TableCell>{getCurrentCompany(user)}</S.TableCell>
+                  <S.TableCell>{getPositionInfo(user)}</S.TableCell>
+                  <S.TableCell>
+                    <S.ProfileLink
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleOpenModal(user.id);
+                      }}
+                    >
+                      더보기
+                    </S.ProfileLink>
+                  </S.TableCell>
+                </S.TableRow>
+              ))
+            )}
+          </S.TableScrollContainer>
 
-          {/* Pagination */}
-          <S.Pagination>
-            <S.PageNav>&lt;</S.PageNav>
-            <S.PageNumber active>1</S.PageNumber>
-            <S.PageNumber>2</S.PageNumber>
-            <S.PageNumber>3</S.PageNumber>
-            <S.PageNumber>4</S.PageNumber>
-            <S.PageNumber>5</S.PageNumber>
-            <S.PageNumber>6</S.PageNumber>
-            <S.PageNumber>7</S.PageNumber>
-            <S.PageNumber>8</S.PageNumber>
-            <S.PageNumber>9</S.PageNumber>
-            <S.PageNav>&gt;</S.PageNav>
-          </S.Pagination>
+          {/* 엑셀 다운로드 버튼 (운영진만 표시) */}
+          {isAdmin && (
+            <S.ExcelDownloadButton onClick={handleExportToExcel}>
+              엑셀파일로 저장
+              <S.DownloadIcon viewBox="0 0 24 24" strokeWidth="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </S.DownloadIcon>
+            </S.ExcelDownloadButton>
+          )}
         </S.ResultsSection>
       </S.Container>
 
       {/* Profile Modal */}
-      <ProfileModal isOpen={isModalOpen} onClose={handleCloseModal} />
+      <ProfileModal isOpen={isModalOpen} onClose={handleCloseModal} userId={selectedUserId} />
 
       {/* Search Filter Modal */}
       <SearchFilterModal

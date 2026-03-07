@@ -1,6 +1,18 @@
 import { useRouter } from "next/router";
+import styled from "@emotion/styled";
 import LayoutNavigation from "./navigation";
 import LayoutHeader from "./header";
+
+const LayoutWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+`;
+
+const ContentWrapper = styled.div`
+  flex: 1;
+  background-color: white;
+`;
 
 interface ILayoutProps {
   children: JSX.Element;
@@ -30,16 +42,12 @@ export default function Layout(props: ILayoutProps): JSX.Element {
   // };
 
   return (
-    <>
+    <LayoutWrapper>
       {!isAdminPath && <LayoutHeader />}
-      <div
-        style={{
-          backgroundColor: "white",
-        }}
-      >
+      <ContentWrapper>
         {props.children}
-      </div>
+      </ContentWrapper>
       {!isAdminPath && <LayoutNavigation />}
-    </>
+    </LayoutWrapper>
   );
 }

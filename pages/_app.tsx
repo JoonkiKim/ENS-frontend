@@ -97,10 +97,15 @@ const globalStyles = css`
     box-sizing: border-box;
   }
 
+  html {
+    overflow-y: scroll;
+  }
+
   body {
     font-family: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background-color: white;
     color: #2c2c2c;
+    overflow-y: scroll;
   }
 `;
 
@@ -151,7 +156,7 @@ const globalStyles = css`
       <Global styles={globalStyles} />
       <RecoilRoot>
         <ApolloProvider client={apolloClient}>
-          {/* <TokenInitializer /> */}
+           <TokenInitializer /> 
           <LoadingOverlay visible={loadingRoute}>
             <LoadingIcon spin fontSize={48} />
           </LoadingOverlay>

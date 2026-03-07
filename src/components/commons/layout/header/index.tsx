@@ -1,5 +1,8 @@
 import styled from "@emotion/styled";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import { useQuery } from "@apollo/client";
+import { FETCH_LOGIN_USER } from "../../../../commons/apis/graphql-queries";
 
 // ─── 공통 레이아웃 헤더 (ENS Intranet 스타일) ─────────────────────────────
 
@@ -69,6 +72,22 @@ const NavItem = styled.a`
 `;
 
 export default function LayoutHeader(): JSX.Element {
+  const router = useRouter();
+  // 로그인한 유저 정보 조회
+  const { data } = useQuery(FETCH_LOGIN_USER);
+  const isAdmin = data?.fetchLoginUser?.role === 'ADMIN';
+  const user = data?.fetchLoginUser;
+  
+  // 로그인한 유저이고 이메일이 없으면 헤더를 숨김
+  const shouldHideHeader = user && !user.email;
+  
+  // 비밀번호 재설정 페이지에서는 네비게이션 숨김
+  const isResetPasswordPage = router.pathname === '/resetPassword';
+
+  if (shouldHideHeader) {
+    return <></>;
+  }
+
   return (
     <HeaderBackground>
       <HeaderInner>
@@ -78,17 +97,25 @@ export default function LayoutHeader(): JSX.Element {
           </Logo>
         </Link>
 
-        <Navigation>
-          <Link href="/findAlumni" passHref>
-            <NavItem>알럼나이 찾기</NavItem>
-          </Link>
-          <Link href="/boardMain" passHref>
-            <NavItem>자유 게시판</NavItem>
-          </Link>
-          <Link href="/mypage" passHref>
-            <NavItem>마이페이지</NavItem>
-          </Link>
-        </Navigation>
+        {!isResetPasswordPage && (
+          <Navigation>
+            <Link href="/findAlumni" passHref>
+              <NavItem>알럼나이 찾기</NavItem>
+            </Link>
+            <Link href="/boardMain" passHref>
+              <NavItem>자유 게시판</NavItem>
+            </Link>
+            
+            <Link href="/mypage" passHref>
+              <NavItem>마이페이지</NavItem>
+            </Link>
+            {isAdmin && (
+              <Link href="/admin" passHref>
+                <NavItem>관리</NavItem>
+              </Link>
+            )}
+          </Navigation>
+        )}
       </HeaderInner>
     </HeaderBackground>
   );

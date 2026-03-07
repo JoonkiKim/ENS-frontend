@@ -2,16 +2,11 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type Guardrail {
+type Industry {
   id: String!
-  user: User!
-  feeling: String!
-  mostImpt: String!
-  diary: String!
-  thanks: String!
-  direction: String!
-  oneStep: String!
-  ignorance: String!
+  name: String!
+  isCustom: Boolean!
+  careers: [Career!]!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -21,279 +16,175 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
-type InfusionDetail {
+type PositionCategory {
   id: String!
-  description: String!
-  periodType: PeriodType!
-  infusion: Infusion
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
-"""
-Period type for infusion details
-"""
-enum PeriodType {
-  ONE_WEEK
-  ONE_MONTH
-  ONE_YEAR
-  TEN_YEARS
-}
-
-type Infusion {
-  id: String!
-  user: User!
-  title: String!
-  category: InfusionCategory!
-  description: String!
-  infusionDetails: [InfusionDetail!]
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
-"""
-Infusion category types
-"""
-enum InfusionCategory {
-  DECISION
-  STRESS
-  CONSUMPTION
-}
-
-type PavlovDetail {
-  id: String!
-  description: String!
-  pavlov: Pavlov!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
-type Pavlov {
-  id: String!
-  user: User!
   name: String!
-  pavlovDetails: [PavlovDetail!]!
+  isCustom: Boolean!
+  careers: [Career!]!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
 
-type Todo {
+type Career {
   id: String!
+  company: String!
+  positionCategory: PositionCategory
+  position: String!
+  startDate: DateTime
+  endDate: DateTime
+  isCurrent: Boolean!
+  adminOnly: Boolean!
   user: User!
-  title: String!
-  description: String
-  date: DateTime!
-  startTime: String!
-  endTime: String!
-  priority: TodoPriority!
-  repeatType: String
-  repeatUntil: DateTime
-  isRepeating: Boolean!
-  parentTodoId: String
+  industry: Industry
   createdAt: DateTime!
   updatedAt: DateTime!
 }
 
-"""
-Todo priority levels
-"""
-enum TodoPriority {
-  LOW
-  MEDIUM
-  HIGH
+type Major {
+  id: String!
+  name: String!
+  isCustom: Boolean!
+  userMajors: [UserMajor!]!
 }
 
-type PushSubscription {
-  id: String!
+type UserMajor {
+  userId: String!
+  majorId: String!
   user: User!
-  endpoint: String!
-  expirationTime: String
-  keys: String!
-  createdAt: DateTime!
+  major: Major!
+  isPrimary: Boolean!
 }
 
 type User {
   id: String!
+  customId: String!
   name: String!
-  email: String!
+  generation: Int!
   phone: String!
-  birthDate: DateTime
-  marketingAgreed: Boolean!
-  termsAgreed: Boolean!
-  privacyAgreed: Boolean!
-  guardrails: [Guardrail!]
-  todos: [Todo!]
-  infusions: [Infusion!]
-  pavlovs: [Pavlov!]
-  pushSubscriptions: [PushSubscription!]
-  reminderHour: Int
-  pushNotificationEnabled: Boolean!
+  imageUrl: String
+  email: String!
+  entrance: Int!
+  userMajors: [UserMajor!]
+  linkedin: String
+  noCoffeeChat: Boolean!
+  abroad: Boolean!
+  memo: String
+  role: UserRole!
+  careers: [Career!]
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  deletedAt: DateTime!
+}
+
+"""사용자 등급"""
+enum UserRole {
+  MEMBER
+  ADMIN
+}
+
+type Board {
+  id: String!
+  title: String!
+  category: BoardCategory!
+  content: String!
+  imageUrl: String
   createdAt: DateTime!
   updatedAt: DateTime!
 }
 
+enum BoardCategory {
+  NOTICE
+  RECRUITMENT
+  ETC
+}
+
 type Query {
   fetchLoginUser: User!
-  fetchGuardrails: [Guardrail!]!
-  fetchGuardrail(guardrailId: String!): Guardrail!
-  fetchInfusions: [Infusion!]!
-  fetchInfusion(infusionId: String!): Infusion!
-  fetchTodos: [Todo!]!
-  fetchTodo(todoId: String!): Todo!
-  fetchTodosByMonth(year: Float!, month: Float!): [Todo!]!
-  fetchPavlovs: [Pavlov!]!
-  fetchPavlov(pavlovId: String!): Pavlov!
+  fetchAllUsers: [User!]!
+  fetchUser(userId: String!): User!
+  fetchAllBoards: [Board!]!
+  fetchBoard(boardId: String!): Board!
 }
 
 type Mutation {
-  login(email: String!, password: String!): String!
-  restoreAccessToken: String!
-  logout: String!
   createUser(createUserInput: CreateUserInput!): User!
   updateUser(userId: String!, updateUserInput: UpdateUserInput!): User!
   deleteUser(userId: String!): String!
-  updateReminderHour(updateReminderHourInput: UpdateReminderHourInput!): User!
-  updatePushNotification(
-    updatePushNotificationInput: UpdatePushNotificationInput!
-  ): User!
-  sendTestPushNotification(userId: String): String!
-  createPushSubscription(input: CreatePushSubscriptionInput!): PushSubscription!
-  removePushSubscription(endpoint: String!): Boolean!
-  createGuardrail(createGuardrailInput: CreateGuardrailInput!): Guardrail!
-  updateGuardrail(
-    guardrailId: String!
-    updateGuardrailInput: UpdateGuardrailInput!
-  ): Guardrail!
-  deleteGuardrail(guardrailId: String!): Boolean!
-  createInfusion(createInfusionInput: CreateInfusionInput!): Infusion!
-  updateInfusion(
-    infusionId: String!
-    updateInfusionInput: UpdateInfusionInput!
-  ): Infusion!
-  deleteInfusion(infusionId: String!): Boolean!
-  createTodo(createTodoInput: CreateTodoInput!): [Todo!]!
-  updateTodo(todoId: String!, updateTodoInput: UpdateTodoInput!): Todo!
-  deleteTodo(todoId: String!): Boolean!
-  createPavlov(createPavlovInput: CreatePavlovInput!): Pavlov!
-  updatePavlov(
-    pavlovId: String!
-    updatePavlovInput: UpdatePavlovInput!
-  ): Pavlov!
-  deletePavlov(pavlovId: String!): Boolean!
+  createBoard(createBoardInput: CreateBoardInput!): Board!
+  updateBoard(boardId: String!, updateBoardInput: UpdateBoardInput!): Board!
+  deleteBoard(boardId: String!): String!
+  login(customId: String!, password: String!): String!
+  restoreAccessToken: String!
+  logout: String!
+  sendPasswordResetLink(email: String!): String!
+  resetPassword(token: String!, newPassword: String!): String!
 }
 
 input CreateUserInput {
+  customId: String!
   name: String!
   email: String!
   password: String!
   phone: String!
-  birthDate: String!
-  termsAgreed: Boolean!
-  privacyAgreed: Boolean!
-  marketingAgreed: Boolean = false
+  generation: Int!
+  entrance: Int!
+  imageUrl: String
+  linkedin: String
+  noCoffeeChat: Boolean = false
+  abroad: Boolean = false
+  memo: String
+  role: UserRole = MEMBER
+  userMajors: [CreateUserMajorInput!]
+}
+
+input CreateUserMajorInput {
+  majorId: String
+  customMajorName: String
+  isPrimary: Boolean = false
 }
 
 input UpdateUserInput {
+  customId: String
   name: String
   email: String
   password: String
   phone: String
-  birthDate: String
-  termsAgreed: Boolean
-  privacyAgreed: Boolean
-  marketingAgreed: Boolean = false
+  generation: Int
+  entrance: Int
+  imageUrl: String
+  linkedin: String
+  noCoffeeChat: Boolean = false
+  abroad: Boolean = false
+  memo: String
+  role: UserRole = MEMBER
+  userMajors: [CreateUserMajorInput!]
+  careers: [CreateCareerInput!]
 }
 
-input UpdateReminderHourInput {
-  reminderHour: Int!
+input CreateCareerInput {
+  company: String!
+  positionCategoryId: String
+  customPositionCategoryName: String
+  position: String!
+  startDate: String
+  endDate: String
+  isCurrent: Boolean = false
+  adminOnly: Boolean = false
+  userId: String!
+  industryId: String
+  customIndustryName: String
 }
 
-input UpdatePushNotificationInput {
-  enabled: Boolean!
-}
-
-input CreatePushSubscriptionInput {
-  endpoint: String!
-  expirationTime: String
-  keys: PushSubscriptionKeysInput!
-}
-
-input PushSubscriptionKeysInput {
-  p256dh: String!
-  auth: String!
-}
-
-input CreateGuardrailInput {
-  feeling: String!
-  mostImpt: String!
-  diary: String!
-  thanks: String!
-  direction: String!
-  oneStep: String!
-  ignorance: String!
-}
-
-input UpdateGuardrailInput {
-  feeling: String
-  mostImpt: String
-  diary: String
-  thanks: String
-  direction: String
-  oneStep: String
-  ignorance: String
-}
-
-input CreateInfusionInput {
+input CreateBoardInput {
   title: String!
-  category: InfusionCategory!
-  description: String!
-  infusionDetails: [InfusionDetailInput!]
+  category: BoardCategory = NOTICE
+  content: String!
+  imageUrl: String
 }
 
-input InfusionDetailInput {
-  description: String!
-  periodType: PeriodType!
-}
-
-input UpdateInfusionInput {
+input UpdateBoardInput {
   title: String
-  category: InfusionCategory
-  description: String
-  infusionDetails: [InfusionDetailInput!]
-}
-
-input CreateTodoInput {
-  title: String!
-  description: String
-  date: DateTime!
-  startTime: String!
-  endTime: String!
-  priority: TodoPriority!
-  repeatType: String
-  repeatUntil: DateTime
-}
-
-input UpdateTodoInput {
-  title: String
-  description: String
-  date: DateTime
-  startTime: String
-  endTime: String
-  priority: TodoPriority
-  repeatType: String
-  repeatUntil: DateTime
-}
-
-input CreatePavlovInput {
-  name: String!
-  pavlovDetails: [PavlovDetailInput!]!
-}
-
-input PavlovDetailInput {
-  description: String!
-}
-
-input UpdatePavlovInput {
-  name: String
-  pavlovDetails: [PavlovDetailInput!]
+  category: BoardCategory = NOTICE
+  content: String
+  imageUrl: String
 }

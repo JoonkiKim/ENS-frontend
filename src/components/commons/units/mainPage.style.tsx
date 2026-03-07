@@ -206,12 +206,12 @@ export const SectionSubtitle = styled.p`
 export const CardGrid = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 48px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
   margin-bottom: 48px;
 
-  @media (max-width: 768px) {
-    gap: 24px;
-  }
+
 `;
 
 export const Card = styled.div`
@@ -220,7 +220,7 @@ export const Card = styled.div`
   border-radius: 8px;
   padding: 24px;
   flex: 1;
-  min-width: 500px;
+  min-width: 520px;
   min-height: 150px;
   display: flex;
   flex-direction: column;
@@ -229,6 +229,21 @@ export const Card = styled.div`
   @media (max-width: 768px) {
     min-width: 100%;
   }
+`;
+
+export const LoginRequiredMessage = styled.div`
+  background: white;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  padding: 24px;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 600;
+  color: #2c2c2c;
+  letter-spacing: -0.32px;
 `;
 
 export const CardTitle = styled.h3`
@@ -337,6 +352,15 @@ export const BoardItems = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
+`;
+
+export const EmptyStateMessage = styled.div`
+  padding: 24px;
+  text-align: center;
+  font-size: 16px;
+  color: #b3b3b3;
+  line-height: 1.4;
+
 `;
 
 // Footer Styles

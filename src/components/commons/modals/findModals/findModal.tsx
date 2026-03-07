@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import styled from '@emotion/styled';
+import { useMutation } from '@apollo/client';
+import { SEND_PASSWORD_RESET_LINK } from '../../../../commons/apis/graphql-queries';
 
 
 
@@ -130,6 +132,27 @@ const Tab = styled.button<{ active?: boolean }>`
   }
 `;
 
+// Instruction Text
+const InstructionText = styled.p`
+  padding: 21px 24px 0;
+  margin-top: 21px;
+  font-size: 14px;
+  color: #2c2c2c;
+  letter-spacing: -0.28px;
+  line-height: 1.5;
+`;
+
+// Success Message
+const SuccessMessage = styled.div`
+  padding: 21px 24px;
+  margin-top: 60px;
+  font-size: 14px;
+  color: #2c2c2c;
+  letter-spacing: -0.28px;
+  line-height: 1.5;
+  text-align: center;
+`;
+
 // Form Content
 const FormContent = styled.div`
   padding: 21px 24px 0;
@@ -186,14 +209,32 @@ const SubmitButton = styled.button`
 interface FindModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit?: (type: 'id' | 'password', value: string) => void;
-  onFindIdModalOpen?: () => void;
+  onSubmit?: (type: 'email' | 'password', value: string) => void;
+  onFindEmailModalOpen?: () => void;
   onFindPasswordModalOpen?: () => void;
 }
 
-export default function FindModal({ isOpen, onClose, onSubmit, onFindIdModalOpen, onFindPasswordModalOpen }: FindModalProps) {
-  const [activeTab, setActiveTab] = useState<'id' | 'password'>('password');
+export default function FindModal({ isOpen, onClose, onSubmit, onFindEmailModalOpen, onFindPasswordModalOpen }: FindModalProps) {
+  const [activeTab, setActiveTab] = useState<'email' | 'password'>('password');
   const [inputValue, setInputValue] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // 최소 로딩 시간 제어용
+
+  const [sendPasswordResetLink, { loading: sendingLink }] = useMutation(SEND_PASSWORD_RESET_LINK);
+
+  // 모달이 열릴 때 상태 초기화
+  useEffect(() => {
+    if (isOpen) {
+      setIsSuccess(false);
+      setInputValue('');
+      setIsLoading(false);
+    } else {
+      // 모달이 닫힐 때도 상태 초기화 (깜빡임 방지)
+      setIsSuccess(false);
+      setInputValue('');
+      setIsLoading(false);
+    }
+  }, [isOpen]);
 
   // 모달이 열릴 때 body 스크롤 막기 (스크롤바는 유지)
   useEffect(() => {
@@ -236,36 +277,77 @@ export default function FindModal({ isOpen, onClose, onSubmit, onFindIdModalOpen
     }
   };
 
-  const handleTabChange = (tab: 'id' | 'password') => {
+  const handleTabChange = (tab: 'email' | 'password') => {
     setActiveTab(tab);
     setInputValue('');
   };
 
-  const handleSubmit = () => {
-    if (onSubmit) {
-      onSubmit(activeTab, inputValue);
-    }
-    console.log(`${activeTab === 'id' ? '아이디' : '비밀번호'} 찾기:`, inputValue);
-    
-    if (activeTab === 'id') {
-      if (onFindIdModalOpen) {
-        onFindIdModalOpen();
+  const handleSubmit = async () => {
+    if (activeTab === 'password') {
+      // 이메일 입력 검증
+      if (!inputValue.trim()) {
+        alert('이메일을 입력해주세요.');
+        return;
       }
-      onClose(); // findModal 닫기
-    } else if (activeTab === 'password') {
-      if (onFindPasswordModalOpen) {
-        onFindPasswordModalOpen();
+
+      // 로딩 시작 시간 기록
+      const startTime = Date.now();
+      setIsLoading(true);
+
+      try {
+        // sendPasswordResetLink mutation 실행
+        await sendPasswordResetLink({
+          variables: {
+            email: inputValue.trim(),
+          },
+        });
+        
+        // 최소 1.5초 대기 (이미 지난 시간 고려)
+        const elapsedTime = Date.now() - startTime;
+        const minLoadingTime = 1500; // 1.5초
+        const remainingTime = Math.max(0, minLoadingTime - elapsedTime);
+        
+        if (remainingTime > 0) {
+          await new Promise(resolve => setTimeout(resolve, remainingTime));
+        }
+        
+        // 성공 시 성공 메시지 표시
+        setIsLoading(false);
+        setIsSuccess(true);
+      } catch (error: any) {
+        // 에러 발생 시에도 최소 로딩 시간 유지
+        const elapsedTime = Date.now() - startTime;
+        const minLoadingTime = 1500; // 1.5초
+        const remainingTime = Math.max(0, minLoadingTime - elapsedTime);
+        
+        if (remainingTime > 0) {
+          await new Promise(resolve => setTimeout(resolve, remainingTime));
+        }
+        
+        setIsLoading(false);
+        console.error('비밀번호 재설정 링크 전송 실패:', error);
+        const errorMessage = error?.graphQLErrors?.[0]?.message || error?.message || '비밀번호 재설정 링크 전송에 실패했습니다.';
+        alert(errorMessage);
+      }
+    } else if (activeTab === 'email') {
+      if (onSubmit) {
+        onSubmit(activeTab, inputValue);
+      }
+      console.log('이메일 찾기:', inputValue);
+      
+      if (onFindEmailModalOpen) {
+        onFindEmailModalOpen();
       }
       onClose(); // findModal 닫기
     }
   };
 
   const getPlaceholder = () => {
-    return activeTab === 'id' ? '이메일 또는 아이디' : '가입한 아이디';
+    return activeTab === 'email' ? '이메일 또는 아이디' : '가입한 이메일';
   };
 
   const getButtonText = () => {
-    return activeTab === 'id' ? '아이디 찾기' : '비밀번호 찾기';
+    return activeTab === 'email' ? '이메일 찾기' : '비밀번호 찾기';
   };
 
   return (
@@ -275,30 +357,56 @@ export default function FindModal({ isOpen, onClose, onSubmit, onFindIdModalOpen
           <ModalContainer>
             {/* Header */}
             <ModalHeader>
-              <ModalTitle>아이디/비밀번호 찾기</ModalTitle>
+              <ModalTitle>비밀번호 찾기</ModalTitle>
               <CloseButton onClick={onClose} aria-label="Close" />
             </ModalHeader>
 
             {/* Tabs */}
-            <TabContainer>
-              <Tab active={activeTab === 'id'} onClick={() => handleTabChange('id')}>
-                아이디 찾기
+            {/* <TabContainer>
+              <Tab active={activeTab === 'email'} onClick={() => handleTabChange('email')}>
+                이메일 찾기
               </Tab>
               <Tab active={activeTab === 'password'} onClick={() => handleTabChange('password')}>
                 비밀번호 찾기
               </Tab>
-            </TabContainer>
+            </TabContainer> */}
 
-            {/* Form */}
-            <FormContent>
-              <InputField
-                type="text"
-                placeholder={getPlaceholder()}
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-              />
-              <SubmitButton onClick={handleSubmit}>{getButtonText()}</SubmitButton>
-            </FormContent>
+            {/* Success Message or Form */}
+            {isSuccess ? (
+              <SuccessMessage>
+                비밀번호 재설정 링크가 전송되었습니다. <br /> 메일함을 확인해주세요!
+              </SuccessMessage>
+            ) : (
+              <>
+                {/* Instruction Text */}
+                <InstructionText>가입하신 이메일을 입력해주세요</InstructionText>
+
+                {/* Form */}
+                <FormContent>
+                  <InputField
+                    type="text"
+                    placeholder={getPlaceholder()}
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSubmit();
+                      }
+                    }}
+                  />
+                  <SubmitButton 
+                    onClick={handleSubmit}
+                    disabled={isLoading || sendingLink}
+                    style={{
+                      opacity: (isLoading || sendingLink) ? 0.6 : 1,
+                      cursor: (isLoading || sendingLink) ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    {(isLoading || sendingLink) ? '전송 중...' : getButtonText()}
+                  </SubmitButton>
+                </FormContent>
+              </>
+            )}
           </ModalContainer>
         </ModalOverlay>
       )}
