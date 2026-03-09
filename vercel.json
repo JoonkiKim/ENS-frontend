@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/graphql",
-      "destination": "https://guardrail-backend.onrender.com/graphql"
+      "destination": "https://ensintranet-backend.onrender.com/graphql"
     }
   ],
   "headers": [
@@ -15,7 +15,7 @@
         },
         {
           "key": "Access-Control-Allow-Origin",
-          "value": "https://guardrail-fawn.vercel.app"
+          "value": "https://ens-intranet.vercel.app"
         }
       ]
     }

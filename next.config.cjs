@@ -55,18 +55,24 @@ const nextConfig = {
   // ────────────────────────
 
   // API 프록시 설정: /api/* 경로를 환경변수로 지정된 백엔드 주소로 리다이렉트
-  rewrites: async () => [
-    // ✅ GraphQL 프록시를 먼저 처리 (더 구체적인 경로가 우선)
-    // 프로덕션에서는 vercel.json의 rewrites가 우선 적용됨
-    {
-      source: "/api/graphql",
-      destination: "http://localhost:3001/graphql", // 개발 환경: 로컬 백엔드로 프록시
-    },
-    {
-      source: "/api/:path*",
-      destination: `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/:path*`,
-    },
-  ],
+  rewrites: async () => {
+    // 환경 변수에서 API URL 가져오기
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+    const graphqlEndpoint = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT || "/graphql";
+    
+    return [
+      // ✅ GraphQL 프록시를 먼저 처리 (더 구체적인 경로가 우선)
+      // 프로덕션에서는 vercel.json의 rewrites가 우선 적용될 수 있음
+      {
+        source: "/api/graphql",
+        destination: `${apiUrl}${graphqlEndpoint}`, // 환경 변수 사용
+      },
+      {
+        source: "/api/:path*",
+        destination: `${apiUrl}/:path*`,
+      },
+    ];
+  },
 
   webpack: (config, { isServer }) => {
     if (isServer) {
