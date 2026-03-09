@@ -60,20 +60,23 @@ type User {
   customId: String!
   name: String!
   generation: Int!
-  phone: String!
+  phone: String
   imageUrl: String
-  email: String!
+  email: String
   entrance: Int!
   userMajors: [UserMajor!]
   linkedin: String
   noCoffeeChat: Boolean!
   abroad: Boolean!
+  agreeTerms: Boolean!
+  agreePrivacy: Boolean!
+  agreeAge: Boolean!
   memo: String
   role: UserRole!
   careers: [Career!]
   createdAt: DateTime!
   updatedAt: DateTime!
-  deletedAt: DateTime!
+  deletedAt: DateTime
 }
 
 """사용자 등급"""
@@ -84,10 +87,12 @@ enum UserRole {
 
 type Board {
   id: String!
+  number: Int!
   title: String!
   category: BoardCategory!
   content: String!
   imageUrl: String
+  user: User!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -102,6 +107,9 @@ type Query {
   fetchLoginUser: User!
   fetchAllUsers: [User!]!
   fetchUser(userId: String!): User!
+  fetchAllMajors: [Major!]!
+  fetchAllIndustries: [Industry!]!
+  fetchAllPositionCategories: [PositionCategory!]!
   fetchAllBoards: [Board!]!
   fetchBoard(boardId: String!): Board!
 }
@@ -110,10 +118,12 @@ type Mutation {
   createUser(createUserInput: CreateUserInput!): User!
   updateUser(userId: String!, updateUserInput: UpdateUserInput!): User!
   deleteUser(userId: String!): String!
+  updateUsers(updates: UpdateUsersBatchInput!): [User!]!
+  createUsers(users: CreateUsersBatchInput!): [User!]!
   createBoard(createBoardInput: CreateBoardInput!): Board!
   updateBoard(boardId: String!, updateBoardInput: UpdateBoardInput!): Board!
   deleteBoard(boardId: String!): String!
-  login(customId: String!, password: String!): String!
+  login(customId: String!, password: String!, keepLoggedIn: Boolean = false): String!
   restoreAccessToken: String!
   logout: String!
   sendPasswordResetLink(email: String!): String!
@@ -123,15 +133,18 @@ type Mutation {
 input CreateUserInput {
   customId: String!
   name: String!
-  email: String!
+  email: String
   password: String!
-  phone: String!
+  phone: String
   generation: Int!
   entrance: Int!
   imageUrl: String
   linkedin: String
   noCoffeeChat: Boolean = false
   abroad: Boolean = false
+  agreeTerms: Boolean = false
+  agreePrivacy: Boolean = false
+  agreeAge: Boolean = false
   memo: String
   role: UserRole = MEMBER
   userMajors: [CreateUserMajorInput!]
@@ -155,9 +168,13 @@ input UpdateUserInput {
   linkedin: String
   noCoffeeChat: Boolean = false
   abroad: Boolean = false
+  agreeTerms: Boolean = false
+  agreePrivacy: Boolean = false
+  agreeAge: Boolean = false
   memo: String
   role: UserRole = MEMBER
   userMajors: [CreateUserMajorInput!]
+  currentPassword: String
   careers: [CreateCareerInput!]
 }
 
@@ -173,6 +190,19 @@ input CreateCareerInput {
   userId: String!
   industryId: String
   customIndustryName: String
+}
+
+input UpdateUsersBatchInput {
+  updates: [UpdateUserBatchItemInput!]!
+}
+
+input UpdateUserBatchItemInput {
+  userId: String!
+  updateUserInput: UpdateUserInput!
+}
+
+input CreateUsersBatchInput {
+  users: [CreateUserInput!]!
 }
 
 input CreateBoardInput {

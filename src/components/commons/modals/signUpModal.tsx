@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react';
 import styled from '@emotion/styled';
+import { useMutation, useQuery } from '@apollo/client';
+import { CREATE_USER, FETCH_ALL_MAJORS } from '../../../commons/apis/graphql-queries';
+import SignUpAlert from './signUpAlert';
+import MessageModal from './messageModal';
 
 
 
@@ -318,6 +322,7 @@ const EmailFieldWrapper = styled.div`
 
 const EmailInput = styled(InputField)`
   width: 135px;
+  height: 49px;
 `;
 
 const EmailAt = styled.span`
@@ -454,6 +459,88 @@ const SelectPlaceholder = styled.span`
 
 const SelectWrapper = styled.div`
   position: relative;
+`;
+
+// Generation Select Field
+const GenerationSelectField = styled.div<{ isClickable?: boolean }>`
+  width: 100%;
+  height: 51px;
+  padding: 0 18px;
+  border: 1px solid #d9d9d9;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  background: white;
+  cursor: ${({ isClickable }) => (isClickable ? 'pointer' : 'default')};
+  
+  &:focus-within {
+    border-color: #ffb700;
+  }
+`;
+
+const GenerationValue = styled.span`
+  font-size: 14px;
+  color: #2c2c2c;
+  letter-spacing: -0.28px;
+`;
+
+const GenerationPlaceholder = styled.span`
+  font-size: 14px;
+  color: #b3b3b3;
+  letter-spacing: -0.28px;
+`;
+
+const GenerationDropdown = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-radius: 3px;
+  margin-top: 4px;
+  max-height: 150px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #d9d9d9;
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: #b3b3b3;
+  }
+`;
+
+const GenerationDropdownItem = styled.div`
+  padding: 12px 18px;
+  font-size: 14px;
+  color: #2c2c2c;
+  letter-spacing: -0.28px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background-color: #e5e5e5;
+  }
+  
+  &:first-of-type {
+    border-radius: 3px 3px 0 0;
+  }
+  
+  &:last-of-type {
+    border-radius: 0 0 3px 3px;
+  }
 `;
 
 const StudentIdDropdown = styled.div`
@@ -669,20 +756,73 @@ export default function SignUpModal({
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isStudentIdDropdownOpen, setIsStudentIdDropdownOpen] = useState(false);
   const [isEmailDomainDropdownOpen, setIsEmailDomainDropdownOpen] = useState(false);
+  const [isGenerationDropdownOpen, setIsGenerationDropdownOpen] = useState(false);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  
+  // 회원가입 성공/실패 모달 상태
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [isFailureModalOpen, setIsFailureModalOpen] = useState(false);
+  const [failureMessage, setFailureMessage] = useState('');
+  
+  // 이메일 도메인 직접 입력 모드 상태
+  const [isEmailDomainCustom, setIsEmailDomainCustom] = useState(false);
   
   // 전공 필드 상태 관리
   const [majors, setMajors] = useState([
     {
       id: 1,
       value: '',
+      majorId: undefined as string | undefined,
     },
   ]);
 
-  // 학번 목록 생성 (25학번부터 10학번까지 역순)
-  const studentIds = Array.from({ length: 16 }, (_, i) => String(25 - i));
+  // 전공 검색 상태 관리 (각 전공 필드별로 관리)
+  const [majorSearchStates, setMajorSearchStates] = useState<Record<number, {
+    searchQuery: string;
+    isDropdownOpen: boolean;
+    filteredMajors: Array<{ id: string; name: string }>;
+  }>>({});
+
+  // CREATE_USER 뮤테이션
+  const [createUser, { loading: isCreatingUser }] = useMutation(CREATE_USER);
+
+  // 전공 목록 조회 (캐시 우선 사용)
+  const { data: majorsData, error, loading } = useQuery<{ fetchAllMajors: Array<{ id: string; name: string; isCustom: boolean }> }>(FETCH_ALL_MAJORS, {
+    fetchPolicy: 'cache-first',
+    onError: (error) => {
+      console.error('fetchAllMajors 에러:', error);
+      console.error('GraphQL 에러:', error.graphQLErrors);
+      console.error('네트워크 에러:', error.networkError);
+    },
+  });
+
+  // 디버깅용 로그
+  useEffect(() => {
+    console.log('=== fetchAllMajors 디버깅 ===');
+    console.log('majorsData:', majorsData);
+    console.log('error:', error);
+    console.log('loading:', loading);
+    if (error) {
+      console.error('에러 상세:', {
+        graphQLErrors: error.graphQLErrors,
+        networkError: error.networkError,
+        message: error.message,
+      });
+    }
+  }, [majorsData, error, loading]);
+
+  // 전공 목록 (API에서 불러온 데이터)
+  const majorList = majorsData?.fetchAllMajors?.map(major => ({ id: major.id, name: major.name })) || [];
+
+  // 기수 목록 생성 (40기부터 1기까지 역순)
+  const generations = Array.from({ length: 40 }, (_, i) => 40 - i);
+
+  // 학번 목록 생성 (2026부터 2019까지 역순)
+  const studentIds = [2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019];
 
   // 이메일 도메인 목록
-  const emailDomains = ['gmail.com', 'naver.com'];
+  const emailDomains = ['gmail.com', 'naver.com', '기타'];
 
   // 드롭다운 외부 클릭 시 닫기
   useEffect(() => {
@@ -694,26 +834,44 @@ export default function SignUpModal({
       const isDropdownElement = 
         target.closest('[data-dropdown-container]') ||
         target.closest('[data-dropdown-item]') ||
-        target.closest('[data-dropdown-field]');
+        target.closest('[data-dropdown-field]') ||
+        target.closest('[data-major-search]');
       
       if (!isDropdownElement) {
+        if (isGenerationDropdownOpen) {
+          setIsGenerationDropdownOpen(false);
+        }
         if (isStudentIdDropdownOpen) {
           setIsStudentIdDropdownOpen(false);
         }
         if (isEmailDomainDropdownOpen) {
           setIsEmailDomainDropdownOpen(false);
         }
+        // 전공 검색 드롭다운 닫기
+        setMajorSearchStates(prev => {
+          const newState = { ...prev };
+          Object.keys(newState).forEach(key => {
+            newState[Number(key)] = {
+              ...newState[Number(key)],
+              isDropdownOpen: false,
+            };
+          });
+          return newState;
+        });
       }
     };
 
-    if (isStudentIdDropdownOpen || isEmailDomainDropdownOpen) {
+    const hasOpenDropdown = isGenerationDropdownOpen || isStudentIdDropdownOpen || isEmailDomainDropdownOpen ||
+      Object.values(majorSearchStates).some(state => state.isDropdownOpen);
+
+    if (hasOpenDropdown) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isStudentIdDropdownOpen, isEmailDomainDropdownOpen, isOpen]);
+  }, [isGenerationDropdownOpen, isStudentIdDropdownOpen, isEmailDomainDropdownOpen, isOpen, majorSearchStates]);
 
   // 모달이 열릴 때 body 스크롤 막기 (스크롤바는 유지)
   useEffect(() => {
@@ -804,43 +962,264 @@ export default function SignUpModal({
     }
   };
 
-  const handleSubmit = () => {
-    if (onSubmit) {
-      onSubmit({ ...formData, profileImage: profileImage || undefined });
-    }
-    onClose();
+  // 전공 검색 핸들러
+  const handleMajorSearch = (majorIndex: number, fieldId: number, query: string) => {
+    const filtered = majorList.filter(major => 
+      major.name.toLowerCase().includes(query.toLowerCase())
+    );
+    
+    setMajorSearchStates(prev => ({
+      ...prev,
+      [fieldId]: {
+        searchQuery: query,
+        isDropdownOpen: query.length > 0 && filtered.length > 0,
+        filteredMajors: filtered,
+      },
+    }));
+    
+    // majors 상태 업데이트
+    setMajors(prev => prev.map((major, idx) => 
+      idx === majorIndex ? { ...major, value: query, majorId: undefined } : major
+    ));
   };
 
+  // 전공 선택 핸들러
+  const handleSelectMajor = (majorIndex: number, fieldId: number, major: { id: string; name: string }) => {
+    setMajors(prev => prev.map((majorItem, idx) => 
+      idx === majorIndex ? { ...majorItem, value: major.name, majorId: major.id } : majorItem
+    ));
+    setMajorSearchStates(prev => ({
+      ...prev,
+      [fieldId]: {
+        searchQuery: major.name,
+        isDropdownOpen: false,
+        filteredMajors: majorList,
+      },
+    }));
+  };
+
+  // 전공 입력 필드 포커스 핸들러
+  const handleMajorInputFocus = (majorIndex: number, fieldId: number, currentValue: string) => {
+    const filtered = majorList.filter(major => 
+      major.name.toLowerCase().includes(currentValue.toLowerCase())
+    );
+    
+    setMajorSearchStates(prev => ({
+      ...prev,
+      [fieldId]: {
+        searchQuery: currentValue,
+        isDropdownOpen: currentValue.length > 0 && filtered.length > 0,
+        filteredMajors: filtered,
+      },
+    }));
+  };
+
+  // 전공 검색어 하이라이트 함수
+  const highlightMajorText = (text: string, query: string): React.ReactNode => {
+    if (!query.trim()) {
+      return text;
+    }
+
+    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    const parts = text.split(regex);
+
+    return parts.map((part, index) => {
+      if (regex.test(part)) {
+        return (
+          <span key={index} style={{ color: '#ffb700', fontWeight: 600 }}>
+            {part}
+          </span>
+        );
+      }
+      return part;
+    });
+  };
+
+  const handleSubmit = async () => {
+    // 유효성 검사
+    if (!formData.username) {
+      setAlertMessage('아이디를 입력해주세요.');
+      setIsAlertOpen(true);
+      return;
+    }
+
+    if (!formData.password) {
+      setAlertMessage('비밀번호를 입력해주세요.');
+      setIsAlertOpen(true);
+      return;
+    }
+
+    if (formData.password !== formData.passwordConfirm) {
+      setAlertMessage('비밀번호가 일치하지 않습니다.');
+      setIsAlertOpen(true);
+      return;
+    }
+
+    if (!formData.name) {
+      setAlertMessage('이름을 입력해주세요.');
+      setIsAlertOpen(true);
+      return;
+    }
+
+    if (!formData.generation) {
+      setAlertMessage('기수를 입력해주세요.');
+      setIsAlertOpen(true);
+      return;
+    }
+
+    if (!formData.studentId) {
+      setAlertMessage('학번을 선택해주세요.');
+      setIsAlertOpen(true);
+      return;
+    }
+
+    // customId 형식 검증 (00기_ 형식)
+    if (!formData.username.match(/^\d{2}기_/)) {
+      setAlertMessage('아이디는 "00기_이름" 형식으로 입력해주세요. (예: 01기_홍길동)');
+      setIsAlertOpen(true);
+      return;
+    }
+
+    // 이메일 구성
+    const email = formData.emailLocal && formData.emailDomain 
+      ? `${formData.emailLocal}@${formData.emailDomain}` 
+      : null;
+
+    // 전공 배열 구성 (빈 값 제외)
+    const userMajors = majors
+      .filter(major => major.value.trim() !== '')
+      .map((major, index) => {
+        const majorName = major.value.trim();
+        // 전공 목록에서 찾기
+        const majorFromList = majorList.find(m => m.name === majorName);
+        
+        // 전공 목록에 있으면 majorId 사용, 없으면 customMajorName 사용
+        if (major.majorId || majorFromList) {
+          return {
+            majorId: major.majorId || majorFromList?.id,
+            isPrimary: index === 0, // 첫 번째 전공을 주전공으로 설정
+          };
+        } else {
+          return {
+            customMajorName: majorName,
+            isPrimary: index === 0,
+          };
+        }
+      });
+
+    if (userMajors.length === 0) {
+      setAlertMessage('전공을 최소 1개 이상 입력해주세요.');
+      setIsAlertOpen(true);
+      return;
+    }
+
+    try {
+      const result = await createUser({
+        variables: {
+          createUserInput: {
+            customId: formData.username,
+            name: formData.name,
+            email: email || undefined,
+            password: formData.password,
+            phone: formData.phone || undefined,
+            generation: parseInt(formData.generation, 10),
+            entrance: parseInt(formData.studentId, 10),
+            imageUrl: profileImage || undefined,
+            agreeTerms: true,
+            agreePrivacy: true,
+            agreeAge: true,
+            userMajors: userMajors.length > 0 ? userMajors : undefined,
+          },
+        },
+      });
+
+      console.log('회원가입 성공:', result);
+      
+      // 성공 시 부모 컴포넌트의 onSubmit 호출
+      if (onSubmit) {
+        onSubmit({ ...formData, profileImage: profileImage || undefined });
+      }
+      
+      // 성공 메시지 모달 표시 (모달 닫기 전에 먼저 표시)
+      setIsSuccessModalOpen(true);
+    } catch (error: any) {
+      console.error('회원가입 실패:', error);
+      
+      // GraphQL 에러 메시지 추출
+      const errorMessage = error.graphQLErrors?.[0]?.message || 
+                          error.message || 
+                          '회원가입에 실패했습니다.';
+      
+      setFailureMessage(errorMessage);
+      setIsFailureModalOpen(true);
+    }
+  };
+
+  // 기수 드롭다운 토글
+  const handleToggleGenerationDropdown = () => {
+    setIsGenerationDropdownOpen(!isGenerationDropdownOpen);
+    setIsStudentIdDropdownOpen(false);
+    setIsEmailDomainDropdownOpen(false);
+  };
+
+  // 기수 선택
+  const handleSelectGeneration = (gen: number) => {
+    handleInputChange('generation', String(gen));
+    setIsGenerationDropdownOpen(false);
+  };
+
+  // 학번 드롭다운 토글
   const handleToggleStudentIdDropdown = () => {
     setIsStudentIdDropdownOpen(!isStudentIdDropdownOpen);
+    setIsGenerationDropdownOpen(false);
+    setIsEmailDomainDropdownOpen(false);
   };
 
-  const handleSelectStudentId = (id: string) => {
-    handleInputChange('studentId', id);
+  // 학번 선택
+  const handleSelectStudentId = (id: number) => {
+    handleInputChange('studentId', String(id));
     setIsStudentIdDropdownOpen(false);
   };
 
+  // 이메일 도메인 드롭다운 토글
   const handleToggleEmailDomainDropdown = () => {
     setIsEmailDomainDropdownOpen(!isEmailDomainDropdownOpen);
+    setIsGenerationDropdownOpen(false);
     setIsStudentIdDropdownOpen(false);
   };
 
+  // 이메일 도메인 선택
   const handleSelectEmailDomain = (domain: string) => {
-    handleInputChange('emailDomain', domain);
+    if (domain === '기타') {
+      handleInputChange('emailDomain', ''); // 빈 값으로 설정
+      setIsEmailDomainCustom(true); // 직접 입력 모드 활성화
+    } else {
+      handleInputChange('emailDomain', domain);
+      setIsEmailDomainCustom(false); // 직접 입력 모드 비활성화
+    }
     setIsEmailDomainDropdownOpen(false);
   };
 
   // 전공 필드 추가 함수
   const handleAddMajor = () => {
-    console.log('handleAddMajor called', majors);
     const newId = majors.length > 0 ? Math.max(...majors.map(m => m.id)) + 1 : 1;
     setMajors([
       ...majors,
       {
         id: newId,
         value: '',
+        majorId: undefined,
       },
     ]);
+    // 새 전공 필드의 검색 상태 초기화
+    setMajorSearchStates(prev => ({
+      ...prev,
+      [newId]: {
+        searchQuery: '',
+        isDropdownOpen: false,
+        filteredMajors: majorList,
+      },
+    }));
   };
 
   return (
@@ -963,12 +1342,40 @@ export default function SignUpModal({
                 기수
                 <RequiredMark />
               </FieldLabel>
-              <InputField
-                type="text"
-                placeholder="ENS 기수를 입력하세요"
-                value={formData.generation}
-                onChange={(e) => handleInputChange('generation', e.target.value)}
-              />
+              <SelectWrapper>
+                <GenerationSelectField 
+                  isClickable={true}
+                  onClick={handleToggleGenerationDropdown}
+                  data-dropdown-field
+                >
+                  {formData.generation ? (
+                    <GenerationValue>{formData.generation}기</GenerationValue>
+                  ) : (
+                    <GenerationPlaceholder>기수를 선택하세요</GenerationPlaceholder>
+                  )}
+                  <DropdownIcon style={{ position: 'absolute', right: '18px' }}>
+                    <svg viewBox="0 0 15 11" fill="none">
+                      <path d="M1 1L7.5 9L14 1" stroke="#999999" strokeWidth="2" />
+                    </svg>
+                  </DropdownIcon>
+                  {isGenerationDropdownOpen && (
+                    <GenerationDropdown data-dropdown-container>
+                      {generations.map((gen) => (
+                        <GenerationDropdownItem
+                          key={gen}
+                          data-dropdown-item
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSelectGeneration(gen);
+                          }}
+                        >
+                          {gen}기
+                        </GenerationDropdownItem>
+                      ))}
+                    </GenerationDropdown>
+                  )}
+                </GenerationSelectField>
+              </SelectWrapper>
             </FormField>
 
             {/* 인증번호 */}
@@ -1019,7 +1426,16 @@ export default function SignUpModal({
                     onClick={handleToggleEmailDomainDropdown}
                     data-dropdown-field
                   >
-                    {formData.emailDomain ? (
+                    {isEmailDomainCustom || (formData.emailDomain && formData.emailDomain !== 'gmail.com' && formData.emailDomain !== 'naver.com') ? (
+                      <EmailInput 
+                        type="text" 
+                        placeholder="직접 입력"
+                        onClick={(e) => e.stopPropagation()}
+                        value={formData.emailDomain}
+                        onChange={(e) => handleInputChange('emailDomain', e.target.value)}
+                        style={{ border: 'none', padding: 0, width: '100%' }}
+                      />
+                    ) : formData.emailDomain ? (
                       <SelectValue>{formData.emailDomain}</SelectValue>
                     ) : (
                       <SelectPlaceholder></SelectPlaceholder>
@@ -1040,7 +1456,7 @@ export default function SignUpModal({
                               handleSelectEmailDomain(domain);
                             }}
                           >
-                            {domain}
+                            {domain === '기타' ? '직접 입력' : domain}
                           </EmailDomainDropdownItem>
                         ))}
                       </EmailDomainDropdown>
@@ -1063,7 +1479,7 @@ export default function SignUpModal({
                   data-dropdown-field
                 >
                   {formData.studentId ? (
-                    <SelectValue>{formData.studentId}학번</SelectValue>
+                    <SelectValue>{formData.studentId}</SelectValue>
                   ) : (
                     <SelectPlaceholder>학번을 선택하세요</SelectPlaceholder>
                   )}
@@ -1083,7 +1499,7 @@ export default function SignUpModal({
                             handleSelectStudentId(id);
                           }}
                         >
-                          {id}학번
+                          {id}
                         </StudentIdDropdownItem>
                       ))}
                     </StudentIdDropdown>
@@ -1100,37 +1516,104 @@ export default function SignUpModal({
               </FieldLabel>
               <FormInputWrapper>
               <MultiInputField>
-                {majors.map((major, index) => (
-                  <MajorInputWrapper key={major.id}>
-                    <Input type="text" placeholder="전공을 입력하세요" />
-                    {index === majors.length - 1 && (
-                      <AddButton 
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleAddMajor();
-                        }}
-                      >
-                        <svg viewBox="0 0 20 20" fill="none">
-                          <path d="M10 5V15M5 9.90196H15" stroke="#FFB700" strokeWidth="1.5" />
-                          <circle cx="10" cy="10" r="9.5" stroke="#FFB700" />
-                        </svg>
-                      </AddButton>
-                    )}
-                  </MajorInputWrapper>
-                ))}
+                {majors.map((major, index) => {
+                  const majorValue = major.value || '';
+                  const searchState = majorSearchStates[major.id] || {
+                    searchQuery: majorValue,
+                    isDropdownOpen: false,
+                    filteredMajors: majorList,
+                  };
+                  
+                  return (
+                    <MajorInputWrapper key={major.id} data-major-search>
+                      <div style={{ position: 'relative', width: '100%' }}>
+                        <Input 
+                          type="text" 
+                          placeholder="전공을 검색하세요" 
+                          value={majorValue}
+                          onChange={(e) => handleMajorSearch(index, major.id, e.target.value)}
+                          onFocus={() => handleMajorInputFocus(index, major.id, majorValue)}
+                          data-major-search
+                        />
+                        {searchState.isDropdownOpen && searchState.filteredMajors.length > 0 && (
+                          <EmailDomainDropdown 
+                            data-dropdown-container
+                            data-major-search
+                            style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 1000 }}
+                          >
+                            {searchState.filteredMajors.map((majorItem) => (
+                              <EmailDomainDropdownItem
+                                key={majorItem.id}
+                                data-dropdown-item
+                                data-major-search
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSelectMajor(index, major.id, majorItem);
+                                }}
+                              >
+                                {highlightMajorText(majorItem.name, searchState.searchQuery)}
+                              </EmailDomainDropdownItem>
+                            ))}
+                          </EmailDomainDropdown>
+                        )}
+                      </div>
+                      {index === majors.length - 1 && (
+                        <AddButton 
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleAddMajor();
+                          }}
+                        >
+                          <svg viewBox="0 0 20 20" fill="none">
+                            <path d="M10 5V15M5 9.90196H15" stroke="#FFB700" strokeWidth="1.5" />
+                            <circle cx="10" cy="10" r="9.5" stroke="#FFB700" />
+                          </svg>
+                        </AddButton>
+                      )}
+                    </MajorInputWrapper>
+                  );
+                })}
               </MultiInputField>
             </FormInputWrapper>
             </FormField>
 
             {/* Submit Button */}
             <ButtonContainer>
-              <SubmitButton onClick={handleSubmit}>가입하기</SubmitButton>
+              <SubmitButton 
+                onClick={handleSubmit}
+                disabled={isCreatingUser}
+              >
+                {isCreatingUser ? '가입 중...' : '가입하기'}
+              </SubmitButton>
             </ButtonContainer>
           </ModalBody>
         </ModalContainer>
       </ModalOverlay>
+
+      <SignUpAlert
+        isOpen={isAlertOpen}
+        onClose={() => setIsAlertOpen(false)}
+        message={alertMessage}
+      />
+
+      {/* 회원가입 성공 모달 */}
+      <MessageModal
+        isOpen={isSuccessModalOpen}
+        onClose={() => {
+          setIsSuccessModalOpen(false);
+          onClose(); // 회원가입 모달도 닫기
+        }}
+        message="회원가입이 완료되었습니다.\n로그인을 진행해주세요!"
+      />
+
+      {/* 회원가입 실패 모달 */}
+      <MessageModal
+        isOpen={isFailureModalOpen}
+        onClose={() => setIsFailureModalOpen(false)}
+        message={failureMessage || '회원가입에 실패했습니다.'}
+      />
     </>
   );
 }

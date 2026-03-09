@@ -80,6 +80,7 @@ const Message = styled.p`
   letter-spacing: -0.28px;
   line-height: 1.5;
   margin: 0;
+  white-space: pre-line;
 `;
 
 // Modal Footer

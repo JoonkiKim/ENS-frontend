@@ -210,7 +210,7 @@ export default function Dashboard() {
         onSubmit={(formData) => {
           // 회원가입 제출 처리 로직 추가 가능
           console.log('Sign up submitted:', formData);
-          setIsSignUpModalOpen(false);
+          // 모달 닫기는 signUpModal.tsx의 성공 모달이 닫힐 때 처리됨
         }}
       />
     </>
