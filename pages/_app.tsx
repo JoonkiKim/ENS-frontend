@@ -97,9 +97,9 @@ const globalStyles = css`
     box-sizing: border-box;
   }
 
-  html {
-    overflow-y: scroll;
-  }
+  // html {
+  //   overflow-y: scroll;
+  // }
 
   body {
     font-family: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
