@@ -20,7 +20,6 @@ import { useImagePreload } from "../src/commons/hooks/useImagePreload";
 function MyApp({ Component, pageProps }) {
   const { imagesLoaded, loadingProgress } = useImagePreload();
 
-
   // console.log("분기 합침 테스트");
 
   /* --------- Service Worker 등록 --------- */
@@ -39,9 +38,9 @@ function MyApp({ Component, pageProps }) {
       const frontendOrigin = process.env.NEXT_PUBLIC_FRONTEND_URL;
 
       if (!frontendOrigin) {
-        console.warn(
-          "NEXT_PUBLIC_FRONTEND_URL이 설정되지 않아 서비스 워커를 등록하지 않습니다."
-        );
+        // console.warn(
+        //   "NEXT_PUBLIC_FRONTEND_URL이 설정되지 않아 서비스 워커를 등록하지 않습니다."
+        // );
         return;
       }
 
@@ -87,27 +86,28 @@ function MyApp({ Component, pageProps }) {
       return () => window.removeEventListener("resize", setRealVh);
     }
   }, []);
-// Global Styles
-const globalStyles = css`
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700;800&family=Pretendard:wght@400;800&display=swap');
+  // Global Styles
+  const globalStyles = css`
+    @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700;800&family=Pretendard:wght@400;800&display=swap");
 
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-  // html {
-  //   overflow-y: scroll;
-  // }
+    // html {
+    //   overflow-y: scroll;
+    // }
 
-  body {
-    font-family: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background-color: white;
-    color: #2c2c2c;
-    overflow-y: scroll;
-  }
-`;
+    body {
+      font-family: "Inter", "Noto Sans KR", -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+      background-color: white;
+      color: #2c2c2c;
+      overflow-y: scroll;
+    }
+  `;
 
   const [loadingRoute, setLoadingRoute] = useState(false);
 
@@ -146,17 +146,16 @@ const globalStyles = css`
     <>
       <Head>
         <title>ENS Intranet</title>
-   
+
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-   
+
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#000000" />
-    
       </Head>
       <Global styles={globalStyles} />
       <RecoilRoot>
         <ApolloProvider client={apolloClient}>
-           <TokenInitializer /> 
+          <TokenInitializer />
           <LoadingOverlay visible={loadingRoute}>
             <LoadingIcon spin fontSize={48} />
           </LoadingOverlay>
