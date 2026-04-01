@@ -15,7 +15,7 @@
         },
         {
           "key": "Access-Control-Allow-Origin",
-          "value": "https://ens-intranet.vercel.app"
+          "value": "https://ensintranet.com"
         }
       ]
     }

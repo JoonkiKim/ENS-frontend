@@ -3,6 +3,8 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useQuery } from "@apollo/client";
 import { FETCH_LOGIN_USER } from "../../../../commons/apis/graphql-queries";
+import { useRecoilValue } from "recoil";
+import { accessTokenState } from "../../../../commons/stores";
 
 // ─── 공통 레이아웃 헤더 (ENS Intranet 스타일) ─────────────────────────────
 
@@ -73,8 +75,15 @@ const NavItem = styled.a`
 
 export default function LayoutHeader(): JSX.Element {
   const router = useRouter();
+
+  // 로그인 직후 admin 여부가 즉시 반영되도록 토큰 기반으로 쿼리 실행 시점을 제어
+  const accessToken = useRecoilValue(accessTokenState);
+
   // 로그인한 유저 정보 조회
-  const { data } = useQuery(FETCH_LOGIN_USER);
+  const { data } = useQuery(FETCH_LOGIN_USER, {
+    skip: !accessToken,
+    fetchPolicy: "network-only",
+  });
   const isAdmin = data?.fetchLoginUser?.role === 'ADMIN';
   const user = data?.fetchLoginUser;
   

@@ -1073,6 +1073,12 @@ export default function SignUpModal({
       return;
     }
 
+    if (!formData.authCode?.trim()) {
+      setAlertMessage('인증번호를 입력해주세요.');
+      setIsAlertOpen(true);
+      return;
+    }
+
     // customId 형식 검증 (00기_ 형식)
     if (!formData.username.match(/^\d{2}기_/)) {
       setAlertMessage('아이디는 "00기_이름" 형식으로 입력해주세요. (예: 01기_홍길동)');
@@ -1125,6 +1131,7 @@ export default function SignUpModal({
             generation: parseInt(formData.generation, 10),
             entrance: parseInt(formData.studentId, 10),
             imageUrl: profileImage || undefined,
+            authCode: formData.authCode.trim(),
             agreeTerms: true,
             agreePrivacy: true,
             agreeAge: true,
