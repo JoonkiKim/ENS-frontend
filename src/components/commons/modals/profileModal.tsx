@@ -429,11 +429,11 @@ interface User {
   id: string;
   name: string;
   generation: number;
-  phone: string;
-  email: string;
+  phone: string | null;
+  email: string | null;
   imageUrl: string | null;
   linkedin: string | null;
-  entrance: number;
+  entrance: number | null;
   noCoffeeChat: boolean;
   abroad: boolean;
   userMajors: UserMajor[] | null;
@@ -506,7 +506,19 @@ export default function ProfileModal({ isOpen, onClose, userId }: ProfileModalPr
   };
 
   // 전공 정보 포맷팅
-  const formatMajors = (userMajors: UserMajor[] | null, entrance: number): string => {
+  const formatMajors = (
+    userMajors: UserMajor[] | null,
+    entrance: number | null
+  ): string => {
+    if (entrance == null) {
+      if (!userMajors || userMajors.length === 0) return '학번 미입력';
+      const majorsOnly = [...userMajors]
+        .sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0))
+        .map((um) => um.major.name)
+        .join(' / ');
+      return majorsOnly || '학번 미입력';
+    }
+
     // 학번의 마지막 두 자리만 표시 (2020 -> 20)
     const entranceYear = entrance % 100;
     
@@ -666,11 +678,11 @@ export default function ProfileModal({ isOpen, onClose, userId }: ProfileModalPr
                       <ContactTitle>Contact</ContactTitle>
                       <ContactRow>
                         <ContactLabel>연락처</ContactLabel>
-                        <ContactValue>{user.phone}</ContactValue>
+                        <ContactValue>{user.phone || '-'}</ContactValue>
                       </ContactRow>
                       <ContactRow>
                         <ContactLabel>이메일</ContactLabel>
-                        <ContactValue>{user.email}</ContactValue>
+                        <ContactValue>{user.email || '-'}</ContactValue>
                       </ContactRow>
                       <ContactRow>
                         <ContactLabel>링크드인</ContactLabel>
