@@ -23,7 +23,7 @@ const AuthCheckingOverlay = styled.div<{ visible: boolean }>`
   display: ${({ visible }) => (visible ? "flex" : "none")};
   align-items: center;
   justify-content: center;
-  z-index: 2500;
+  z-index: 1500;
 `;
 
 // JWT 토큰 만료 시간 확인 함수
@@ -267,7 +267,8 @@ export default function TokenInitializer() {
   };
 
   const isPublicPath = PUBLIC_PATHS.includes(router.pathname);
-  const showAuthCheckingOverlay = !authChecked && !isPublicPath;
+  const showAuthCheckingOverlay =
+    !authChecked && !isPublicPath && !isMessageModalOpen;
 
   return (
     <>
