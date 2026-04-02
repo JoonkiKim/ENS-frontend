@@ -5,7 +5,7 @@ import styled from '@emotion/styled';
 const ModalOverlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -15,13 +15,16 @@ const ModalOverlay = styled.div`
 // Modal Container
 const ModalContainer = styled.div`
   width: 400px;
-  background: #f5f5f5;
-  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   font-family: 'Inter', 'Noto Sans KR', sans-serif;
-  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.18),
+    0 2px 8px rgba(0, 0, 0, 0.08);
   position: relative;
 `;
 

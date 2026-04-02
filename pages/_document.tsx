@@ -7,6 +7,8 @@ export default function Document() {
    <Head>
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#000000" />
+        <link rel="icon" type="image/png" href="/images/ENS-logo.png" />
+        <link rel="apple-touch-icon" href="/images/ENS-logo.png" />
         
         {/* 이미지 preload - 페이지 로드 전에 미리 로드 */}
  
