@@ -92,6 +92,36 @@ export const SectionHeader = styled.div`
   margin-bottom: 35px;
 `;
 
+// SectionTitle + RequiredNote를 좌측에 그룹화
+export const SectionTitleAndNoteWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+// SectionHeader 우측: 로그아웃 버튼
+export const LogoutButton = styled.button`
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid #d9d9d9;
+  border-radius: 3px;
+  background: white;
+  color: #1e1e1e;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-left: auto;
+
+  &:hover {
+    background: #f5f5f5;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
 export const SectionTitle = styled.h2`
   font-size: 27px;
   font-weight: 600;
