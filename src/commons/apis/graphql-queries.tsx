@@ -168,6 +168,7 @@ export const FETCH_USER = gql`
       entrance
       noCoffeeChat
       abroad
+      memo
       userMajors {
         userId
         majorId
