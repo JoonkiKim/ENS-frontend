@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { useSetRecoilState, useResetRecoilState, useRecoilValue } from "recoil";
 import { accessTokenState, authCheckedState } from "../stores";
 import { useMutation, useApolloClient } from "@apollo/client";
+import styled from "@emotion/styled";
 import {
   registerAccessTokenSetter,
   setAccessToken,
@@ -10,9 +11,20 @@ import {
 } from "./token";
 import { RESTORE_ACCESS_TOKEN } from "../apis/graphql-queries";
 import MessageModal from "../../components/commons/modals/messageModal";
+import { LoadingIcon } from "./loadingOverlay";
 
 // ✅ 인증이 필요 없는 페이지 목록
 const PUBLIC_PATHS = ["/", "/resetPassword"];
+
+const AuthCheckingOverlay = styled.div<{ visible: boolean }>`
+  position: fixed;
+  inset: 0;
+  background: #ffffff;
+  display: ${({ visible }) => (visible ? "flex" : "none")};
+  align-items: center;
+  justify-content: center;
+  z-index: 2500;
+`;
 
 // JWT 토큰 만료 시간 확인 함수
 const isTokenValid = (token: string | null): boolean => {
@@ -254,8 +266,14 @@ export default function TokenInitializer() {
     router.replace("/");
   };
 
+  const isPublicPath = PUBLIC_PATHS.includes(router.pathname);
+  const showAuthCheckingOverlay = !authChecked && !isPublicPath;
+
   return (
     <>
+      <AuthCheckingOverlay visible={showAuthCheckingOverlay}>
+        <LoadingIcon spin fontSize={48} />
+      </AuthCheckingOverlay>
       <MessageModal
         isOpen={isMessageModalOpen}
         onClose={handleMessageModalConfirm}
