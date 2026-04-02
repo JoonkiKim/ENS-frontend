@@ -511,12 +511,12 @@ export default function ProfileModal({ isOpen, onClose, userId }: ProfileModalPr
     entrance: number | null
   ): string => {
     if (entrance == null) {
-      if (!userMajors || userMajors.length === 0) return '학번 미입력';
+      if (!userMajors || userMajors.length === 0) return '';
       const majorsOnly = [...userMajors]
         .sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0))
         .map((um) => um.major.name)
         .join(' / ');
-      return majorsOnly || '학번 미입력';
+      return majorsOnly || '';
     }
 
     // 학번의 마지막 두 자리만 표시 (2020 -> 20)
@@ -669,7 +669,13 @@ export default function ProfileModal({ isOpen, onClose, userId }: ProfileModalPr
                     )}
                   </ProfileNameGenerationWrapper>
 
-                  <Major>{formatMajors(user.userMajors, user.entrance)}</Major>
+                  {(() => {
+                    const majorLine = formatMajors(
+                      user.userMajors,
+                      user.entrance
+                    );
+                    return majorLine ? <Major>{majorLine}</Major> : null;
+                  })()}
 
                   {/* Contact and Highlight */}
                   <ContactHighlightWrapper>

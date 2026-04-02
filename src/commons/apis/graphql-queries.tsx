@@ -139,6 +139,8 @@ export const FETCH_ALL_USERS = gql`
         id
         company
         position
+        startDate
+        endDate
         isCurrent
         positionCategory {
           id

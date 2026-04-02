@@ -434,14 +434,15 @@ export const TableHeader = styled.div`
   grid-template-columns: 70px 140px 180px 200px 120px 140px 100px;
   gap: 10px;
   padding: 15px 0;
-  background: rgba(217, 217, 217, 0.2);
+  background: #e8e8e8;
   font-size: 13px;
-  color: rgba(44, 44, 44, 0.75);
+  color: #2c2c2c;
   letter-spacing: -0.26px;
   border-bottom: 1px solid #d9d9d9;
   position: sticky;
   top: 0;
   z-index: 10;
+  box-shadow: 0 1px 0 #d9d9d9;
 
   & > div {
     text-align: center;
