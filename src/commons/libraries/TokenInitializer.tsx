@@ -81,14 +81,8 @@ export default function TokenInitializer() {
 
     const currentPath = router.pathname;
 
-    // ✅ 공개 페이지면 토큰 갱신 스킵
+    // ✅ 공개 페이지 여부
     const isPublicPath = PUBLIC_PATHS.includes(currentPath);
-
-    if (isPublicPath) {
-      console.log("🔓 공개 페이지: 토큰 갱신 스킵");
-      setChecked(true);
-      return;
-    }
 
     // ✅ 이미 이 경로에서 검증했으면 실행 안 함 (중복 방지)
     if (initializedPaths.current.has(currentPath)) {
@@ -151,8 +145,10 @@ export default function TokenInitializer() {
             
             setChecked(true);
 
-            // 메시지 모달 표시
-            setIsMessageModalOpen(true);
+            // 공개 페이지에서는 모달 없이 조용히 처리
+            if (!isPublicPath) {
+              setIsMessageModalOpen(true);
+            }
           }
         })
         .catch((error) => {
@@ -217,8 +213,10 @@ export default function TokenInitializer() {
             
             setChecked(true);
 
-            // 메시지 모달 표시
-            setIsMessageModalOpen(true);
+            // 공개 페이지에서는 모달 없이 조용히 처리
+            if (!isPublicPath) {
+              setIsMessageModalOpen(true);
+            }
           } else if (isNetworkError && !is404Error) {
             console.warn("🌐 네트워크 오류 → 토큰 유지, 오프라인 모드");
             console.warn("💡 네트워크 연결을 확인해주세요");
@@ -235,8 +233,10 @@ export default function TokenInitializer() {
             
             setChecked(true);
 
-            // 메시지 모달 표시
-            setIsMessageModalOpen(true);
+            // 공개 페이지에서는 모달 없이 조용히 처리
+            if (!isPublicPath) {
+              setIsMessageModalOpen(true);
+            }
           }
         })
         .finally(() => {
