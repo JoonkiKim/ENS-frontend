@@ -18,7 +18,10 @@ import {
   FETCH_ALL_POSITION_CATEGORIES,
 } from "../../../../commons/apis/graphql-queries";
 import { clearAccessToken } from "../../../../commons/libraries/token";
-import { LoadingIcon, LoadingOverlay } from "../../../../commons/libraries/loadingOverlay";
+import {
+  LoadingIcon,
+  LoadingOverlay,
+} from "../../../../commons/libraries/loadingOverlay";
 
 interface MajorField {
   id: number;
@@ -1384,7 +1387,7 @@ export default function MyPage() {
             </S.LogoutButton>
           </S.SectionHeader>
 
-          <S.ProfileSection>
+          {/* <S.ProfileSection>
             <S.ProfileImageWrapper>
               {user?.imageUrl ? (
                 <img
@@ -1427,7 +1430,7 @@ export default function MyPage() {
                 </S.StatusBadge>
               </S.StatusBadges>
             </S.ProfileInfo>
-          </S.ProfileSection>
+          </S.ProfileSection> */}
 
           {/* 이름 */}
           <S.FormField>
@@ -1473,6 +1476,23 @@ export default function MyPage() {
               </S.FormInputWrapper>
             </S.FormField>
           )}
+          <S.ProfileInfo>
+            <S.FormLabel>상태 표시</S.FormLabel>
+            <S.StatusBadges>
+              <S.StatusBadge
+                active={watch("noCoffeeChat")}
+                onClick={handleToggleCoffeeChat}
+              >
+                커피챗은 어려워요
+              </S.StatusBadge>
+              <S.StatusBadge
+                active={watch("abroad")}
+                onClick={handleToggleOverseas}
+              >
+                해외 거주 중
+              </S.StatusBadge>
+            </S.StatusBadges>
+          </S.ProfileInfo>
         </S.Section>
 
         <S.Divider />

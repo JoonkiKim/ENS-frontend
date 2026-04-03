@@ -1,11 +1,12 @@
-import styled from '@emotion/styled';
+import styled from "@emotion/styled";
 
 export const Container = styled.div`
   width: 1200px;
   margin: 0 auto;
   margin-bottom: 80px;
   background-color: white;
-  font-family: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: "Inter", "Noto Sans KR", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
 `;
 
 // Header
@@ -55,7 +56,7 @@ export const NavItem = styled.a`
 // Hero
 export const Hero = styled.div`
   height: 185px;
-  background-image: url('/images/mypage-bg.png');
+  background-image: url("/images/mypage-bg.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -67,7 +68,7 @@ export const Hero = styled.div`
 `;
 
 export const HeroTitle = styled.h1`
-  font-family: 'Pretendard', sans-serif;
+  font-family: "Pretendard", sans-serif;
   font-size: 35px;
   font-weight: 800;
   color: white;
@@ -127,8 +128,6 @@ export const SectionTitle = styled.h2`
   font-weight: 600;
   color: black;
   margin-right: 20px;
-
-
 `;
 
 export const ContactSectionTitle = styled(SectionTitle)`
@@ -140,7 +139,6 @@ export const CareerSectionTitle = styled.h2`
   font-weight: 600;
   color: black;
   margin-bottom: 20px;
-
 `;
 
 export const AdminNotesSectionTitle = styled.h2`
@@ -163,11 +161,11 @@ export const AdminNotesTextarea = styled.textarea`
   background: white;
   font-family: inherit;
   resize: vertical;
-  
+
   &::placeholder {
     color: #b3b3b3;
   }
-  
+
   &:focus {
     border-color: #ffb700;
   }
@@ -182,9 +180,9 @@ export const RequiredNote = styled.p`
   display: flex;
   align-items: center;
   gap: 4px;
-  
+
   &::before {
-    content: '';
+    content: "";
     width: 4px;
     height: 4px;
     background: #ffb700;
@@ -223,9 +221,9 @@ export const ProfileImage = styled.div`
   justify-content: center;
   overflow: hidden;
   position: relative;
-  
+
   &::before {
-    content: '';
+    content: "";
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -233,9 +231,9 @@ export const ProfileImage = styled.div`
     position: absolute;
     top: 20px;
   }
-  
+
   &::after {
-    content: '';
+    content: "";
     width: 80px;
     height: 60px;
     border-radius: 50% 50% 0 0;
@@ -258,7 +256,7 @@ export const CameraButton = styled.button`
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  
+
   svg {
     width: 15px;
     height: 15px;
@@ -283,19 +281,20 @@ export const StatusLabel = styled.p`
 export const StatusBadges = styled.div`
   display: flex;
   gap: 12px;
+  margin-top: 10px;
 `;
 
 export const StatusBadge = styled.button<{ active?: boolean }>`
   padding: 6px 16px;
   border-radius: 12px;
-  border: 1px solid ${({ active }) => (active ? '#ffb700' : '#e5e5e5')};
-  background: ${({ active }) => (active ? '#fff8e5' : 'white')};
+  border: 1px solid ${({ active }) => (active ? "#ffb700" : "#e5e5e5")};
+  background: ${({ active }) => (active ? "#fff8e5" : "white")};
   font-size: 13px;
-  color: ${({ active }) => (active ? '#ffb700' : '#b3b3b3')};
+  color: ${({ active }) => (active ? "#ffb700" : "#b3b3b3")};
   letter-spacing: -0.26px;
   cursor: pointer;
   transition: all 0.2s;
-  
+
   &:hover {
     border-color: #ffb700;
   }
@@ -323,9 +322,9 @@ export const FormLabel = styled.label`
   display: flex;
   align-items: center;
   gap: 8px;
-  
+
   &.required::after {
-    content: '';
+    content: "";
     width: 4px;
     height: 4px;
     background: #ffb700;
@@ -346,22 +345,22 @@ export const Input = styled.input<{ active?: boolean }>`
   width: 100%;
   height: 51px;
   padding: 0 18px;
-  border: 1px solid ${({ active }) => (active ? '#ffb700' : '#d9d9d9')};
+  border: 1px solid ${({ active }) => (active ? "#ffb700" : "#d9d9d9")};
   border-radius: 3px;
   font-size: 14px;
   color: #2c2c2c;
   letter-spacing: -0.28px;
   outline: none;
   background: white;
-  
+
   &::placeholder {
     color: #b3b3b3;
   }
-  
+
   &:focus {
     border-color: #ffb700;
   }
-  
+
   &:disabled {
     background: #f5f5f5;
   }
@@ -398,7 +397,7 @@ export const EmailDomain = styled(Input)`
   -webkit-appearance: none;
   -moz-appearance: none;
   background-image: none;
-  
+
   /* IE에서 화살표 제거 */
   &::-ms-expand {
     display: none;
@@ -422,11 +421,11 @@ export const Select = styled.select`
   background: white;
   appearance: none;
   cursor: pointer;
-  
+
   &::placeholder {
     color: #b3b3b3;
   }
-  
+
   option {
     color: #2c2c2c;
   }
@@ -437,21 +436,21 @@ export const DropdownIcon = styled.div`
   right: 15px;
   top: 50%;
   transform: translateY(-50%);
-  display:flex;
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 15px;
   height: 11px;
   pointer-events: none;
-  
+
   svg {
     width: 70%;
     height: 70%;
   }
-     path {
+  path {
     stroke: #ffb700 !important;
-     stroke-width: 4;
+    stroke-width: 4;
   }
 `;
 
@@ -467,7 +466,7 @@ export const MajorInputWrapper = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  
+
   input {
     width: 413px; /* flex: 1 제거하고 고정 width */
     flex-shrink: 0; /* 줄어들지 않도록 */
@@ -487,7 +486,7 @@ export const AddButton = styled.button`
   flex-shrink: 0;
   position: relative;
   z-index: 1;
-  
+
   svg {
     width: 100%;
     height: 100%;
@@ -526,7 +525,7 @@ export const CareerRow = styled.div`
   display: grid;
   grid-template-columns: 1fr 1px 1fr 1px 1fr;
   height: 51px;
-  
+
   &:not(:last-child) {
     border-bottom: 1px solid #d9d9d9;
   }
@@ -536,22 +535,25 @@ export const CareerRowSpan = styled.div`
   display: grid;
   grid-template-columns: 1fr 1px 2fr;
   height: 51px;
-  
+
   &:not(:last-child) {
     border-bottom: 1px solid #d9d9d9;
   }
 `;
 
-export const CareerField = styled.div<{ isCurrentJob?: boolean; isClickable?: boolean }>`
+export const CareerField = styled.div<{
+  isCurrentJob?: boolean;
+  isClickable?: boolean;
+}>`
   padding: 0 18px;
   display: flex;
   align-items: center;
   gap: 8px;
   position: relative;
   min-width: 0;
-  background-color: ${({ isCurrentJob }) => 
-    isCurrentJob ? 'rgba(217, 217, 217, 0.33)' : 'transparent'};
-  cursor: ${({ isClickable }) => (isClickable ? 'pointer' : 'default')};
+  background-color: ${({ isCurrentJob }) =>
+    isCurrentJob ? "rgba(217, 217, 217, 0.33)" : "transparent"};
+  cursor: ${({ isClickable }) => (isClickable ? "pointer" : "default")};
 `;
 
 export const GenerationSelectField = styled.div<{ isClickable?: boolean }>`
@@ -564,8 +566,8 @@ export const GenerationSelectField = styled.div<{ isClickable?: boolean }>`
   align-items: center;
   position: relative;
   background: white;
-  cursor: ${({ isClickable }) => (isClickable ? 'pointer' : 'default')};
-  
+  cursor: ${({ isClickable }) => (isClickable ? "pointer" : "default")};
+
   &:focus-within {
     border-color: #ffb700;
   }
@@ -581,8 +583,8 @@ export const EmailDomainSelectField = styled.div<{ isClickable?: boolean }>`
   align-items: center;
   position: relative;
   background: white;
-  cursor: ${({ isClickable }) => (isClickable ? 'pointer' : 'default')};
-  
+  cursor: ${({ isClickable }) => (isClickable ? "pointer" : "default")};
+
   &:focus-within {
     border-color: #ffb700;
   }
@@ -613,8 +615,6 @@ export const CareerLabel = styled.span`
   flex-shrink: 0;
 `;
 
-
-
 export const CareerValue = styled.span`
   font-size: 14px;
   color: #2c2c2c;
@@ -633,11 +633,11 @@ export const CareerInput = styled.input`
   color: #2c2c2c;
   letter-spacing: -0.28px;
   padding: 0;
-  
+
   &::placeholder {
     color: #b3b3b3;
   }
-  
+
   &:focus {
     outline: none;
   }
@@ -677,15 +677,15 @@ export const IndustryDropdownItem = styled.div`
   letter-spacing: -0.28px;
   cursor: pointer;
   transition: background-color 0.2s;
-  
+
   &:hover {
     background-color: #e5e5e5;
   }
-  
+
   &:first-of-type {
     border-radius: 3px 3px 0 0;
   }
-  
+
   &:last-of-type {
     border-radius: 0 0 3px 3px;
   }
@@ -726,25 +726,28 @@ export const DateSelector = styled.div`
   width: 100%;
 `;
 
-export const DateInput = styled.input<{ hasValue?: boolean; isDropdownOpen?: boolean }>`
+export const DateInput = styled.input<{
+  hasValue?: boolean;
+  isDropdownOpen?: boolean;
+}>`
   width: 100%;
   height: 51px;
   padding: 0 18px;
   border: 1px solid #d9d9d9;
   border-radius: 3px;
-  background: ${({ hasValue, isDropdownOpen }) => 
-    (hasValue || isDropdownOpen)
-      ? 'rgba(255, 208, 0, 0.07)' // #FFD000 with 7% opacity
-      : '#ffffff'};
+  background: ${({ hasValue, isDropdownOpen }) =>
+    hasValue || isDropdownOpen
+      ? "rgba(255, 208, 0, 0.07)" // #FFD000 with 7% opacity
+      : "#ffffff"};
   font-size: 14px;
   color: #2c2c2c;
   letter-spacing: -0.28px;
   cursor: pointer;
-  
+
   &::placeholder {
     color: #b3b3b3;
   }
-  
+
   &:focus {
     outline: none;
     border-color: #ffb700;
@@ -773,15 +776,15 @@ export const YearDropdownItem = styled.div`
   letter-spacing: -0.28px;
   cursor: pointer;
   transition: background-color 0.2s;
-  
+
   &:hover {
     background-color: #f5f5f5;
   }
-  
+
   &:first-of-type {
     border-radius: 3px 3px 0 0;
   }
-  
+
   &:last-of-type {
     border-radius: 0 0 3px 3px;
   }
@@ -809,15 +812,15 @@ export const MonthDropdownItem = styled.div`
   letter-spacing: -0.28px;
   cursor: pointer;
   transition: background-color 0.2s;
-  
+
   &:hover {
     background-color: #f5f5f5;
   }
-  
+
   &:first-of-type {
     border-radius: 3px 3px 0 0;
   }
-  
+
   &:last-of-type {
     border-radius: 0 0 3px 3px;
   }
@@ -858,28 +861,31 @@ export const CheckboxLabel = styled.label<{ disabled?: boolean }>`
   gap: 8px;
   cursor: pointer;
   font-size: 14px;
-  color: ${({ disabled }) => (disabled ? 'rgba(44, 44, 44, 0.5)' : '#2c2c2c')};
+  color: ${({ disabled }) => (disabled ? "rgba(44, 44, 44, 0.5)" : "#2c2c2c")};
   letter-spacing: -0.28px;
 `;
 
-export const CheckboxBox = styled.div<{ checked?: boolean; disabled?: boolean }>`
+export const CheckboxBox = styled.div<{
+  checked?: boolean;
+  disabled?: boolean;
+}>`
   width: 22px;
   height: 22px;
-  border: 1px solid ${({ checked }) => (checked ? '#ffb700' : '#d9d9d9')};
+  border: 1px solid ${({ checked }) => (checked ? "#ffb700" : "#d9d9d9")};
   border-radius: 3px;
-  background: ${({ checked }) => (checked ? '#ffb700' : 'white')};
+  background: ${({ checked }) => (checked ? "#ffb700" : "white")};
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
-  
+
   &::after {
-    content: '✓';
+    content: "✓";
     color: white;
     font-size: 14px;
     font-weight: bold;
-    display: ${({ checked }) => (checked ? 'block' : 'none')};
+    display: ${({ checked }) => (checked ? "block" : "none")};
   }
 `;
 
@@ -906,7 +912,6 @@ export const AddCareerButton = styled.button`
   cursor: pointer;
   transition: background 0.2s;
 
-  
   &:hover {
     background: #fff8e5;
   }
@@ -926,7 +931,7 @@ export const SaveButton = styled.button`
   cursor: pointer;
   transition: background 0.2s;
   margin: 0 53px;
-  
+
   &:hover {
     background: #e6a500;
   }
