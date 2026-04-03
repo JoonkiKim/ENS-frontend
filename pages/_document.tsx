@@ -20,7 +20,6 @@ export default function Document() {
           property="og:image"
           content="https://ensintranet.com/images/ENS-logo.png"
         />
-        {siteUrl ? <meta property="og:url" content={siteUrl} /> : null}
 
         <meta property="og:site_name" content="ENS Intranet" />
         <meta property="og:locale" content="ko_KR" />
