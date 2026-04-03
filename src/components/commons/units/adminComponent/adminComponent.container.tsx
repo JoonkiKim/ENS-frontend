@@ -170,24 +170,29 @@ export default function MembersList() {
     }
   };
 
-  // 필터링된 멤버 계산
-  const filteredMembers = members.filter((member) => {
-    // 기수 필터링
-    if (selectedGenerations.length > 0 && !selectedGenerations.includes(member.generation)) {
-      return false;
-    }
-    // 검색 필터링
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      return (
-        member.name.toLowerCase().includes(query) ||
-        member.email.toLowerCase().includes(query) ||
-        member.phone.includes(query) ||
-        member.generation.includes(query)
-      );
-    }
-    return true;
-  });
+  // 필터링 후 정렬: 기수 내림차순, 동일 기수는 이름 가나다 역순
+  const filteredMembers = members
+    .filter((member) => {
+      if (selectedGenerations.length > 0 && !selectedGenerations.includes(member.generation)) {
+        return false;
+      }
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        return (
+          member.name.toLowerCase().includes(query) ||
+          member.email.toLowerCase().includes(query) ||
+          member.phone.includes(query) ||
+          member.generation.includes(query)
+        );
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      const genA = parseInt(a.generation, 10) || 0;
+      const genB = parseInt(b.generation, 10) || 0;
+      if (genB !== genA) return genB - genA;
+      return b.name.localeCompare(a.name, 'ko-KR');
+    });
 
   // 표시할 멤버 계산
   const displayedMembers = filteredMembers.slice(0, displayCount);

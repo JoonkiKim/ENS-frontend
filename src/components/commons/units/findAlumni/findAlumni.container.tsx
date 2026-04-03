@@ -158,7 +158,7 @@ export default function AlumniSearch() {
     return career.position || "-";
   };
 
-  // 필터링된 사용자 목록 (기수 내림차순: 최신 기수가 위로)
+  // 필터링된 사용자 목록 (기수 내림차순, 동일 기수는 이름 가나다 역순)
   const users = data?.fetchAllUsers || [];
   const filteredUsers = useMemo(() => {
     const list = appliedFilters
@@ -196,7 +196,12 @@ export default function AlumniSearch() {
         })
       : users;
 
-    return [...list].sort((a, b) => b.generation - a.generation);
+    return [...list].sort((a, b) => {
+      if (b.generation !== a.generation) {
+        return b.generation - a.generation;
+      }
+      return b.name.localeCompare(a.name, "ko-KR");
+    });
   }, [users, appliedFilters]);
 
   // 표시할 사용자 목록 (무한 스크롤용)
