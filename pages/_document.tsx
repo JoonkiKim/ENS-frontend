@@ -17,7 +17,7 @@ export default function Document() {
         <meta property="og:title" content={defaultTitle} />
         <meta property="og:description" content={defaultDescription} />
         {siteUrl ? <meta property="og:url" content={siteUrl} /> : null}
-        {ogImage ? <meta property="og:image" content={ogImage} /> : null}
+        <meta property="og:image" content="/images/ENS-logo.png" />
         <meta property="og:site_name" content="ENS Intranet" />
         <meta property="og:locale" content="ko_KR" />
         <link rel="manifest" href="/manifest.json" />
