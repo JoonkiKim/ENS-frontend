@@ -3,10 +3,6 @@ import { Html, Head, Main, NextScript } from "next/document";
 export default function Document() {
   const defaultTitle = "ENS Intranet | 서울대학교 ENS 학회";
   const defaultDescription = "서울대학교 ENS 학회원 전용 서비스입니다.";
-  const siteUrl = (process.env.NEXT_PUBLIC_FRONTEND_URL || "").replace(
-    /\/$/,
-    ""
-  );
 
   return (
     <Html lang="ko">
@@ -16,7 +12,7 @@ export default function Document() {
         <meta property="og:type" content="website" />
         <meta property="og:title" content={defaultTitle} />
         <meta property="og:description" content={defaultDescription} />
-        <meta property="og:image" content="images/ENS-logo.png" />
+        <meta property="og:image" content="/images/header-logo.png" />
 
         <meta property="og:site_name" content="ENS Intranet" />
         <meta property="og:locale" content="ko_KR" />
