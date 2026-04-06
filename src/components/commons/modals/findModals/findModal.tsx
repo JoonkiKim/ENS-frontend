@@ -1,9 +1,7 @@
-import { useState, useEffect } from 'react';
-import styled from '@emotion/styled';
-import { useMutation } from '@apollo/client';
-import { SEND_PASSWORD_RESET_LINK } from '../../../../commons/apis/graphql-queries';
-
-
+import { useState, useEffect } from "react";
+import styled from "@emotion/styled";
+import { useMutation } from "@apollo/client";
+import { SEND_PASSWORD_RESET_LINK } from "../../../../commons/apis/graphql-queries";
 
 // Modal Overlay
 const ModalOverlay = styled.div`
@@ -24,9 +22,9 @@ const ModalContainer = styled.div`
   border-radius: 0;
   display: flex;
   flex-direction: column;
-  font-family: 'Inter', 'Noto Sans KR', sans-serif;
+  font-family: "Inter", "Noto Sans KR", sans-serif;
   position: relative;
-//   border: 1px solid black;
+  //   border: 1px solid black;
 `;
 
 // Modal Header
@@ -59,10 +57,10 @@ const CloseButton = styled.button`
   background: transparent;
   cursor: pointer;
   padding: 0;
-  
+
   &::before,
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     width: 14px;
     height: 1px;
@@ -70,15 +68,15 @@ const CloseButton = styled.button`
     top: 50%;
     left: 0;
   }
-  
+
   &::before {
     transform: rotate(45deg);
   }
-  
+
   &::after {
     transform: rotate(-45deg);
   }
-  
+
   &:hover::before,
   &:hover::after {
     background: #999;
@@ -96,39 +94,41 @@ const TabContainer = styled.div`
 const Tab = styled.button<{ active?: boolean }>`
   flex: 1;
   height: 48px;
-  background: ${({ active }) => (active ? 'white' : 'rgba(217, 217, 217, 0.4)')};
-  border: 0.5px solid ${({ active }) => (active ? '#ffb700' : '#b3b3b3')};
-  border-bottom: ${({ active }) => (active ? '0.5px solid #ffb700' : 'none')};
-  border-top: 0.5px solid ${({ active }) => (active ? '#ffb700' : '#b3b3b3')};
+  background: ${({ active }) =>
+    active ? "white" : "rgba(217, 217, 217, 0.4)"};
+  border: 0.5px solid ${({ active }) => (active ? "#ffb700" : "#b3b3b3")};
+  border-bottom: ${({ active }) => (active ? "0.5px solid #ffb700" : "none")};
+  border-top: 0.5px solid ${({ active }) => (active ? "#ffb700" : "#b3b3b3")};
   font-size: 14px;
-  color: ${({ active }) => (active ? '#ffb700' : '#b3b3b3')};
+  color: ${({ active }) => (active ? "#ffb700" : "#b3b3b3")};
   letter-spacing: -0.28px;
   cursor: pointer;
   transition: all 0.2s;
   position: relative;
-  
+
   &:first-of-type {
-    border-left: 0.5px solid ${({ active }) => (active ? '#ffb700' : '#b3b3b3')};
-    border-right: ${({ active }) => (active ? '0.5px solid #ffb700' : 'none')};
+    border-left: 0.5px solid ${({ active }) => (active ? "#ffb700" : "#b3b3b3")};
+    border-right: ${({ active }) => (active ? "0.5px solid #ffb700" : "none")};
   }
-  
+
   &:last-of-type {
-    border-right: 0.5px solid ${({ active }) => (active ? '#ffb700' : '#b3b3b3')};
-    border-left: ${({ active }) => (active ? '0.5px solid #ffb700' : 'none')};
+    border-right: 0.5px solid
+      ${({ active }) => (active ? "#ffb700" : "#b3b3b3")};
+    border-left: ${({ active }) => (active ? "0.5px solid #ffb700" : "none")};
   }
-  
+
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     bottom: -0.5px;
     left: 0;
     right: 0;
     height: 0.5px;
-    background: ${({ active }) => (active ? '#ffb700' : 'transparent')};
+    background: ${({ active }) => (active ? "#ffb700" : "transparent")};
   }
-  
+
   &:hover {
-    color: ${({ active }) => (active ? '#ffb700' : '#999')};
+    color: ${({ active }) => (active ? "#ffb700" : "#999")};
   }
 `;
 
@@ -145,7 +145,7 @@ const InstructionText = styled.p`
 // Success Message
 const SuccessMessage = styled.div`
   padding: 21px 24px;
-  margin-top: 60px;
+  margin-top: 30px;
   font-size: 14px;
   color: #2c2c2c;
   letter-spacing: -0.28px;
@@ -171,11 +171,11 @@ const InputField = styled.input`
   font-size: 14px;
   color: #2c2c2c;
   letter-spacing: -0.28px;
-  
+
   &::placeholder {
     color: #b3b3b3;
   }
-  
+
   &:focus {
     outline: none;
     border-color: #ffb700;
@@ -195,11 +195,11 @@ const SubmitButton = styled.button`
   letter-spacing: -0.28px;
   cursor: pointer;
   transition: background 0.2s;
-  
+
   &:hover {
     background: #e6a500;
   }
-  
+
   &:active {
     background: #cc9400;
   }
@@ -209,29 +209,37 @@ const SubmitButton = styled.button`
 interface FindModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit?: (type: 'email' | 'password', value: string) => void;
+  onSubmit?: (type: "email" | "password", value: string) => void;
   onFindEmailModalOpen?: () => void;
   onFindPasswordModalOpen?: () => void;
 }
 
-export default function FindModal({ isOpen, onClose, onSubmit, onFindEmailModalOpen, onFindPasswordModalOpen }: FindModalProps) {
-  const [activeTab, setActiveTab] = useState<'email' | 'password'>('password');
-  const [inputValue, setInputValue] = useState('');
+export default function FindModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  onFindEmailModalOpen,
+  onFindPasswordModalOpen,
+}: FindModalProps) {
+  const [activeTab, setActiveTab] = useState<"email" | "password">("password");
+  const [inputValue, setInputValue] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false); // 최소 로딩 시간 제어용
 
-  const [sendPasswordResetLink, { loading: sendingLink }] = useMutation(SEND_PASSWORD_RESET_LINK);
+  const [sendPasswordResetLink, { loading: sendingLink }] = useMutation(
+    SEND_PASSWORD_RESET_LINK
+  );
 
   // 모달이 열릴 때 상태 초기화
   useEffect(() => {
     if (isOpen) {
       setIsSuccess(false);
-      setInputValue('');
+      setInputValue("");
       setIsLoading(false);
     } else {
       // 모달이 닫힐 때도 상태 초기화 (깜빡임 방지)
       setIsSuccess(false);
-      setInputValue('');
+      setInputValue("");
       setIsLoading(false);
     }
   }, [isOpen]);
@@ -242,30 +250,30 @@ export default function FindModal({ isOpen, onClose, onSubmit, onFindEmailModalO
       // 현재 스크롤 위치 저장
       const scrollY = window.scrollY;
       // 스크롤바는 유지하되 스크롤만 막기
-      document.body.style.overflowY = 'scroll';
-      document.body.style.position = 'fixed';
+      document.body.style.overflowY = "scroll";
+      document.body.style.position = "fixed";
       document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
-      
+      document.body.style.width = "100%";
+
       // 스크롤 이벤트 막기
       const preventScroll = (e: Event) => {
         e.preventDefault();
         window.scrollTo(0, scrollY);
       };
-      
-      window.addEventListener('scroll', preventScroll, { passive: false });
-      document.addEventListener('wheel', preventScroll, { passive: false });
-      document.addEventListener('touchmove', preventScroll, { passive: false });
-      
+
+      window.addEventListener("scroll", preventScroll, { passive: false });
+      document.addEventListener("wheel", preventScroll, { passive: false });
+      document.addEventListener("touchmove", preventScroll, { passive: false });
+
       return () => {
         // 모달이 닫힐 때 스크롤 복원
-        window.removeEventListener('scroll', preventScroll);
-        document.removeEventListener('wheel', preventScroll);
-        document.removeEventListener('touchmove', preventScroll);
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
-        document.body.style.overflowY = '';
+        window.removeEventListener("scroll", preventScroll);
+        document.removeEventListener("wheel", preventScroll);
+        document.removeEventListener("touchmove", preventScroll);
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.width = "";
+        document.body.style.overflowY = "";
         window.scrollTo(0, scrollY);
       };
     }
@@ -277,16 +285,16 @@ export default function FindModal({ isOpen, onClose, onSubmit, onFindEmailModalO
     }
   };
 
-  const handleTabChange = (tab: 'email' | 'password') => {
+  const handleTabChange = (tab: "email" | "password") => {
     setActiveTab(tab);
-    setInputValue('');
+    setInputValue("");
   };
 
   const handleSubmit = async () => {
-    if (activeTab === 'password') {
+    if (activeTab === "password") {
       // 이메일 입력 검증
       if (!inputValue.trim()) {
-        alert('이메일을 입력해주세요.');
+        alert("이메일을 입력해주세요.");
         return;
       }
 
@@ -301,16 +309,16 @@ export default function FindModal({ isOpen, onClose, onSubmit, onFindEmailModalO
             email: inputValue.trim(),
           },
         });
-        
+
         // 최소 1.5초 대기 (이미 지난 시간 고려)
         const elapsedTime = Date.now() - startTime;
         const minLoadingTime = 1500; // 1.5초
         const remainingTime = Math.max(0, minLoadingTime - elapsedTime);
-        
+
         if (remainingTime > 0) {
-          await new Promise(resolve => setTimeout(resolve, remainingTime));
+          await new Promise((resolve) => setTimeout(resolve, remainingTime));
         }
-        
+
         // 성공 시 성공 메시지 표시
         setIsLoading(false);
         setIsSuccess(true);
@@ -319,22 +327,25 @@ export default function FindModal({ isOpen, onClose, onSubmit, onFindEmailModalO
         const elapsedTime = Date.now() - startTime;
         const minLoadingTime = 1500; // 1.5초
         const remainingTime = Math.max(0, minLoadingTime - elapsedTime);
-        
+
         if (remainingTime > 0) {
-          await new Promise(resolve => setTimeout(resolve, remainingTime));
+          await new Promise((resolve) => setTimeout(resolve, remainingTime));
         }
-        
+
         setIsLoading(false);
-        console.error('비밀번호 재설정 링크 전송 실패:', error);
-        const errorMessage = error?.graphQLErrors?.[0]?.message || error?.message || '비밀번호 재설정 링크 전송에 실패했습니다.';
+        console.error("비밀번호 재설정 링크 전송 실패:", error);
+        const errorMessage =
+          error?.graphQLErrors?.[0]?.message ||
+          error?.message ||
+          "비밀번호 재설정 링크 전송에 실패했습니다.";
         alert(errorMessage);
       }
-    } else if (activeTab === 'email') {
+    } else if (activeTab === "email") {
       if (onSubmit) {
         onSubmit(activeTab, inputValue);
       }
-      console.log('이메일 찾기:', inputValue);
-      
+      console.log("이메일 찾기:", inputValue);
+
       if (onFindEmailModalOpen) {
         onFindEmailModalOpen();
       }
@@ -343,11 +354,11 @@ export default function FindModal({ isOpen, onClose, onSubmit, onFindEmailModalO
   };
 
   const getPlaceholder = () => {
-    return activeTab === 'email' ? '이메일 또는 아이디' : '가입한 이메일';
+    return activeTab === "email" ? "이메일 또는 아이디" : "가입한 이메일";
   };
 
   const getButtonText = () => {
-    return activeTab === 'email' ? '이메일 찾기' : '비밀번호 찾기';
+    return activeTab === "email" ? "이메일 찾기" : "비밀번호 찾기";
   };
 
   return (
@@ -373,13 +384,32 @@ export default function FindModal({ isOpen, onClose, onSubmit, onFindEmailModalO
 
             {/* Success Message or Form */}
             {isSuccess ? (
-              <SuccessMessage>
-                비밀번호 재설정 링크가 전송되었습니다. <br /> 메일함을 확인해주세요!
-              </SuccessMessage>
+              <>
+                <SuccessMessage>
+                  비밀번호 재설정 링크가 전송되었습니다. <br />
+                  메일함을 확인해주세요! <br />
+                  스팸함에 있을 수 있으니 함께 확인 부탁드립니다.
+                </SuccessMessage>
+                <FormContent>
+                  <SubmitButton
+                    onClick={handleSubmit}
+                    disabled={isLoading || sendingLink}
+                    style={{
+                      opacity: isLoading || sendingLink ? 0.6 : 1,
+                      cursor:
+                        isLoading || sendingLink ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    {isLoading || sendingLink ? "전송 중..." : "재전송"}
+                  </SubmitButton>
+                </FormContent>
+              </>
             ) : (
               <>
                 {/* Instruction Text */}
-                <InstructionText>가입하신 이메일을 입력해주세요</InstructionText>
+                <InstructionText>
+                  가입하신 이메일을 입력해주세요
+                </InstructionText>
 
                 {/* Form */}
                 <FormContent>
@@ -389,20 +419,21 @@ export default function FindModal({ isOpen, onClose, onSubmit, onFindEmailModalO
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
+                      if (e.key === "Enter") {
                         handleSubmit();
                       }
                     }}
                   />
-                  <SubmitButton 
+                  <SubmitButton
                     onClick={handleSubmit}
                     disabled={isLoading || sendingLink}
                     style={{
-                      opacity: (isLoading || sendingLink) ? 0.6 : 1,
-                      cursor: (isLoading || sendingLink) ? 'not-allowed' : 'pointer'
+                      opacity: isLoading || sendingLink ? 0.6 : 1,
+                      cursor:
+                        isLoading || sendingLink ? "not-allowed" : "pointer",
                     }}
                   >
-                    {(isLoading || sendingLink) ? '전송 중...' : getButtonText()}
+                    {isLoading || sendingLink ? "전송 중..." : getButtonText()}
                   </SubmitButton>
                 </FormContent>
               </>
