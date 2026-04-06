@@ -17,10 +17,10 @@ function logLoginFailureDebug(message: string, customId: string) {
   if (!isDev) return;
   const id = customId.trim();
   let reason: string;
-  if (message.includes('등록된 아이디가 없')) {
-    reason = '아이디 없음 — 입력한 아이디가 등록되어 있지 않습니다.';
-  } else if (message.includes('비밀번호가 일치하지')) {
-    reason = '비밀번호 불일치 — 아이디는 맞고 비밀번호가 틀렸습니다.';
+  if (message.includes('아이디를 확인해 주세요')) {
+    reason = '아이디 오류';
+  } else if (message.includes('비밀번호를 확인해 주세요')) {
+    reason = '비밀번호 오류';
   } else {
     reason = message;
   }
