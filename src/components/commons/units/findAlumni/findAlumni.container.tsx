@@ -75,6 +75,8 @@ function getDisplayCareer(user: User) {
 export default function AlumniSearch() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [appliedFilters, setAppliedFilters] = useState<FilterState | null>(
     null
   );
@@ -90,6 +92,16 @@ export default function AlumniSearch() {
   // 로그인한 유저 정보 조회 (운영진 확인용)
   const { data: loginUserData } = useQuery(FETCH_LOGIN_USER);
   const isAdmin = loginUserData?.fetchLoginUser?.role === "ADMIN";
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [searchQuery]);
 
   const handleOpenModal = (userId: string) => {
     setSelectedUserId(userId);
@@ -161,7 +173,9 @@ export default function AlumniSearch() {
   // 필터링된 사용자 목록 (기수 내림차순, 동일 기수는 이름 가나다 역순)
   const users = data?.fetchAllUsers || [];
   const filteredUsers = useMemo(() => {
-    const list = appliedFilters
+    const normalizedQuery = debouncedSearchQuery.trim().toLowerCase();
+
+    const listByFilters = appliedFilters
       ? users.filter((user) => {
           if (
             user.generation < appliedFilters.generationMin ||
@@ -196,13 +210,31 @@ export default function AlumniSearch() {
         })
       : users;
 
+    const list = normalizedQuery
+      ? listByFilters.filter((user) => {
+          const displayCareer = getDisplayCareer(user);
+          const searchableFields = [
+            user.name ?? "",
+            String(user.generation ?? ""),
+            user.phone ?? "",
+            user.email ?? "",
+            displayCareer?.company ?? "",
+            displayCareer?.position ?? "",
+          ];
+
+          return searchableFields.some((value) =>
+            value.toLowerCase().includes(normalizedQuery)
+          );
+        })
+      : listByFilters;
+
     return [...list].sort((a, b) => {
       if (b.generation !== a.generation) {
         return b.generation - a.generation;
       }
       return b.name.localeCompare(a.name, "ko-KR");
     });
-  }, [users, appliedFilters]);
+  }, [users, appliedFilters, debouncedSearchQuery]);
 
   // 표시할 사용자 목록 (무한 스크롤용)
   const displayedUsers = filteredUsers.slice(0, displayCount);
@@ -211,7 +243,7 @@ export default function AlumniSearch() {
   // 필터 변경 시 표시 개수 리셋
   useEffect(() => {
     setDisplayCount(20);
-  }, [appliedFilters]);
+  }, [appliedFilters, debouncedSearchQuery]);
 
   // 엑셀 다운로드 함수
   const handleExportToExcel = () => {
@@ -313,6 +345,8 @@ export default function AlumniSearch() {
                 <S.SearchInput
                   type="text"
                   placeholder="이름, 기수, 재직 기업 등을 입력하세요"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 <S.SearchDivider />
                 <S.SearchFilter>

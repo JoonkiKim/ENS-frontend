@@ -67,10 +67,10 @@ interface Member {
 
 interface User {
   id: string;
-  name: string;
+  name: string | null;
   generation: number;
-  phone: string;
-  email: string;
+  phone: string | null;
+  email: string | null;
   role: 'MEMBER' | 'ADMIN';
   memo: string | null;
 }
@@ -82,6 +82,7 @@ export default function MembersList() {
   const [selectedMembers, setSelectedMembers] = useState<number[]>([]);
   const [selectedGenerations, setSelectedGenerations] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [displayCount, setDisplayCount] = useState(20); // 무한스크롤용 표시 개수
   const [selectedMemo, setSelectedMemo] = useState<{ id: number; memo: string; position: { top: number; left: number } } | null>(null);
   const memoCellRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
@@ -120,9 +121,9 @@ export default function MembersList() {
       const convertedMembers = data.fetchAllUsers.map((user, index) => ({
         id: index + 1,
         generation: `${user.generation}기`,
-        name: user.name,
-        phone: user.phone,
-        email: user.email,
+        name: user.name ?? '',
+        phone: user.phone ?? '',
+        email: user.email ?? '',
         grade: user.role === 'ADMIN' ? '운영진' : '학회원',
         memo: user.memo || '',
         userId: user.id, // 실제 유저 ID 저장
@@ -139,6 +140,16 @@ export default function MembersList() {
       setInitialMembers(convertedMembers); // 초기 데이터 저장
     }
   }, [data]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [searchQuery]);
 
   const handleSelectAll = () => {
     const displayedIds = displayedMembers.map(m => m.id);
@@ -176,13 +187,17 @@ export default function MembersList() {
       if (selectedGenerations.length > 0 && !selectedGenerations.includes(member.generation)) {
         return false;
       }
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase();
+      if (debouncedSearchQuery.trim()) {
+        const query = debouncedSearchQuery.toLowerCase();
+        const name = member.name ?? '';
+        const email = member.email ?? '';
+        const phone = member.phone ?? '';
+        const generation = member.generation ?? '';
         return (
-          member.name.toLowerCase().includes(query) ||
-          member.email.toLowerCase().includes(query) ||
-          member.phone.includes(query) ||
-          member.generation.includes(query)
+          name.toLowerCase().includes(query) ||
+          email.toLowerCase().includes(query) ||
+          phone.includes(query) ||
+          generation.includes(query)
         );
       }
       return true;
@@ -191,7 +206,7 @@ export default function MembersList() {
       const genA = parseInt(a.generation, 10) || 0;
       const genB = parseInt(b.generation, 10) || 0;
       if (genB !== genA) return genB - genA;
-      return b.name.localeCompare(a.name, 'ko-KR');
+      return (b.name ?? '').localeCompare(a.name ?? '', 'ko-KR');
     });
 
   // 표시할 멤버 계산
@@ -201,7 +216,7 @@ export default function MembersList() {
   // 필터 변경 시 displayCount 리셋
   useEffect(() => {
     setDisplayCount(20);
-  }, [selectedGenerations, searchQuery]);
+  }, [selectedGenerations, debouncedSearchQuery]);
 
   // 저장하기 핸들러
   const handleSave = async () => {
@@ -346,13 +361,14 @@ export default function MembersList() {
   }, [hasMore]);
 
   // 검색어 하이라이트 함수
-  const highlightText = (text: string, query: string): React.ReactNode => {
+  const highlightText = (text: string | null | undefined, query: string): React.ReactNode => {
+    const safeText = text ?? '';
     if (!query.trim()) {
-      return text;
+      return safeText;
     }
 
     const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-    const parts = text.split(regex);
+    const parts = safeText.split(regex);
 
     return parts.map((part, index) => {
       if (regex.test(part)) {
@@ -530,10 +546,10 @@ export default function MembersList() {
                           />
                         </CheckboxWrapper>
                       </TableCell>
-                      <TableCell>{highlightText(member.generation, searchQuery)}</TableCell>
-                      <TableCell>{highlightText(member.name, searchQuery)}</TableCell>
-                      <TableCell>{highlightText(member.phone, searchQuery)}</TableCell>
-                      <TableCell>{highlightText(member.email, searchQuery)}</TableCell>
+                      <TableCell>{highlightText(member.generation, debouncedSearchQuery)}</TableCell>
+                      <TableCell>{highlightText(member.name, debouncedSearchQuery)}</TableCell>
+                      <TableCell>{highlightText(member.phone, debouncedSearchQuery)}</TableCell>
+                      <TableCell>{highlightText(member.email, debouncedSearchQuery)}</TableCell>
                       <TableCell>
                         {isEditMode ? (
                           <GradeSelectField

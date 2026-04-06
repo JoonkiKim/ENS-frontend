@@ -11,6 +11,22 @@ import SignUpModal from './signUpModal';
 import { LOGIN, FETCH_LOGIN_USER } from '../../../commons/apis/graphql-queries';
 import { setAccessToken } from '../../../commons/libraries/token';
 
+const isDev = process.env.NODE_ENV !== 'production';
+
+function logLoginFailureDebug(message: string, customId: string) {
+  if (!isDev) return;
+  const id = customId.trim();
+  let reason: string;
+  if (message.includes('등록된 아이디가 없')) {
+    reason = '아이디 없음 — 입력한 아이디가 등록되어 있지 않습니다.';
+  } else if (message.includes('비밀번호가 일치하지')) {
+    reason = '비밀번호 불일치 — 아이디는 맞고 비밀번호가 틀렸습니다.';
+  } else {
+    reason = message;
+  }
+  console.warn('[Login debug]', { customId: id, reason });
+}
+
 
 
 // Modal Overlay
@@ -329,6 +345,7 @@ export default function LoginModal({
         const errorMessage = errors[0]?.message || '로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.';
         // 스택 트레이스 제거 (메시지에서 \n\nStack: 이후 부분 제거)
         const cleanMessage = errorMessage.split('\n\nStack:')[0].trim();
+        logLoginFailureDebug(cleanMessage, customId);
         setLoginError(cleanMessage);
         return;
       }
@@ -389,6 +406,7 @@ export default function LoginModal({
       
       // 스택 트레이스 제거 (메시지에서 \n\nStack: 이후 부분 제거)
       const cleanMessage = errorMessage.split('\n\nStack:')[0].trim();
+      logLoginFailureDebug(cleanMessage, customId);
       setLoginError(cleanMessage || '로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.');
     }
   };
