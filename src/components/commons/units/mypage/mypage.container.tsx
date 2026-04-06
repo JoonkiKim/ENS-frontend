@@ -1210,15 +1210,31 @@ export default function MyPage() {
     let passwordData: { currentPassword?: string; password?: string } = {};
     if (formData.newPassword && formData.newPassword.trim()) {
       // 새 비밀번호가 입력된 경우
+      const trimmedNewPassword = formData.newPassword.trim();
       if (!formData.currentPassword || !formData.currentPassword.trim()) {
         throw new Error("기존 비밀번호를 입력해주세요.");
       }
-      if (formData.newPassword !== formData.confirmPassword) {
+      if (trimmedNewPassword !== formData.confirmPassword.trim()) {
         throw new Error("새 비밀번호와 비밀번호 확인이 일치하지 않습니다.");
       }
+
+      const hasLowerCase = /[a-z]/.test(trimmedNewPassword);
+      const hasUpperCase = /[A-Z]/.test(trimmedNewPassword);
+      const hasNumber = /\d/.test(trimmedNewPassword);
+      const hasSpecialChar = /[@$!%*?&]/.test(trimmedNewPassword);
+      if (
+        trimmedNewPassword.length < 8 ||
+        !hasLowerCase ||
+        !hasUpperCase ||
+        !hasNumber ||
+        !hasSpecialChar
+      ) {
+        throw new Error("8자리 이상의 대소문자, 숫자, 특수문자를 사용해 주세요.");
+      }
+
       passwordData = {
         currentPassword: formData.currentPassword.trim(),
-        password: formData.newPassword.trim(),
+        password: trimmedNewPassword,
       };
     }
 
