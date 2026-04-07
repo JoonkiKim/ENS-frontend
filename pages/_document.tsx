@@ -12,7 +12,7 @@ export default function Document() {
         <meta property="og:type" content="website" />
         <meta property="og:title" content={defaultTitle} />
         <meta property="og:description" content={defaultDescription} />
-        <meta property="og:image" content="/images/header-logo.png" />
+        <meta property="og:image" content="/images/og-image.png" />
 
         <meta property="og:site_name" content="ENS Intranet" />
         <meta property="og:locale" content="ko_KR" />
