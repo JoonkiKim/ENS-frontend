@@ -61,6 +61,7 @@ export default function TokenInitializer() {
 
   // ✅ 각 경로별 초기화 완료 여부를 추적
   const initializedPaths = useRef<Set<string>>(new Set());
+  const inFlightPaths = useRef<Set<string>>(new Set());
   
   // 메시지 모달 상태
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
@@ -103,6 +104,12 @@ export default function TokenInitializer() {
       return;
     }
 
+    // ✅ 동일 경로에서 진행 중인 검증이 있으면 중복 호출 방지
+    if (inFlightPaths.current.has(currentPath)) {
+      console.log("⏳ 이미 검증 진행 중인 경로:", currentPath);
+      return;
+    }
+
     // ✅ 액세스 토큰이 있고 유효하면 리프레시 토큰 체크 스킵
     if (accessToken && isTokenValid(accessToken)) {
       console.log("✅ 유효한 액세스 토큰 존재: 리프레시 토큰 체크 스킵");
@@ -119,6 +126,7 @@ export default function TokenInitializer() {
     // ✅ 브라우저가 완전히 준비될 때까지 기다림 (인위적 지연 대신)
     // requestIdleCallback이 지원되지 않으면 requestAnimationFrame 사용
     const executeRestore = () => {
+      inFlightPaths.current.add(currentPath);
       console.log("🚀 restoreAccessToken 호출 시작...");
       console.log("📤 요청 헤더:", { authorization: "" });
       
@@ -258,6 +266,7 @@ export default function TokenInitializer() {
           }
         })
         .finally(() => {
+          inFlightPaths.current.delete(currentPath);
           console.log("✔️ TokenInitializer: 인증 체크 완료");
           setChecked(true);
         });
