@@ -84,10 +84,14 @@ export default function TokenInitializer() {
     // ✅ 공개 페이지 여부
     const isPublicPath = PUBLIC_PATHS.includes(currentPath);
 
-    // ✅ 이미 이 경로에서 검증했으면 실행 안 함 (중복 방지)
+    // ✅ 같은 경로라도 액세스 토큰이 없거나 만료되면 캐시 무시 후 재검증 (로그아웃 직후 등)
     if (initializedPaths.current.has(currentPath)) {
-      console.log("✅ 이미 검증된 경로:", currentPath);
-      return;
+      if (accessToken && isTokenValid(accessToken)) {
+        console.log("✅ 이미 검증된 경로 (유효 토큰 유지):", currentPath);
+        return;
+      }
+      initializedPaths.current.delete(currentPath);
+      console.log("🔄 세션 없음/만료 — 경로 캐시 무시 후 재검증:", currentPath);
     }
 
     // ✅ 액세스 토큰이 있고 유효하면 리프레시 토큰 체크 스킵

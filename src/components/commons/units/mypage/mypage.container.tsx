@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import { useQuery, useMutation, useApolloClient } from "@apollo/client";
+import { useResetRecoilState } from "recoil";
+import { authCheckedState } from "../../../../commons/stores";
 import { useForm, useFieldArray } from "react-hook-form";
 
 import * as S from "./mypage.style";
@@ -70,6 +72,7 @@ export default function MyPage() {
   const targetUserId = router.query.userId as string | undefined;
 
   const apolloClient = useApolloClient();
+  const resetAuthChecked = useResetRecoilState(authCheckedState);
 
   // 메시지 모달 상태 관리
   const [messageModal, setMessageModal] = useState({
@@ -309,6 +312,7 @@ export default function MyPage() {
       console.warn("logout mutation failed:", error);
     } finally {
       clearAccessToken();
+      resetAuthChecked();
       apolloClient.clearStore();
       router.push("/");
     }
