@@ -127,6 +127,7 @@ export default function TokenInitializer() {
     // requestIdleCallback이 지원되지 않으면 requestAnimationFrame 사용
     const executeRestore = () => {
       inFlightPaths.current.add(currentPath);
+      console.count(`[restoreAccessToken] started:${currentPath}`);
       console.log("🚀 restoreAccessToken 호출 시작...");
       console.log("📤 요청 헤더:", { authorization: "" });
       
@@ -267,6 +268,7 @@ export default function TokenInitializer() {
         })
         .finally(() => {
           inFlightPaths.current.delete(currentPath);
+          console.count(`[restoreAccessToken] finished:${currentPath}`);
           console.log("✔️ TokenInitializer: 인증 체크 완료");
           setChecked(true);
         });
