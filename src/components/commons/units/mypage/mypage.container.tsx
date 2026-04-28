@@ -266,8 +266,12 @@ export default function MyPage() {
   };
 
   // 로그인한 유저 데이터 조회 (항상 실행하여 role 확인)
-  const { data: loginUserData, loading: loginLoading } =
-    useQuery(FETCH_LOGIN_USER);
+  const { data: loginUserData, loading: loginLoading } = useQuery(
+    FETCH_LOGIN_USER,
+    {
+      fetchPolicy: "network-only",
+    }
+  );
 
   // 사용자 데이터 조회 (userId가 있으면 해당 유저)
   const { data: userData, loading: userLoading } = useQuery(FETCH_USER, {
