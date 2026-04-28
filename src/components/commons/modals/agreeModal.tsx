@@ -1,4 +1,4 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from "react";
 import styled from '@emotion/styled';
 import SignUpAlert from './signUpAlert';
 
@@ -358,6 +358,7 @@ export default function AgreeModal({
   onClose,
   onSubmit,
 }: AgreeModalProps) {
+  const modalRootRef = useRef<HTMLDivElement>(null);
   const [agreeAll, setAgreeAll] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
@@ -376,8 +377,15 @@ export default function AgreeModal({
       document.body.style.top = `-${scrollY}px`;
       document.body.style.width = '100%';
       
-      // 스크롤 이벤트 막기
+      // 배경 페이지 스크롤만 막기 (모달 안 스크롤·휠은 허용)
       const preventScroll = (e: Event) => {
+        const target = e.target;
+        if (
+          target instanceof Node &&
+          modalRootRef.current?.contains(target)
+        ) {
+          return;
+        }
         e.preventDefault();
         window.scrollTo(0, scrollY);
       };
@@ -461,7 +469,7 @@ export default function AgreeModal({
   return (
     <>
     
-      <ModalOverlay onClick={handleOverlayClick}>
+      <ModalOverlay ref={modalRootRef} onClick={handleOverlayClick}>
         <ModalContainer>
           {/* Header */}
           <ModalHeader>
