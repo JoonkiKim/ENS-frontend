@@ -13,6 +13,12 @@ export const authCheckedState = atom<boolean>({
   default: false, // 아직 refresh 여부 판단 전
 });
 
+/** 로그아웃 시 증가 → TokenInitializer가 경로별 인증 캐시(initializedPaths)를 비움 */
+export const authInitEpochState = atom<number>({
+  key: "authInitEpochState",
+  default: 0,
+});
+
 // 1. Auth 정보용 인터페이스 정의
 interface AuthInfo {
   role: string;

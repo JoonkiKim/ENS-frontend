@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { useSetRecoilState, useResetRecoilState, useRecoilValue } from "recoil";
-import { accessTokenState, authCheckedState } from "../stores";
+import {
+  accessTokenState,
+  authCheckedState,
+  authInitEpochState,
+} from "../stores";
 import { useMutation, useApolloClient } from "@apollo/client";
 import styled from "@emotion/styled";
 import {
@@ -49,6 +53,7 @@ export default function TokenInitializer() {
   const resetAuthChecked = useResetRecoilState(authCheckedState);
   const accessToken = useRecoilValue(accessTokenState);
   const authChecked = useRecoilValue(authCheckedState);
+  const authInitEpoch = useRecoilValue(authInitEpochState);
   const router = useRouter();
   const apolloClient = useApolloClient();
 
@@ -75,6 +80,11 @@ export default function TokenInitializer() {
     };
   }, [setToken]);
 
+  // 로그아웃 시에만 epoch이 올라가며, 경로별 "이미 검증함" 캐시를 비움
+  useEffect(() => {
+    initializedPaths.current.clear();
+  }, [authInitEpoch]);
+
   // ② 각 페이지 접근 시마다 인증 검증
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -84,14 +94,10 @@ export default function TokenInitializer() {
     // ✅ 공개 페이지 여부
     const isPublicPath = PUBLIC_PATHS.includes(currentPath);
 
-    // ✅ 같은 경로라도 액세스 토큰이 없거나 만료되면 캐시 무시 후 재검증 (로그아웃 직후 등)
+    // ✅ 이미 이 경로에서 검증했으면 실행 안 함 (중복 방지)
     if (initializedPaths.current.has(currentPath)) {
-      if (accessToken && isTokenValid(accessToken)) {
-        console.log("✅ 이미 검증된 경로 (유효 토큰 유지):", currentPath);
-        return;
-      }
-      initializedPaths.current.delete(currentPath);
-      console.log("🔄 세션 없음/만료 — 경로 캐시 무시 후 재검증:", currentPath);
+      console.log("✅ 이미 검증된 경로:", currentPath);
+      return;
     }
 
     // ✅ 액세스 토큰이 있고 유효하면 리프레시 토큰 체크 스킵
@@ -260,7 +266,7 @@ export default function TokenInitializer() {
       // 폴백: 즉시 실행
       executeRestore();
     }
-  }, [router.pathname, accessToken, authChecked]); // ✅ 경로, 토큰, 체크 상태 변경 시 실행
+  }, [router.pathname, accessToken, authChecked, authInitEpoch]); // epoch: 로그아웃 후 동일 경로도 재검증
 
   // 메시지 모달 확인 핸들러
   const handleMessageModalConfirm = () => {
