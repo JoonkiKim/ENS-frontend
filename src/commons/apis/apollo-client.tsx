@@ -11,7 +11,6 @@ import {
   getAccessToken, // 인메모리에서 액세스 토큰 가져오기
   setAccessToken, // 인메모리에 액세스 토큰 저장
   clearAccessToken, // 인메모리 토큰 삭제
-  bumpAuthInitEpoch, // 토큰 소거 시 보호 경로 재검증 epoch 증가
 } from "../libraries/token";
 import { RESTORE_ACCESS_TOKEN } from "./graphql-queries"; // 토큰 갱신 뮤테이션
 
@@ -157,7 +156,6 @@ const errorLink = onError(
                 .catch((error) => {
                   // ❌ 토큰 갱신 실패
                   clearAccessToken(); // 토큰 삭제
-                  bumpAuthInitEpoch();
                   pendingRequests = []; // 대기 큐 초기화
                   isRefreshing = false; // 플래그 해제
 
