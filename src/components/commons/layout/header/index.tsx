@@ -3,8 +3,10 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useQuery } from "@apollo/client";
 import { FETCH_LOGIN_USER } from "../../../../commons/apis/graphql-queries";
+import MessageModal from "../../modals/messageModal";
+import { useState } from "react";
 import { useRecoilValue } from "recoil";
-import { accessTokenState } from "../../../../commons/stores";
+import { accessTokenState, authCheckedState } from "../../../../commons/stores";
 
 // ─── 공통 레이아웃 헤더 (ENS Intranet 스타일) ─────────────────────────────
 
@@ -75,9 +77,11 @@ const NavItem = styled.a`
 
 export default function LayoutHeader(): JSX.Element {
   const router = useRouter();
+  const [isProtectedNavModalOpen, setIsProtectedNavModalOpen] = useState(false);
 
   // 로그인 직후 admin 여부가 즉시 반영되도록 토큰 기반으로 쿼리 실행 시점을 제어
   const accessToken = useRecoilValue(accessTokenState);
+  const authChecked = useRecoilValue(authCheckedState);
 
   // 로그인한 유저 정보 조회
   const { data } = useQuery(FETCH_LOGIN_USER, {
@@ -97,35 +101,49 @@ export default function LayoutHeader(): JSX.Element {
     return <></>;
   }
 
-  return (
-    <HeaderBackground>
-      <HeaderInner>
-        <Link href="/" passHref>
-          <Logo>
-            <LogoENS>ENS</LogoENS> <LogoIntranet>Intranet</LogoIntranet>
-          </Logo>
-        </Link>
+  const handleProtectedNav = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (authChecked && !accessToken) {
+      e.preventDefault();
+      setIsProtectedNavModalOpen(true);
+    }
+  };
 
-        {!isResetPasswordPage && (
-          <Navigation>
-            <Link href="/findAlumni" passHref>
-              <NavItem>알럼나이 찾기</NavItem>
-            </Link>
-            <Link href="/boardMain" passHref>
-              <NavItem>자유 게시판</NavItem>
-            </Link>
-            
-            <Link href="/mypage" passHref>
-              <NavItem>마이페이지</NavItem>
-            </Link>
-            {isAdmin && (
-              <Link href="/admin" passHref>
-                <NavItem>관리</NavItem>
+  return (
+    <>
+      <HeaderBackground>
+        <HeaderInner>
+          <Link href="/" passHref>
+            <Logo>
+              <LogoENS>ENS</LogoENS> <LogoIntranet>Intranet</LogoIntranet>
+            </Logo>
+          </Link>
+
+          {!isResetPasswordPage && (
+            <Navigation>
+              <Link href="/findAlumni" passHref>
+                <NavItem onClick={handleProtectedNav}>알럼나이 찾기</NavItem>
               </Link>
-            )}
-          </Navigation>
-        )}
-      </HeaderInner>
-    </HeaderBackground>
+              <Link href="/boardMain" passHref>
+                <NavItem onClick={handleProtectedNav}>자유 게시판</NavItem>
+              </Link>
+              
+              <Link href="/mypage" passHref>
+                <NavItem onClick={handleProtectedNav}>마이페이지</NavItem>
+              </Link>
+              {isAdmin && (
+                <Link href="/admin" passHref>
+                  <NavItem>관리</NavItem>
+                </Link>
+              )}
+            </Navigation>
+          )}
+        </HeaderInner>
+      </HeaderBackground>
+      <MessageModal
+        isOpen={isProtectedNavModalOpen}
+        onClose={() => setIsProtectedNavModalOpen(false)}
+        message="로그인 후 이용가능합니다"
+      />
+    </>
   );
 }
