@@ -49,7 +49,15 @@ function AuthGate({
 
   // 보호 경로에서 토큰이 없으면 children을 렌더하지 않음 (TokenInitializer 모달 흐름 사용)
   if (!isPublicPath && !accessToken) {
-    return null;
+    return (
+      <>
+        {fallback ?? (
+          <LoadingOverlayNoOpacity visible={true}>
+            <LoadingIcon spin fontSize={48} />
+          </LoadingOverlayNoOpacity>
+        )}
+      </>
+    );
   }
 
   // 인증 성공한 경우 children 표시
