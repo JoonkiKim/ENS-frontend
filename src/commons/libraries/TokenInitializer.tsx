@@ -75,6 +75,16 @@ export default function TokenInitializer() {
     },
   });
 
+  const clearAuthState = () => {
+    clearAccessToken();
+    resetAccessToken();
+    resetAuthChecked();
+    // 비로그인(토큰 없음) 상태에서는 in-flight query 취소를 유발하는 clearStore 생략
+    if (accessToken) {
+      apolloClient.clearStore();
+    }
+  };
+
   // ① RecoilRoot 안에서만 registerAccessTokenSetter를 호출
   useEffect(() => {
     registerAccessTokenSetter(setToken);
@@ -158,10 +168,7 @@ export default function TokenInitializer() {
             console.warn(
               "⚠️ 리프레시 응답에 토큰이 없습니다 → 메시지 모달 표시"
             );
-            clearAccessToken();
-            resetAccessToken();
-            resetAuthChecked();
-            apolloClient.clearStore();
+            clearAuthState();
             initializedPaths.current.add(currentPath);
             
             setChecked(true);
@@ -229,10 +236,7 @@ export default function TokenInitializer() {
           } else if (isAuthError) {
             console.log("🔐 인증 실패 → 상태 초기화 후 메시지 모달 표시");
             console.log("💡 리프레시 토큰이 만료되었거나 유효하지 않습니다");
-            clearAccessToken();
-            resetAccessToken();
-            resetAuthChecked();
-            apolloClient.clearStore();
+            clearAuthState();
             initializedPaths.current.add(currentPath);
             
             setChecked(true);
@@ -252,10 +256,7 @@ export default function TokenInitializer() {
           } else {
             console.error("❌ 알 수 없는 오류 → 상태 초기화 후 메시지 모달 표시");
             console.error("💡 예상치 못한 오류가 발생했습니다");
-            clearAccessToken();
-            resetAccessToken();
-            resetAuthChecked();
-            apolloClient.clearStore();
+            clearAuthState();
             initializedPaths.current.add(currentPath);
             
             setChecked(true);

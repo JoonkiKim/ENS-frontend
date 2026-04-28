@@ -789,6 +789,7 @@ export default function SignUpModal({
 
   // 전공 목록 조회 (캐시 우선 사용)
   const { data: majorsData, error, loading } = useQuery<{ fetchAllMajors: Array<{ id: string; name: string; isCustom: boolean }> }>(FETCH_ALL_MAJORS, {
+    skip: !isOpen,
     fetchPolicy: 'cache-first',
     onError: (error) => {
       console.error('fetchAllMajors 에러:', error);
@@ -799,6 +800,7 @@ export default function SignUpModal({
 
   // 디버깅용 로그
   useEffect(() => {
+    if (!isOpen) return;
     console.log('=== fetchAllMajors 디버깅 ===');
     console.log('majorsData:', majorsData);
     console.log('error:', error);
