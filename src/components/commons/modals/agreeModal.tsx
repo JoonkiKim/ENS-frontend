@@ -274,6 +274,19 @@ const TextBox = styled.div`
     background: #d9d9d9;
     border-radius: 3px;
   }
+
+  &::-webkit-scrollbar-button {
+    display: none;
+    height: 0;
+    width: 0;
+  }
+
+  &::-webkit-scrollbar-button:vertical:start:decrement,
+  &::-webkit-scrollbar-button:vertical:end:increment {
+    display: none;
+    height: 0;
+    width: 0;
+  }
 `;
 
 const ScrollIcon = styled.div`
