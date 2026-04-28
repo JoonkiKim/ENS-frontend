@@ -2,7 +2,9 @@ import  { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useQuery } from '@apollo/client';
+import { useRecoilValue } from 'recoil';
 import { FETCH_ALL_BOARDS } from '../../../../../commons/apis/graphql-queries';
+import { accessTokenState, authCheckedState } from '../../../../../commons/stores';
 
 import * as S from './boardMain.style';
 
@@ -31,6 +33,9 @@ interface Post {
 }
 
 export default function FreeBoard() {
+  const accessToken = useRecoilValue(accessTokenState);
+  const authChecked = useRecoilValue(authCheckedState);
+  const canQueryProtected = authChecked && !!accessToken;
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
@@ -38,6 +43,7 @@ export default function FreeBoard() {
 
   // GraphQL 쿼리로 게시판 데이터 가져오기
   const { data, loading, error, refetch } = useQuery(FETCH_ALL_BOARDS, {
+    skip: !canQueryProtected,
     fetchPolicy: 'cache-and-network', // 캐시와 네트워크 모두 확인하여 최신 데이터 보장
   });
 

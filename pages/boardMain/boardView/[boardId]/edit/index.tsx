@@ -1,5 +1,6 @@
 import { useRouter } from 'next/router';
 import BoardCreate from "../../../../../src/components/commons/units/board/createBoard/createBoard.container";
+import AuthGate from "../../../../../src/commons/hooks/authGate";
 
 export default function BoardEditPage() {
   const router = useRouter();
@@ -9,5 +10,9 @@ export default function BoardEditPage() {
     return <div>게시글을 찾을 수 없습니다.</div>;
   }
 
-  return <BoardCreate isEdit={true} boardId={boardId} />;
+  return (
+    <AuthGate>
+      <BoardCreate isEdit={true} boardId={boardId} />
+    </AuthGate>
+  );
 }

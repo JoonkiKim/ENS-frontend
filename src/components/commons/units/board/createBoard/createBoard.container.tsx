@@ -4,9 +4,11 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useMutation, useQuery } from '@apollo/client';
+import { useRecoilValue } from 'recoil';
 import { CREATE_BOARD, UPDATE_BOARD, FETCH_BOARD, FETCH_LOGIN_USER, FETCH_ALL_BOARDS } from '../../../../../commons/apis/graphql-queries';
 import MessageModal from '../../../modals/messageModal';
 import * as S from './createBoard.style';
+import { accessTokenState, authCheckedState } from '../../../../../commons/stores';
 
 // react-quill을 dynamic import로 로드 (SSR 방지)
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
@@ -24,6 +26,9 @@ interface BoardCreateProps {
 }
 
 export default function BoardCreate({ isEdit = false, boardId }: BoardCreateProps) {
+  const accessToken = useRecoilValue(accessTokenState);
+  const authChecked = useRecoilValue(authCheckedState);
+  const canQueryProtected = authChecked && !!accessToken;
   const router = useRouter();
   const { register, handleSubmit, setValue, watch } = useForm<FormData>({
     defaultValues: {
@@ -40,13 +45,15 @@ export default function BoardCreate({ isEdit = false, boardId }: BoardCreateProp
   const content = watch('content');
 
   // 로그인한 유저 정보 조회
-  const { data: userData } = useQuery(FETCH_LOGIN_USER);
+  const { data: userData } = useQuery(FETCH_LOGIN_USER, {
+    skip: !canQueryProtected,
+  });
   const userName = userData?.fetchLoginUser?.name || '';
 
   // 수정 모드일 때 기존 게시글 데이터 조회
   const { data: boardData, loading: boardLoading } = useQuery(FETCH_BOARD, {
     variables: { boardId: boardId || '' },
-    skip: !isEdit || !boardId,
+    skip: !canQueryProtected || !isEdit || !boardId,
   });
 
   // 게시판 생성/수정 mutation

@@ -2,20 +2,28 @@ import { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import { useRecoilValue } from 'recoil';
 import { FETCH_BOARD, FETCH_LOGIN_USER, DELETE_BOARD, FETCH_ALL_BOARDS } from '../../../../../commons/apis/graphql-queries';
 import MessageModal from '../../../modals/messageModal';
 import * as S from './fetchBoard.style';
+import { accessTokenState, authCheckedState } from '../../../../../commons/stores';
 
 interface BoardViewProps {
   boardId: string;
 }
 
 export default function BoardView({ boardId }: BoardViewProps) {
+  const accessToken = useRecoilValue(accessTokenState);
+  const authChecked = useRecoilValue(authCheckedState);
+  const canQueryProtected = authChecked && !!accessToken;
   const router = useRouter();
   const { data, loading, error } = useQuery(FETCH_BOARD, {
     variables: { boardId },
+    skip: !canQueryProtected,
   });
-  const { data: loginUserData } = useQuery(FETCH_LOGIN_USER);
+  const { data: loginUserData } = useQuery(FETCH_LOGIN_USER, {
+    skip: !canQueryProtected,
+  });
   const [deleteBoardMutation] = useMutation(DELETE_BOARD);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteErrorMessage, setDeleteErrorMessage] = useState('');

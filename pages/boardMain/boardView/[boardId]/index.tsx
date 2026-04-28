@@ -1,5 +1,6 @@
 import { useRouter } from 'next/router';
 import BoardView from "../../../../src/components/commons/units/board/fetchBoard/fetchBoard.container";
+import AuthGate from "../../../../src/commons/hooks/authGate";
 
 export default function BoardViewPage() {
   const router = useRouter();
@@ -9,5 +10,9 @@ export default function BoardViewPage() {
     return <div>게시글을 찾을 수 없습니다.</div>;
   }
 
-  return <BoardView boardId={boardId} />;
+  return (
+    <AuthGate>
+      <BoardView boardId={boardId} />
+    </AuthGate>
+  );
 }

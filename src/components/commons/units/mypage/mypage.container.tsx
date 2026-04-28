@@ -1,8 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import { useQuery, useMutation, useApolloClient } from "@apollo/client";
-import { useSetRecoilState } from "recoil";
-import { authInitEpochState } from "../../../../commons/stores";
+import { useSetRecoilState, useRecoilValue } from "recoil";
+import {
+  authInitEpochState,
+  accessTokenState,
+  authCheckedState,
+} from "../../../../commons/stores";
 import { useForm, useFieldArray } from "react-hook-form";
 
 import * as S from "./mypage.style";
@@ -70,6 +74,9 @@ interface FormData {
 export default function MyPage() {
   const router = useRouter();
   const targetUserId = router.query.userId as string | undefined;
+  const accessToken = useRecoilValue(accessTokenState);
+  const authChecked = useRecoilValue(authCheckedState);
+  const canQueryProtected = authChecked && !!accessToken;
 
   const apolloClient = useApolloClient();
   const bumpAuthInitEpoch = useSetRecoilState(authInitEpochState);
@@ -273,6 +280,7 @@ export default function MyPage() {
   } = useQuery(
     FETCH_LOGIN_USER,
     {
+      skip: !canQueryProtected,
       fetchPolicy: "network-only",
     }
   );
@@ -280,7 +288,7 @@ export default function MyPage() {
   // 사용자 데이터 조회 (userId가 있으면 해당 유저)
   const { data: userData, loading: userLoading } = useQuery(FETCH_USER, {
     variables: { userId: targetUserId || "" },
-    skip: !targetUserId, // userId가 없으면 이 쿼리는 실행하지 않음
+    skip: !canQueryProtected || !targetUserId, // userId 없거나 인증 전이면 실행하지 않음
   });
 
   // 데이터 통합

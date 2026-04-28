@@ -1,6 +1,6 @@
 import { useRecoilValue } from "recoil";
 import { useRouter } from "next/router";
-import { authCheckedState } from "../stores";
+import { accessTokenState, authCheckedState } from "../stores";
 import {
   LoadingIcon,
   LoadingOverlay,
@@ -26,6 +26,7 @@ function AuthGate({
   additionalPublicPaths?: string[];
 }) {
   const checked = useRecoilValue(authCheckedState);
+  const accessToken = useRecoilValue(accessTokenState);
   const router = useRouter();
   // 현재 경로가 공개 경로인지 확인
   const isPublicPath = [
@@ -44,6 +45,11 @@ function AuthGate({
         )}
       </>
     );
+  }
+
+  // 보호 경로에서 토큰이 없으면 children을 렌더하지 않음 (TokenInitializer 모달 흐름 사용)
+  if (!isPublicPath && !accessToken) {
+    return null;
   }
 
   // 인증 성공한 경우 children 표시

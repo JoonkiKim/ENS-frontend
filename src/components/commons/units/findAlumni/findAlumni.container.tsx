@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useQuery } from "@apollo/client";
+import { useRecoilValue } from "recoil";
 import * as XLSX from "xlsx";
 import * as S from "./findAlumni.style";
 import Head from "next/head";
@@ -10,6 +11,7 @@ import {
   FETCH_ALL_USERS,
   FETCH_LOGIN_USER,
 } from "../../../../commons/apis/graphql-queries";
+import { accessTokenState, authCheckedState } from "../../../../commons/stores";
 
 interface FilterState {
   generationMin: number;
@@ -73,6 +75,10 @@ function getDisplayCareer(user: User) {
 }
 
 export default function AlumniSearch() {
+  const accessToken = useRecoilValue(accessTokenState);
+  const authChecked = useRecoilValue(authCheckedState);
+  const canQueryProtected = authChecked && !!accessToken;
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -86,11 +92,16 @@ export default function AlumniSearch() {
 
   // 사용자 데이터 조회
   const { data, loading, error } = useQuery<{ fetchAllUsers: User[] }>(
-    FETCH_ALL_USERS
+    FETCH_ALL_USERS,
+    {
+      skip: !canQueryProtected,
+    }
   );
 
   // 로그인한 유저 정보 조회 (운영진 확인용)
-  const { data: loginUserData } = useQuery(FETCH_LOGIN_USER);
+  const { data: loginUserData } = useQuery(FETCH_LOGIN_USER, {
+    skip: !canQueryProtected,
+  });
   const isAdmin = loginUserData?.fetchLoginUser?.role === "ADMIN";
 
   useEffect(() => {
