@@ -10,6 +10,7 @@ import { useMutation, useApolloClient } from "@apollo/client";
 import styled from "@emotion/styled";
 import {
   registerAccessTokenSetter,
+  registerAuthInitEpochSetter,
   setAccessToken,
   clearAccessToken,
 } from "./token";
@@ -48,6 +49,7 @@ const isTokenValid = (token: string | null): boolean => {
 
 export default function TokenInitializer() {
   const setToken = useSetRecoilState(accessTokenState);
+  const setAuthInitEpoch = useSetRecoilState(authInitEpochState);
   const setChecked = useSetRecoilState(authCheckedState);
   const resetAccessToken = useResetRecoilState(accessTokenState);
   const resetAuthChecked = useResetRecoilState(authCheckedState);
@@ -75,10 +77,11 @@ export default function TokenInitializer() {
   // ① RecoilRoot 안에서만 registerAccessTokenSetter를 호출
   useEffect(() => {
     registerAccessTokenSetter(setToken);
+    registerAuthInitEpochSetter(setAuthInitEpoch);
     return () => {
       clearAccessToken();
     };
-  }, [setToken]);
+  }, [setToken, setAuthInitEpoch]);
 
   // 로그아웃 시에만 epoch이 올라가며, 경로별 "이미 검증함" 캐시를 비움
   useEffect(() => {
@@ -113,9 +116,6 @@ export default function TokenInitializer() {
     console.log("🌐 현재 환경:", process.env.NODE_ENV);
     console.log("📍 현재 경로:", currentPath);
 
-    // ✅ 이 경로 검증 시작 표시
-    initializedPaths.current.add(currentPath);
-
     // ✅ 브라우저가 완전히 준비될 때까지 기다림 (인위적 지연 대신)
     // requestIdleCallback이 지원되지 않으면 requestAnimationFrame 사용
     const executeRestore = () => {
@@ -138,6 +138,7 @@ export default function TokenInitializer() {
           if (newToken) {
             // ✅ 토큰 갱신 성공
             setAccessToken(newToken);
+            initializedPaths.current.add(currentPath);
             console.log("✅ 리프레시 성공 (GraphQL)");
             console.log(
               "📝 새 액세스 토큰:",
@@ -152,6 +153,7 @@ export default function TokenInitializer() {
             resetAccessToken();
             resetAuthChecked();
             apolloClient.clearStore();
+            initializedPaths.current.add(currentPath);
             
             setChecked(true);
 
@@ -211,6 +213,8 @@ export default function TokenInitializer() {
             console.error("   - 백엔드가 http://localhost:3001에서 실행 중인지 확인");
             console.error("   - GraphQL 엔드포인트가 /graphql인지 확인");
             console.error("   - 네트워크 탭에서 실제 요청 URL 확인");
+            // 네트워크/설정 이슈일 때는 캐시를 남기지 않아야 다음 진입 시 재검증 가능
+            initializedPaths.current.delete(currentPath);
             // 404는 네트워크/설정 문제이므로 로그인 페이지로 이동하지 않음
             // 대신 사용자에게 알림을 표시하거나 재시도 로직 추가 가능
           } else if (isAuthError) {
@@ -220,6 +224,7 @@ export default function TokenInitializer() {
             resetAccessToken();
             resetAuthChecked();
             apolloClient.clearStore();
+            initializedPaths.current.add(currentPath);
             
             setChecked(true);
 
@@ -230,9 +235,11 @@ export default function TokenInitializer() {
           } else if (isNetworkError && !is404Error) {
             console.warn("🌐 네트워크 오류 → 토큰 유지, 오프라인 모드");
             console.warn("💡 네트워크 연결을 확인해주세요");
+            initializedPaths.current.delete(currentPath);
           } else if (isServerError) {
             console.warn("🔧 서버 오류 → 토큰 유지, 나중에 재시도");
             console.warn("💡 서버에 일시적인 문제가 있습니다");
+            initializedPaths.current.delete(currentPath);
           } else {
             console.error("❌ 알 수 없는 오류 → 상태 초기화 후 메시지 모달 표시");
             console.error("💡 예상치 못한 오류가 발생했습니다");
@@ -240,6 +247,7 @@ export default function TokenInitializer() {
             resetAccessToken();
             resetAuthChecked();
             apolloClient.clearStore();
+            initializedPaths.current.add(currentPath);
             
             setChecked(true);
 

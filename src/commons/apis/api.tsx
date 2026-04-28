@@ -9,6 +9,7 @@ import {
   clearAccessToken,
   getAccessToken,
   setAccessToken,
+  bumpAuthInitEpoch,
 } from "../libraries/token";
 
 type RetryConfig = InternalAxiosRequestConfig & { _retry?: boolean };
@@ -82,6 +83,7 @@ API.interceptors.response.use(
     // refresh 자체가 실패하면 끝
     if (url.endsWith("/auth/refresh")) {
       clearAccessToken();
+      bumpAuthInitEpoch();
       return Promise.reject(error);
     }
 
@@ -108,6 +110,7 @@ API.interceptors.response.use(
           // })
           .catch((err: unknown) => {
             clearAccessToken();
+            bumpAuthInitEpoch();
             // ⚠️ 화면 알림은 여기서 하지 않습니다.
             throw err;
           })
