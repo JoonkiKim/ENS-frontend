@@ -266,7 +266,11 @@ export default function MyPage() {
   };
 
   // 로그인한 유저 데이터 조회 (항상 실행하여 role 확인)
-  const { data: loginUserData, loading: loginLoading } = useQuery(
+  const {
+    data: loginUserData,
+    loading: loginLoading,
+    error: loginUserError,
+  } = useQuery(
     FETCH_LOGIN_USER,
     {
       fetchPolicy: "network-only",
@@ -1380,6 +1384,11 @@ export default function MyPage() {
         <div style={{ padding: "40px", textAlign: "center" }}>로딩 중...</div>
       </S.Container>
     );
+  }
+
+  // 인증 실패/사용자 미존재 시에는 본문 렌더를 막고 TokenInitializer 모달 흐름에 맡김
+  if (loginUserError || !user) {
+    return null;
   }
 
   return (
