@@ -1,13 +1,14 @@
-import { RightCircleFilled } from '@ant-design/icons';
-import styled from '@emotion/styled';
-import { DisclosureButtonIcon } from '../../../commons/libraries/DisclosureButtonIcon';
+import { RightCircleFilled } from "@ant-design/icons";
+import styled from "@emotion/styled";
+import { DisclosureButtonIcon } from "../../../commons/libraries/DisclosureButtonIcon";
 
 export const Container = styled.div`
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
   background-color: white;
-  font-family: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: "Inter", "Noto Sans KR", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
   min-height: 100vh;
 `;
 
@@ -72,7 +73,7 @@ export const NavItem = styled.a`
 export const Hero = styled.section`
   position: relative;
   height: 586px;
-  background-image: url('/images/log-in-bg.png');
+  background-image: url("/images/log-in-bg.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -89,7 +90,7 @@ export const HeroBackground = styled.div`
   opacity: 0.15;
   overflow: hidden;
   pointer-events: none;
-  background-image: url('/images/log-in-bg.png');
+  background-image: url("/images/log-in-bg.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -105,7 +106,7 @@ export const HeroContent = styled.div`
 `;
 
 export const HeroTitle = styled.h1`
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 72px;
   font-weight: 700;
   color: #303030;
@@ -121,7 +122,7 @@ export const HeroTitle = styled.h1`
 `;
 
 export const HeroDescription = styled.p`
-  font-family: 'Inter', 'Noto Sans KR', sans-serif;
+  font-family: "Inter", "Noto Sans KR", sans-serif;
   font-size: 16px;
   color: rgba(30, 30, 30, 0.7);
   text-align: center;
@@ -139,10 +140,94 @@ export const ButtonGroup = styled.div`
   display: flex;
   gap: 16px;
   align-items: center;
-  
 `;
 
-export const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
+export const LoggedInPanel = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+`;
+
+export const CurrentUserCard = styled.div`
+  min-width: 186px;
+  height: 57px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid #ffb700;
+`;
+
+export const UserAvatar = styled.div`
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #e4e4e7;
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #c5c5c5;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    width: 14px;
+    height: 8px;
+    border-radius: 10px 10px 0 0;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #c5c5c5;
+  }
+`;
+
+export const CurrentUserText = styled.span`
+  font-size: 14px;
+  color: #2c2c2c;
+  letter-spacing: -0.4px;
+  margin-left: 8px;
+`;
+
+export const LogoutActionButton = styled.button`
+  min-width: 204px;
+  height: 40px;
+  padding: 0 16px;
+  margin-top: 8px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(245, 245, 245, 0.8);
+  color: #2c2c2c;
+  font-size: 16px;
+  letter-spacing: -0.48px;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: rgba(245, 245, 245, 1);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+`;
+
+export const Button = styled.button<{ variant?: "primary" | "secondary" }>`
   padding: 12px;
   font-size: 16px;
   border-radius: 8px;
@@ -153,7 +238,7 @@ export const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
   box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.1);
 
   ${({ variant }) =>
-    variant === 'primary'
+    variant === "primary"
       ? `
     background: #2c2c2c;
     color: #f5f5f5;
@@ -210,8 +295,6 @@ export const CardGrid = styled.div`
   flex-direction: row;
   justify-content: space-between;
   margin-bottom: 48px;
-
-
 `;
 
 export const Card = styled.div`
@@ -360,7 +443,6 @@ export const EmptyStateMessage = styled.div`
   font-size: 16px;
   color: #b3b3b3;
   line-height: 1.4;
-
 `;
 
 // Footer Styles
@@ -461,7 +543,6 @@ export const ArrowButton = styled.button`
   justify-content: center;
   cursor: pointer;
   transition: background 0.2s;
-
 
   &:hover {
     background: rgba(0, 0, 0, 0.1);

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRecoilValue } from 'recoil';
-import { useQuery } from '@apollo/client';
+import { useApolloClient, useMutation, useQuery } from '@apollo/client';
 import * as S from './mainPage.style';
 
 import { DisclosureButtonIcon } from '../../../commons/libraries/DisclosureButtonIcon';
@@ -11,7 +11,12 @@ import LoginModal from '../modals/loginModal';
 import AgreeModal from '../modals/agreeModal';
 import SignUpModal from '../modals/signUpModal';
 import { accessTokenState, authCheckedState } from '../../../commons/stores';
-import { FETCH_ALL_BOARDS } from '../../../commons/apis/graphql-queries';
+import {
+  FETCH_ALL_BOARDS,
+  FETCH_LOGIN_USER,
+  LOGOUT,
+} from '../../../commons/apis/graphql-queries';
+import { bumpAuthInitEpoch, clearAccessToken } from '../../../commons/libraries/token';
 
 // Global Styles
 
@@ -19,6 +24,7 @@ import { FETCH_ALL_BOARDS } from '../../../commons/apis/graphql-queries';
 
 
 export default function Dashboard() {
+  const apolloClient = useApolloClient();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isAgreeModalOpen, setIsAgreeModalOpen] = useState(false);
   const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
@@ -36,6 +42,11 @@ export default function Dashboard() {
     skip: !isLoggedIn, // 로그인하지 않았으면 쿼리 실행 안 함
     fetchPolicy: 'cache-and-network',
   });
+  const { data: loginUserData } = useQuery(FETCH_LOGIN_USER, {
+    skip: !isLoggedIn,
+    fetchPolicy: 'network-only',
+  });
+  const [logoutMutation, { loading: logoutLoading }] = useMutation(LOGOUT);
 
   // 최신 게시글 3개 가져오기 (createdAt 기준 내림차순)
   const latestBoards = boardsData?.fetchAllBoards
@@ -60,6 +71,25 @@ export default function Dashboard() {
     'ETC': '기타',
   };
 
+  const loginUser = loginUserData?.fetchLoginUser;
+  const currentCompany = loginUser?.careers?.find(
+    (career: { isCurrent?: boolean; company?: string }) =>
+      !!career?.isCurrent && !!career?.company?.trim()
+  )?.company?.trim();
+
+  const handleLogout = async () => {
+    try {
+      await logoutMutation();
+    } catch (error) {
+      // 서버 로그아웃 실패 시에도 클라이언트 상태는 정리
+      console.warn('logout mutation failed:', error);
+    } finally {
+      clearAccessToken();
+      bumpAuthInitEpoch();
+      await apolloClient.clearStore();
+    }
+  };
+
   return (
     <>
  
@@ -77,6 +107,19 @@ export default function Dashboard() {
                 <S.Button variant="secondary" onClick={() => setIsLoginModalOpen(true)}>로그인</S.Button>
                 <S.Button variant="primary" onClick={() => setIsAgreeModalOpen(true)}>회원가입</S.Button>
               </S.ButtonGroup>
+            )}
+            {isLoggedIn && (
+              <S.LoggedInPanel>
+                <S.CurrentUserCard>
+                  <S.UserAvatar />
+                  <S.CurrentUserText>
+                    {`${loginUserData?.fetchLoginUser?.generation ?? ''}기 ${loginUserData?.fetchLoginUser?.name ?? ''}`}
+                  </S.CurrentUserText>
+                </S.CurrentUserCard>
+                <S.LogoutActionButton onClick={handleLogout} disabled={logoutLoading}>
+                  {logoutLoading ? '로그아웃 중...' : '로그아웃'}
+                </S.LogoutActionButton>
+              </S.LoggedInPanel>
             )}
           </S.HeroContent>
         </S.Hero>
@@ -109,8 +152,11 @@ export default function Dashboard() {
                           />
                         </S.Avatar>
                         <S.UserInfo>
-                          <S.UserName>홍길동</S.UserName>
-                          <S.UserDetails>ENS 00기 · 00 재직 중</S.UserDetails>
+                          <S.UserName>{loginUser?.name ?? '-'}</S.UserName>
+                          <S.UserDetails>
+                            {`ENS ${loginUser?.generation ?? '-'}기`}
+                            {currentCompany ? ` · ${currentCompany} 재직 중` : ''}
+                          </S.UserDetails>
                         </S.UserInfo>
                       </S.AvatarBlock>
                     </S.Card>

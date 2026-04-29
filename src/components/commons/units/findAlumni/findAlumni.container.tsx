@@ -55,23 +55,12 @@ interface User {
   }>;
 }
 
-/** 표시용 경력: isCurrent 우선, 없으면 종료일 미입력·시작일 최근 순 */
+/** 표시용 경력: 현재 재직 중인 경력만 사용 */
 function getDisplayCareer(user: User) {
   const list = user.careers;
   if (!list?.length) return undefined;
 
-  const current = list.find((c) => c.isCurrent);
-  if (current) return current;
-
-  return [...list].sort((a, b) => {
-    const aOpen = a.endDate == null ? 1 : 0;
-    const bOpen = b.endDate == null ? 1 : 0;
-    if (aOpen !== bOpen) return bOpen - aOpen;
-
-    const aTime = a.startDate != null ? new Date(a.startDate).getTime() : 0;
-    const bTime = b.startDate != null ? new Date(b.startDate).getTime() : 0;
-    return bTime - aTime;
-  })[0];
+  return list.find((c) => c.isCurrent);
 }
 
 export default function AlumniSearch() {

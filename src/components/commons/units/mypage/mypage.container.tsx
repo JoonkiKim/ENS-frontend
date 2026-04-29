@@ -596,6 +596,18 @@ export default function MyPage() {
     }));
   };
 
+  // 전공 필드 삭제 함수
+  const handleRemoveMajor = (majorIndex: number, fieldId: number) => {
+    if (majorFields.length <= 1) return;
+
+    removeMajor(majorIndex);
+    setMajorSearchStates((prev) => {
+      const next = { ...prev };
+      delete next[fieldId];
+      return next;
+    });
+  };
+
   // 전공 검색 핸들러
   const handleMajorSearch = (
     majorIndex: number,
@@ -1714,6 +1726,26 @@ export default function MyPage() {
                             <circle cx="10" cy="10" r="9.5" stroke="#FFB700" />
                           </svg>
                         </S.AddButton>
+                      )}
+                      {index > 0 && (
+                        <S.RemoveButton
+                          type="button"
+                          disabled={majorFields.length <= 1}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleRemoveMajor(index, field.id);
+                          }}
+                        >
+                          <svg viewBox="0 0 20 20" fill="none">
+                            <path
+                              d="M5 9.90196H15"
+                              stroke="#B3B3B3"
+                              strokeWidth="1.5"
+                            />
+                            <circle cx="10" cy="10" r="9.5" stroke="#B3B3B3" />
+                          </svg>
+                        </S.RemoveButton>
                       )}
                     </S.MajorInputWrapper>
                   );

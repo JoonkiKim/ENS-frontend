@@ -494,6 +494,32 @@ export const AddButton = styled.button`
   }
 `;
 
+export const RemoveButton = styled.button`
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+`;
+
 // Career Section
 export const CareerNote = styled.p`
   font-size: 14px;

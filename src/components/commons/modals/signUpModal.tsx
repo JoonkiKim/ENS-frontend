@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
-import styled from '@emotion/styled';
-import { useMutation, useQuery } from '@apollo/client';
-import { CREATE_USER, FETCH_ALL_MAJORS } from '../../../commons/apis/graphql-queries';
-import SignUpAlert from './signUpAlert';
-import MessageModal from './messageModal';
-
-
+import { useState, useEffect } from "react";
+import styled from "@emotion/styled";
+import { useMutation, useQuery } from "@apollo/client";
+import {
+  CREATE_USER,
+  FETCH_ALL_MAJORS,
+} from "../../../commons/apis/graphql-queries";
+import SignUpAlert from "./signUpAlert";
+import MessageModal from "./messageModal";
 
 // Modal Overlay
 const ModalOverlay = styled.div`
@@ -27,7 +28,7 @@ const ModalContainer = styled.div`
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  font-family: 'Inter', 'Noto Sans KR', sans-serif;
+  font-family: "Inter", "Noto Sans KR", sans-serif;
   position: relative;
 `;
 
@@ -61,10 +62,10 @@ const CloseButton = styled.button`
   background: transparent;
   cursor: pointer;
   padding: 0;
-  
+
   &::before,
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     width: 14px;
     height: 1px;
@@ -72,15 +73,15 @@ const CloseButton = styled.button`
     top: 50%;
     left: 0;
   }
-  
+
   &::before {
     transform: rotate(45deg);
   }
-  
+
   &::after {
     transform: rotate(-45deg);
   }
-  
+
   &:hover::before,
   &:hover::after {
     background: #999;
@@ -96,11 +97,10 @@ const ProgressContainer = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
 `;
 
 const StepWrapper = styled.div`
-width: 100%;
+  width: 100%;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -110,8 +110,8 @@ width: 100%;
 `;
 
 const StepLabel = styled.div`
-width:20%;
-text-align: center;
+  width: 20%;
+  text-align: center;
   font-size: 12px;
   color: #b3b3b3;
   letter-spacing: -0.24px;
@@ -119,25 +119,25 @@ text-align: center;
 `;
 
 const StepIndicatorConnectorWrapper = styled.div`
-    width: 100%;
-display: flex;
+  width: 100%;
+  display: flex;
   align-items: center;
   gap: 0;
   flex: 1;
 `;
 
 const StepIndicatorWrapper = styled.div`
- width:20%;
- display: flex;
- align-items: center;
- justify-content: center;
+  width: 20%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const StepIndicator = styled.div<{ active?: boolean }>`
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  border: 3px solid ${({ active }) => (active ? '#ffb700' : '#e4e4e7')};
+  border: 3px solid ${({ active }) => (active ? "#ffb700" : "#e4e4e7")};
   background: white;
   flex-shrink: 0;
 `;
@@ -228,7 +228,7 @@ const ProfilePlaceholder = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   svg {
     width: 100%;
     height: 100%;
@@ -249,11 +249,11 @@ const CameraButton = styled.label`
   align-items: center;
   justify-content: center;
   z-index: 999;
-  
+
   &:hover {
     background: #f5f5f5;
   }
-  
+
   svg {
     opacity: 0.4;
   }
@@ -295,11 +295,11 @@ const InputField = styled.input`
   font-size: 14px;
   color: #2c2c2c;
   letter-spacing: -0.28px;
-  
+
   &::placeholder {
     color: #b3b3b3;
   }
-  
+
   &:focus {
     outline: none;
     border-color: #ffb700;
@@ -345,8 +345,8 @@ const EmailDomainSelectField = styled.div<{ isClickable?: boolean }>`
   align-items: center;
   position: relative;
   background: white;
-  cursor: ${({ isClickable }) => (isClickable ? 'pointer' : 'default')};
-  
+  cursor: ${({ isClickable }) => (isClickable ? "pointer" : "default")};
+
   &:focus-within {
     border-color: #ffb700;
   }
@@ -364,20 +364,20 @@ const EmailDomainDropdown = styled.div`
   overflow-y: auto;
   z-index: 100;
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
-  
+
   &::-webkit-scrollbar {
     width: 6px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: #d9d9d9;
     border-radius: 3px;
   }
-  
+
   &::-webkit-scrollbar-thumb:hover {
     background: #b3b3b3;
   }
@@ -390,15 +390,15 @@ const EmailDomainDropdownItem = styled.div`
   letter-spacing: -0.28px;
   cursor: pointer;
   transition: background-color 0.2s;
-  
+
   &:hover {
     background-color: #e5e5e5;
   }
-  
+
   &:first-of-type {
     border-radius: 3px 3px 0 0;
   }
-  
+
   &:last-of-type {
     border-radius: 0 0 3px 3px;
   }
@@ -409,21 +409,21 @@ export const DropdownIcon = styled.div`
   right: 15px;
   top: 50%;
   transform: translateY(-50%);
-  display:flex;
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 15px;
   height: 11px;
   pointer-events: none;
-  
+
   svg {
     width: 70%;
     height: 70%;
   }
-     path {
+  path {
     stroke: #ffb700 !important;
-     stroke-width: 4;
+    stroke-width: 4;
   }
 `;
 
@@ -438,8 +438,8 @@ const StudentIdSelectField = styled.div<{ isClickable?: boolean }>`
   align-items: center;
   position: relative;
   background: white;
-  cursor: ${({ isClickable }) => (isClickable ? 'pointer' : 'default')};
-  
+  cursor: ${({ isClickable }) => (isClickable ? "pointer" : "default")};
+
   &:focus-within {
     border-color: #ffb700;
   }
@@ -472,8 +472,8 @@ const GenerationSelectField = styled.div<{ isClickable?: boolean }>`
   align-items: center;
   position: relative;
   background: white;
-  cursor: ${({ isClickable }) => (isClickable ? 'pointer' : 'default')};
-  
+  cursor: ${({ isClickable }) => (isClickable ? "pointer" : "default")};
+
   &:focus-within {
     border-color: #ffb700;
   }
@@ -503,20 +503,20 @@ const GenerationDropdown = styled.div`
   overflow-y: auto;
   z-index: 100;
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
-  
+
   &::-webkit-scrollbar {
     width: 6px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: #d9d9d9;
     border-radius: 3px;
   }
-  
+
   &::-webkit-scrollbar-thumb:hover {
     background: #b3b3b3;
   }
@@ -529,15 +529,15 @@ const GenerationDropdownItem = styled.div`
   letter-spacing: -0.28px;
   cursor: pointer;
   transition: background-color 0.2s;
-  
+
   &:hover {
     background-color: #e5e5e5;
   }
-  
+
   &:first-of-type {
     border-radius: 3px 3px 0 0;
   }
-  
+
   &:last-of-type {
     border-radius: 0 0 3px 3px;
   }
@@ -555,20 +555,20 @@ const StudentIdDropdown = styled.div`
   overflow-y: auto;
   z-index: 100;
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
-  
+
   &::-webkit-scrollbar {
     width: 6px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: #d9d9d9;
     border-radius: 3px;
   }
-  
+
   &::-webkit-scrollbar-thumb:hover {
     background: #b3b3b3;
   }
@@ -581,15 +581,15 @@ const StudentIdDropdownItem = styled.div`
   letter-spacing: -0.28px;
   cursor: pointer;
   transition: background-color 0.2s;
-  
+
   &:hover {
     background-color: #e5e5e5;
   }
-  
+
   &:first-of-type {
     border-radius: 3px 3px 0 0;
   }
-  
+
   &:last-of-type {
     border-radius: 0 0 3px 3px;
   }
@@ -599,25 +599,23 @@ const StudentIdDropdownItem = styled.div`
 const ButtonContainer = styled.div`
   display: flex;
   gap: 16px;
-//   padding: 0 22px 30px;
-margin-top: 18px;
+  //   padding: 0 22px 30px;
+  margin-top: 18px;
 `;
-
-
 
 const SubmitButton = styled.button<{ disabled?: boolean }>`
   flex: 1;
   height: 45px;
-  background: ${({ disabled }) => (disabled ? '#e4e4e7' : '#ffb700')};
+  background: ${({ disabled }) => (disabled ? "#e4e4e7" : "#ffb700")};
   border: none;
   border-radius: 3px;
   font-size: 14px;
   font-weight: 500;
   color: white;
   letter-spacing: -0.28px;
-  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
+  cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
   transition: background 0.2s;
-  
+
   &:hover:not(:disabled) {
     background: #e6a500;
   }
@@ -651,7 +649,7 @@ export const MajorInputWrapper = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  
+
   input {
     flex: 1; /* flex-shrink: 0 대신 flex: 1 사용 */
     min-width: 0; /* flex item이 축소될 수 있도록 */
@@ -669,7 +667,7 @@ export const Input = styled.input<{ active?: boolean }>`
   width: 100%; /* auto에서 100%로 변경 */
   height: 51px;
   padding: 0 18px;
-  border: 1px solid ${({ active }) => (active ? '#ffb700' : '#d9d9d9')};
+  border: 1px solid ${({ active }) => (active ? "#ffb700" : "#d9d9d9")};
   border-radius: 3px;
   font-size: 14px;
   color: #2c2c2c;
@@ -677,15 +675,15 @@ export const Input = styled.input<{ active?: boolean }>`
   outline: none;
   background: white;
   box-sizing: border-box; /* padding 포함한 너비 계산 */
-  
+
   &::placeholder {
     color: #b3b3b3;
   }
-  
+
   &:focus {
     border-color: #ffb700;
   }
-  
+
   &:disabled {
     background: #f5f5f5;
   }
@@ -704,7 +702,7 @@ export const AddButton = styled.button`
   flex-shrink: 0;
   position: relative;
   z-index: 1;
-  
+
   svg {
     width: 100%;
     height: 100%;
@@ -740,73 +738,86 @@ export default function SignUpModal({
   onSubmit,
 }: SignUpModalProps) {
   const [formData, setFormData] = useState<SignUpFormData>({
-    username: '',
-    password: '',
-    passwordConfirm: '',
-    name: '',
-    generation: '',
-    authCode: '',
-    phone: '',
-    emailLocal: '',
-    emailDomain: '',
-    studentId: '',
-    major: '',
+    username: "",
+    password: "",
+    passwordConfirm: "",
+    name: "",
+    generation: "",
+    authCode: "",
+    phone: "",
+    emailLocal: "",
+    emailDomain: "",
+    studentId: "",
+    major: "",
   });
 
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isStudentIdDropdownOpen, setIsStudentIdDropdownOpen] = useState(false);
-  const [isEmailDomainDropdownOpen, setIsEmailDomainDropdownOpen] = useState(false);
-  const [isGenerationDropdownOpen, setIsGenerationDropdownOpen] = useState(false);
+  const [isEmailDomainDropdownOpen, setIsEmailDomainDropdownOpen] =
+    useState(false);
+  const [isGenerationDropdownOpen, setIsGenerationDropdownOpen] =
+    useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('');
-  
+  const [alertMessage, setAlertMessage] = useState("");
+
   // 회원가입 성공/실패 모달 상태
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [isFailureModalOpen, setIsFailureModalOpen] = useState(false);
-  const [failureMessage, setFailureMessage] = useState('');
-  
+  const [failureMessage, setFailureMessage] = useState("");
+
   // 이메일 도메인 직접 입력 모드 상태
   const [isEmailDomainCustom, setIsEmailDomainCustom] = useState(false);
-  
+
   // 전공 필드 상태 관리
   const [majors, setMajors] = useState([
     {
       id: 1,
-      value: '',
+      value: "",
       majorId: undefined as string | undefined,
     },
   ]);
 
   // 전공 검색 상태 관리 (각 전공 필드별로 관리)
-  const [majorSearchStates, setMajorSearchStates] = useState<Record<number, {
-    searchQuery: string;
-    isDropdownOpen: boolean;
-    filteredMajors: Array<{ id: string; name: string }>;
-  }>>({});
+  const [majorSearchStates, setMajorSearchStates] = useState<
+    Record<
+      number,
+      {
+        searchQuery: string;
+        isDropdownOpen: boolean;
+        filteredMajors: Array<{ id: string; name: string }>;
+      }
+    >
+  >({});
 
   // CREATE_USER 뮤테이션
   const [createUser, { loading: isCreatingUser }] = useMutation(CREATE_USER);
 
   // 전공 목록 조회 (캐시 우선 사용)
-  const { data: majorsData, error, loading } = useQuery<{ fetchAllMajors: Array<{ id: string; name: string; isCustom: boolean }> }>(FETCH_ALL_MAJORS, {
+  const {
+    data: majorsData,
+    error,
+    loading,
+  } = useQuery<{
+    fetchAllMajors: Array<{ id: string; name: string; isCustom: boolean }>;
+  }>(FETCH_ALL_MAJORS, {
     skip: !isOpen,
-    fetchPolicy: 'cache-first',
+    fetchPolicy: "cache-first",
     onError: (error) => {
-      console.error('fetchAllMajors 에러:', error);
-      console.error('GraphQL 에러:', error.graphQLErrors);
-      console.error('네트워크 에러:', error.networkError);
+      console.error("fetchAllMajors 에러:", error);
+      console.error("GraphQL 에러:", error.graphQLErrors);
+      console.error("네트워크 에러:", error.networkError);
     },
   });
 
   // 디버깅용 로그
   useEffect(() => {
     if (!isOpen) return;
-    console.log('=== fetchAllMajors 디버깅 ===');
-    console.log('majorsData:', majorsData);
-    console.log('error:', error);
-    console.log('loading:', loading);
+    console.log("=== fetchAllMajors 디버깅 ===");
+    console.log("majorsData:", majorsData);
+    console.log("error:", error);
+    console.log("loading:", loading);
     if (error) {
-      console.error('에러 상세:', {
+      console.error("에러 상세:", {
         graphQLErrors: error.graphQLErrors,
         networkError: error.networkError,
         message: error.message,
@@ -815,7 +826,11 @@ export default function SignUpModal({
   }, [majorsData, error, loading]);
 
   // 전공 목록 (API에서 불러온 데이터)
-  const majorList = majorsData?.fetchAllMajors?.map(major => ({ id: major.id, name: major.name })) || [];
+  const majorList =
+    majorsData?.fetchAllMajors?.map((major) => ({
+      id: major.id,
+      name: major.name,
+    })) || [];
 
   // 기수 목록 생성 (40기부터 1기까지 역순)
   const generations = Array.from({ length: 40 }, (_, i) => 40 - i);
@@ -824,21 +839,21 @@ export default function SignUpModal({
   const studentIds = [2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019];
 
   // 이메일 도메인 목록
-  const emailDomains = ['gmail.com', 'naver.com', '기타'];
+  const emailDomains = ["gmail.com", "naver.com", "기타"];
 
   // 드롭다운 외부 클릭 시 닫기
   useEffect(() => {
     if (!isOpen) return;
-    
+
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      
-      const isDropdownElement = 
-        target.closest('[data-dropdown-container]') ||
-        target.closest('[data-dropdown-item]') ||
-        target.closest('[data-dropdown-field]') ||
-        target.closest('[data-major-search]');
-      
+
+      const isDropdownElement =
+        target.closest("[data-dropdown-container]") ||
+        target.closest("[data-dropdown-item]") ||
+        target.closest("[data-dropdown-field]") ||
+        target.closest("[data-major-search]");
+
       if (!isDropdownElement) {
         if (isGenerationDropdownOpen) {
           setIsGenerationDropdownOpen(false);
@@ -850,9 +865,9 @@ export default function SignUpModal({
           setIsEmailDomainDropdownOpen(false);
         }
         // 전공 검색 드롭다운 닫기
-        setMajorSearchStates(prev => {
+        setMajorSearchStates((prev) => {
           const newState = { ...prev };
-          Object.keys(newState).forEach(key => {
+          Object.keys(newState).forEach((key) => {
             newState[Number(key)] = {
               ...newState[Number(key)],
               isDropdownOpen: false,
@@ -863,17 +878,26 @@ export default function SignUpModal({
       }
     };
 
-    const hasOpenDropdown = isGenerationDropdownOpen || isStudentIdDropdownOpen || isEmailDomainDropdownOpen ||
-      Object.values(majorSearchStates).some(state => state.isDropdownOpen);
+    const hasOpenDropdown =
+      isGenerationDropdownOpen ||
+      isStudentIdDropdownOpen ||
+      isEmailDomainDropdownOpen ||
+      Object.values(majorSearchStates).some((state) => state.isDropdownOpen);
 
     if (hasOpenDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isGenerationDropdownOpen, isStudentIdDropdownOpen, isEmailDomainDropdownOpen, isOpen, majorSearchStates]);
+  }, [
+    isGenerationDropdownOpen,
+    isStudentIdDropdownOpen,
+    isEmailDomainDropdownOpen,
+    isOpen,
+    majorSearchStates,
+  ]);
 
   // 모달이 열릴 때 body 스크롤 막기 (스크롤바는 유지)
   useEffect(() => {
@@ -881,61 +905,67 @@ export default function SignUpModal({
       // 현재 스크롤 위치 저장
       const scrollY = window.scrollY;
       // 스크롤바는 유지하되 스크롤만 막기
-      document.body.style.overflowY = 'scroll';
-      document.body.style.position = 'fixed';
+      document.body.style.overflowY = "scroll";
+      document.body.style.position = "fixed";
       document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
-      
+      document.body.style.width = "100%";
+
       // 스크롤 이벤트 막기 (모달 외부만)
       const preventScroll = (e: Event) => {
         e.preventDefault();
         window.scrollTo(0, scrollY);
       };
-      
+
       // wheel 이벤트 처리 (모달 내부는 허용)
       const preventWheel = (e: WheelEvent) => {
         const target = e.target as HTMLElement;
-        const modalContainer = document.querySelector('[data-modal-container]') as HTMLElement;
-        
+        const modalContainer = document.querySelector(
+          "[data-modal-container]"
+        ) as HTMLElement;
+
         // 모달 내부인지 확인
         if (modalContainer && modalContainer.contains(target)) {
           // 모달 내부면 스크롤 허용
           return;
         }
-        
+
         // 모달 외부면 스크롤 막기
         e.preventDefault();
         window.scrollTo(0, scrollY);
       };
-      
+
       // touchmove 이벤트 처리 (모달 내부는 허용)
       const preventTouchMove = (e: TouchEvent) => {
         const target = e.target as HTMLElement;
-        const modalContainer = document.querySelector('[data-modal-container]') as HTMLElement;
-        
+        const modalContainer = document.querySelector(
+          "[data-modal-container]"
+        ) as HTMLElement;
+
         // 모달 내부인지 확인
         if (modalContainer && modalContainer.contains(target)) {
           // 모달 내부면 스크롤 허용
           return;
         }
-        
+
         // 모달 외부면 스크롤 막기
         e.preventDefault();
       };
-      
-      window.addEventListener('scroll', preventScroll, { passive: false });
-      document.addEventListener('wheel', preventWheel, { passive: false });
-      document.addEventListener('touchmove', preventTouchMove, { passive: false });
-      
+
+      window.addEventListener("scroll", preventScroll, { passive: false });
+      document.addEventListener("wheel", preventWheel, { passive: false });
+      document.addEventListener("touchmove", preventTouchMove, {
+        passive: false,
+      });
+
       return () => {
         // 모달이 닫힐 때 스크롤 복원
-        window.removeEventListener('scroll', preventScroll);
-        document.removeEventListener('wheel', preventWheel);
-        document.removeEventListener('touchmove', preventTouchMove);
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
-        document.body.style.overflowY = '';
+        window.removeEventListener("scroll", preventScroll);
+        document.removeEventListener("wheel", preventWheel);
+        document.removeEventListener("touchmove", preventTouchMove);
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.width = "";
+        document.body.style.overflowY = "";
         window.scrollTo(0, scrollY);
       };
     }
@@ -965,12 +995,16 @@ export default function SignUpModal({
   };
 
   // 전공 검색 핸들러
-  const handleMajorSearch = (majorIndex: number, fieldId: number, query: string) => {
-    const filtered = majorList.filter(major => 
+  const handleMajorSearch = (
+    majorIndex: number,
+    fieldId: number,
+    query: string
+  ) => {
+    const filtered = majorList.filter((major) =>
       major.name.toLowerCase().includes(query.toLowerCase())
     );
-    
-    setMajorSearchStates(prev => ({
+
+    setMajorSearchStates((prev) => ({
       ...prev,
       [fieldId]: {
         searchQuery: query,
@@ -978,19 +1012,31 @@ export default function SignUpModal({
         filteredMajors: filtered,
       },
     }));
-    
+
     // majors 상태 업데이트
-    setMajors(prev => prev.map((major, idx) => 
-      idx === majorIndex ? { ...major, value: query, majorId: undefined } : major
-    ));
+    setMajors((prev) =>
+      prev.map((major, idx) =>
+        idx === majorIndex
+          ? { ...major, value: query, majorId: undefined }
+          : major
+      )
+    );
   };
 
   // 전공 선택 핸들러
-  const handleSelectMajor = (majorIndex: number, fieldId: number, major: { id: string; name: string }) => {
-    setMajors(prev => prev.map((majorItem, idx) => 
-      idx === majorIndex ? { ...majorItem, value: major.name, majorId: major.id } : majorItem
-    ));
-    setMajorSearchStates(prev => ({
+  const handleSelectMajor = (
+    majorIndex: number,
+    fieldId: number,
+    major: { id: string; name: string }
+  ) => {
+    setMajors((prev) =>
+      prev.map((majorItem, idx) =>
+        idx === majorIndex
+          ? { ...majorItem, value: major.name, majorId: major.id }
+          : majorItem
+      )
+    );
+    setMajorSearchStates((prev) => ({
       ...prev,
       [fieldId]: {
         searchQuery: major.name,
@@ -1001,12 +1047,16 @@ export default function SignUpModal({
   };
 
   // 전공 입력 필드 포커스 핸들러
-  const handleMajorInputFocus = (majorIndex: number, fieldId: number, currentValue: string) => {
-    const filtered = majorList.filter(major => 
+  const handleMajorInputFocus = (
+    majorIndex: number,
+    fieldId: number,
+    currentValue: string
+  ) => {
+    const filtered = majorList.filter((major) =>
       major.name.toLowerCase().includes(currentValue.toLowerCase())
     );
-    
-    setMajorSearchStates(prev => ({
+
+    setMajorSearchStates((prev) => ({
       ...prev,
       [fieldId]: {
         searchQuery: currentValue,
@@ -1022,13 +1072,16 @@ export default function SignUpModal({
       return text;
     }
 
-    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    const regex = new RegExp(
+      `(${query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`,
+      "gi"
+    );
     const parts = text.split(regex);
 
     return parts.map((part, index) => {
       if (regex.test(part)) {
         return (
-          <span key={index} style={{ color: '#ffb700', fontWeight: 600 }}>
+          <span key={index} style={{ color: "#ffb700", fontWeight: 600 }}>
             {part}
           </span>
         );
@@ -1040,67 +1093,70 @@ export default function SignUpModal({
   const handleSubmit = async () => {
     // 유효성 검사
     if (!formData.username) {
-      setAlertMessage('아이디를 입력해주세요.');
+      setAlertMessage("아이디를 입력해주세요.");
       setIsAlertOpen(true);
       return;
     }
 
     if (!formData.password) {
-      setAlertMessage('비밀번호를 입력해주세요.');
+      setAlertMessage("비밀번호를 입력해주세요.");
       setIsAlertOpen(true);
       return;
     }
 
     if (formData.password !== formData.passwordConfirm) {
-      setAlertMessage('비밀번호가 일치하지 않습니다.');
+      setAlertMessage("비밀번호가 일치하지 않습니다.");
       setIsAlertOpen(true);
       return;
     }
 
     if (!formData.name) {
-      setAlertMessage('이름을 입력해주세요.');
+      setAlertMessage("이름을 입력해주세요.");
       setIsAlertOpen(true);
       return;
     }
 
     if (!formData.generation) {
-      setAlertMessage('기수를 입력해주세요.');
+      setAlertMessage("기수를 입력해주세요.");
       setIsAlertOpen(true);
       return;
     }
 
     if (!formData.studentId) {
-      setAlertMessage('학번을 선택해주세요.');
+      setAlertMessage("학번을 선택해주세요.");
       setIsAlertOpen(true);
       return;
     }
 
     if (!formData.authCode?.trim()) {
-      setAlertMessage('인증번호를 입력해주세요.');
+      setAlertMessage("인증번호를 입력해주세요.");
       setIsAlertOpen(true);
       return;
     }
 
     // customId 형식 검증 (00기_ 형식)
     if (!formData.username.match(/^\d{2}기_/)) {
-      setAlertMessage('아이디는 "00기_이름" 형식으로 입력해주세요. (예: 01기_홍길동)');
+      setAlertMessage(
+        '아이디는 "00기_이름" 형식으로 입력해주세요. (예: 01기_홍길동)'
+      );
       setIsAlertOpen(true);
       return;
     }
 
     // 이메일 구성
-    const email = formData.emailLocal && formData.emailDomain 
-      ? `${formData.emailLocal}@${formData.emailDomain}` 
-      : null;
+    const email =
+      formData.emailLocal && formData.emailDomain
+        ? `${formData.emailLocal}@${formData.emailDomain}`
+        : null;
 
     // 전공 배열 구성 (빈 값 제외)
     const userMajors = majors
-      .filter(major => major.value.trim() !== '')
+      .filter((major) => major.value.trim() !== "")
       .map((major, index) => {
         const majorName = major.value.trim();
         // 전공 목록에서 찾기
-        const majorFromList = majorList.find(m => m.name === majorName);
-        
+        const majorFromList = majorList.find((m) => m.name === majorName);
+
         // 전공 목록에 있으면 majorId 사용, 없으면 customMajorName 사용
         if (major.majorId || majorFromList) {
           return {
@@ -1116,7 +1172,7 @@ export default function SignUpModal({
       });
 
     if (userMajors.length === 0) {
-      setAlertMessage('전공을 최소 1개 이상 입력해주세요.');
+      setAlertMessage("전공을 최소 1개 이상 입력해주세요.");
       setIsAlertOpen(true);
       return;
     }
@@ -1142,23 +1198,24 @@ export default function SignUpModal({
         },
       });
 
-      console.log('회원가입 성공:', result);
-      
+      console.log("회원가입 성공:", result);
+
       // 성공 시 부모 컴포넌트의 onSubmit 호출
       if (onSubmit) {
         onSubmit({ ...formData, profileImage: profileImage || undefined });
       }
-      
+
       // 성공 메시지 모달 표시 (모달 닫기 전에 먼저 표시)
       setIsSuccessModalOpen(true);
     } catch (error: any) {
-      console.error('회원가입 실패:', error);
-      
+      console.error("회원가입 실패:", error);
+
       // GraphQL 에러 메시지 추출
-      const errorMessage = error.graphQLErrors?.[0]?.message || 
-                          error.message || 
-                          '회원가입에 실패했습니다.';
-      
+      const errorMessage =
+        error.graphQLErrors?.[0]?.message ||
+        error.message ||
+        "회원가입에 실패했습니다.";
+
       setFailureMessage(errorMessage);
       setIsFailureModalOpen(true);
     }
@@ -1173,7 +1230,7 @@ export default function SignUpModal({
 
   // 기수 선택
   const handleSelectGeneration = (gen: number) => {
-    handleInputChange('generation', String(gen));
+    handleInputChange("generation", String(gen));
     setIsGenerationDropdownOpen(false);
   };
 
@@ -1186,7 +1243,7 @@ export default function SignUpModal({
 
   // 학번 선택
   const handleSelectStudentId = (id: number) => {
-    handleInputChange('studentId', String(id));
+    handleInputChange("studentId", String(id));
     setIsStudentIdDropdownOpen(false);
   };
 
@@ -1199,11 +1256,11 @@ export default function SignUpModal({
 
   // 이메일 도메인 선택
   const handleSelectEmailDomain = (domain: string) => {
-    if (domain === '기타') {
-      handleInputChange('emailDomain', ''); // 빈 값으로 설정
+    if (domain === "기타") {
+      handleInputChange("emailDomain", ""); // 빈 값으로 설정
       setIsEmailDomainCustom(true); // 직접 입력 모드 활성화
     } else {
-      handleInputChange('emailDomain', domain);
+      handleInputChange("emailDomain", domain);
       setIsEmailDomainCustom(false); // 직접 입력 모드 비활성화
     }
     setIsEmailDomainDropdownOpen(false);
@@ -1211,20 +1268,21 @@ export default function SignUpModal({
 
   // 전공 필드 추가 함수
   const handleAddMajor = () => {
-    const newId = majors.length > 0 ? Math.max(...majors.map(m => m.id)) + 1 : 1;
+    const newId =
+      majors.length > 0 ? Math.max(...majors.map((m) => m.id)) + 1 : 1;
     setMajors([
       ...majors,
       {
         id: newId,
-        value: '',
+        value: "",
         majorId: undefined,
       },
     ]);
     // 새 전공 필드의 검색 상태 초기화
-    setMajorSearchStates(prev => ({
+    setMajorSearchStates((prev) => ({
       ...prev,
       [newId]: {
-        searchQuery: '',
+        searchQuery: "",
         isDropdownOpen: false,
         filteredMajors: majorList,
       },
@@ -1233,7 +1291,6 @@ export default function SignUpModal({
 
   return (
     <>
-
       <ModalOverlay onClick={handleOverlayClick}>
         <ModalContainer data-modal-container>
           {/* Header */}
@@ -1257,7 +1314,6 @@ export default function SignUpModal({
                 <StepIndicator active />
               </StepIndicatorWrapper>
             </StepIndicatorConnectorWrapper>
-      
           </ProgressContainer>
 
           {/* Section Title */}
@@ -1266,7 +1322,7 @@ export default function SignUpModal({
           {/* Body */}
           <ModalBody>
             {/* Profile Upload */}
-            <ProfileUpload>
+            {/* <ProfileUpload>
               <ProfileImageWrapper>
                 {profileImage ? (
                   <ProfileImage src={profileImage} alt="Profile" />
@@ -1298,7 +1354,7 @@ export default function SignUpModal({
                   />
                 </CameraButton>
               </ProfileImageWrapper>
-            </ProfileUpload>
+            </ProfileUpload> */}
 
             {/* 아이디 */}
             <FormField>
@@ -1306,7 +1362,7 @@ export default function SignUpModal({
                 type="text"
                 placeholder="아이디 (ex. 00기_홍길동)"
                 value={formData.username}
-                onChange={(e) => handleInputChange('username', e.target.value)}
+                onChange={(e) => handleInputChange("username", e.target.value)}
               />
             </FormField>
 
@@ -1316,7 +1372,7 @@ export default function SignUpModal({
                 type="password"
                 placeholder="비밀번호"
                 value={formData.password}
-                onChange={(e) => handleInputChange('password', e.target.value)}
+                onChange={(e) => handleInputChange("password", e.target.value)}
               />
             </FormField>
 
@@ -1326,9 +1382,13 @@ export default function SignUpModal({
                 type="password"
                 placeholder="비밀번호 확인"
                 value={formData.passwordConfirm}
-                onChange={(e) => handleInputChange('passwordConfirm', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("passwordConfirm", e.target.value)
+                }
               />
-              <HelpText>8자리 이상의 대소문자, 숫자, 특수문자를 사용해 주세요.</HelpText>
+              <HelpText>
+                8자리 이상의 대소문자, 숫자, 특수문자를 사용해 주세요.
+              </HelpText>
             </FormField>
 
             {/* 이름 */}
@@ -1341,7 +1401,7 @@ export default function SignUpModal({
                 type="text"
                 placeholder="이름을 입력하세요"
                 value={formData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
+                onChange={(e) => handleInputChange("name", e.target.value)}
               />
             </FormField>
 
@@ -1352,7 +1412,7 @@ export default function SignUpModal({
                 <RequiredMark />
               </FieldLabel>
               <SelectWrapper>
-                <GenerationSelectField 
+                <GenerationSelectField
                   isClickable={true}
                   onClick={handleToggleGenerationDropdown}
                   data-dropdown-field
@@ -1360,11 +1420,17 @@ export default function SignUpModal({
                   {formData.generation ? (
                     <GenerationValue>{formData.generation}기</GenerationValue>
                   ) : (
-                    <GenerationPlaceholder>기수를 선택하세요</GenerationPlaceholder>
+                    <GenerationPlaceholder>
+                      기수를 선택하세요
+                    </GenerationPlaceholder>
                   )}
-                  <DropdownIcon style={{ position: 'absolute', right: '18px' }}>
+                  <DropdownIcon style={{ position: "absolute", right: "18px" }}>
                     <svg viewBox="0 0 15 11" fill="none">
-                      <path d="M1 1L7.5 9L14 1" stroke="#999999" strokeWidth="2" />
+                      <path
+                        d="M1 1L7.5 9L14 1"
+                        stroke="#999999"
+                        strokeWidth="2"
+                      />
                     </svg>
                   </DropdownIcon>
                   {isGenerationDropdownOpen && (
@@ -1397,7 +1463,7 @@ export default function SignUpModal({
                 type="text"
                 placeholder="부여된 인증번호를 입력하세요"
                 value={formData.authCode}
-                onChange={(e) => handleInputChange('authCode', e.target.value)}
+                onChange={(e) => handleInputChange("authCode", e.target.value)}
               />
             </FormField>
 
@@ -1411,7 +1477,7 @@ export default function SignUpModal({
                 type="tel"
                 placeholder="전화번호를 입력하세요"
                 value={formData.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
+                onChange={(e) => handleInputChange("phone", e.target.value)}
               />
             </FormField>
 
@@ -1426,32 +1492,45 @@ export default function SignUpModal({
                   type="text"
                   placeholder=""
                   value={formData.emailLocal}
-                  onChange={(e) => handleInputChange('emailLocal', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("emailLocal", e.target.value)
+                  }
                 />
                 <EmailAt>@</EmailAt>
                 <EmailDomainWrapper>
-                  <EmailDomainSelectField 
+                  <EmailDomainSelectField
                     isClickable={true}
                     onClick={handleToggleEmailDomainDropdown}
                     data-dropdown-field
                   >
-                    {isEmailDomainCustom || (formData.emailDomain && formData.emailDomain !== 'gmail.com' && formData.emailDomain !== 'naver.com') ? (
-                      <EmailInput 
-                        type="text" 
+                    {isEmailDomainCustom ||
+                    (formData.emailDomain &&
+                      formData.emailDomain !== "gmail.com" &&
+                      formData.emailDomain !== "naver.com") ? (
+                      <EmailInput
+                        type="text"
                         placeholder="직접 입력"
                         onClick={(e) => e.stopPropagation()}
                         value={formData.emailDomain}
-                        onChange={(e) => handleInputChange('emailDomain', e.target.value)}
-                        style={{ border: 'none', padding: 0, width: '100%' }}
+                        onChange={(e) =>
+                          handleInputChange("emailDomain", e.target.value)
+                        }
+                        style={{ border: "none", padding: 0, width: "100%" }}
                       />
                     ) : formData.emailDomain ? (
                       <SelectValue>{formData.emailDomain}</SelectValue>
                     ) : (
                       <SelectPlaceholder></SelectPlaceholder>
                     )}
-                    <DropdownIcon style={{ position: 'absolute', right: '10px' }}>
+                    <DropdownIcon
+                      style={{ position: "absolute", right: "10px" }}
+                    >
                       <svg viewBox="0 0 15 11" fill="none">
-                        <path d="M1 1L7.5 9L14 1" stroke="#999999" strokeWidth="2" />
+                        <path
+                          d="M1 1L7.5 9L14 1"
+                          stroke="#999999"
+                          strokeWidth="2"
+                        />
                       </svg>
                     </DropdownIcon>
                     {isEmailDomainDropdownOpen && (
@@ -1465,7 +1544,7 @@ export default function SignUpModal({
                               handleSelectEmailDomain(domain);
                             }}
                           >
-                            {domain === '기타' ? '직접 입력' : domain}
+                            {domain === "기타" ? "직접 입력" : domain}
                           </EmailDomainDropdownItem>
                         ))}
                       </EmailDomainDropdown>
@@ -1482,7 +1561,7 @@ export default function SignUpModal({
                 <RequiredMark />
               </FieldLabel>
               <SelectWrapper>
-                <StudentIdSelectField 
+                <StudentIdSelectField
                   isClickable={true}
                   onClick={handleToggleStudentIdDropdown}
                   data-dropdown-field
@@ -1492,9 +1571,13 @@ export default function SignUpModal({
                   ) : (
                     <SelectPlaceholder>학번을 선택하세요</SelectPlaceholder>
                   )}
-                  <DropdownIcon style={{ position: 'absolute', right: '10px' }}>
+                  <DropdownIcon style={{ position: "absolute", right: "10px" }}>
                     <svg viewBox="0 0 15 11" fill="none">
-                      <path d="M1 1L7.5 9L14 1" stroke="#999999" strokeWidth="2" />
+                      <path
+                        d="M1 1L7.5 9L14 1"
+                        stroke="#999999"
+                        strokeWidth="2"
+                      />
                     </svg>
                   </DropdownIcon>
                   {isStudentIdDropdownOpen && (
@@ -1524,77 +1607,101 @@ export default function SignUpModal({
                 <RequiredMark />
               </FieldLabel>
               <FormInputWrapper>
-              <MultiInputField>
-                {majors.map((major, index) => {
-                  const majorValue = major.value || '';
-                  const searchState = majorSearchStates[major.id] || {
-                    searchQuery: majorValue,
-                    isDropdownOpen: false,
-                    filteredMajors: majorList,
-                  };
-                  
-                  return (
-                    <MajorInputWrapper key={major.id} data-major-search>
-                      <div style={{ position: 'relative', width: '100%' }}>
-                        <Input 
-                          type="text" 
-                          placeholder="전공을 검색하세요" 
-                          value={majorValue}
-                          onChange={(e) => handleMajorSearch(index, major.id, e.target.value)}
-                          onFocus={() => handleMajorInputFocus(index, major.id, majorValue)}
-                          data-major-search
-                        />
-                        {searchState.isDropdownOpen && searchState.filteredMajors.length > 0 && (
-                          <EmailDomainDropdown 
-                            data-dropdown-container
+                <MultiInputField>
+                  {majors.map((major, index) => {
+                    const majorValue = major.value || "";
+                    const searchState = majorSearchStates[major.id] || {
+                      searchQuery: majorValue,
+                      isDropdownOpen: false,
+                      filteredMajors: majorList,
+                    };
+
+                    return (
+                      <MajorInputWrapper key={major.id} data-major-search>
+                        <div style={{ position: "relative", width: "100%" }}>
+                          <Input
+                            type="text"
+                            placeholder="전공을 검색하세요"
+                            value={majorValue}
+                            onChange={(e) =>
+                              handleMajorSearch(index, major.id, e.target.value)
+                            }
+                            onFocus={() =>
+                              handleMajorInputFocus(index, major.id, majorValue)
+                            }
                             data-major-search
-                            style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 1000 }}
-                          >
-                            {searchState.filteredMajors.map((majorItem) => (
-                              <EmailDomainDropdownItem
-                                key={majorItem.id}
-                                data-dropdown-item
+                          />
+                          {searchState.isDropdownOpen &&
+                            searchState.filteredMajors.length > 0 && (
+                              <EmailDomainDropdown
+                                data-dropdown-container
                                 data-major-search
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleSelectMajor(index, major.id, majorItem);
+                                style={{
+                                  position: "absolute",
+                                  top: "100%",
+                                  left: 0,
+                                  right: 0,
+                                  zIndex: 1000,
                                 }}
                               >
-                                {highlightMajorText(majorItem.name, searchState.searchQuery)}
-                              </EmailDomainDropdownItem>
-                            ))}
-                          </EmailDomainDropdown>
+                                {searchState.filteredMajors.map((majorItem) => (
+                                  <EmailDomainDropdownItem
+                                    key={majorItem.id}
+                                    data-dropdown-item
+                                    data-major-search
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleSelectMajor(
+                                        index,
+                                        major.id,
+                                        majorItem
+                                      );
+                                    }}
+                                  >
+                                    {highlightMajorText(
+                                      majorItem.name,
+                                      searchState.searchQuery
+                                    )}
+                                  </EmailDomainDropdownItem>
+                                ))}
+                              </EmailDomainDropdown>
+                            )}
+                        </div>
+                        {index === majors.length - 1 && (
+                          <AddButton
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleAddMajor();
+                            }}
+                          >
+                            <svg viewBox="0 0 20 20" fill="none">
+                              <path
+                                d="M10 5V15M5 9.90196H15"
+                                stroke="#FFB700"
+                                strokeWidth="1.5"
+                              />
+                              <circle
+                                cx="10"
+                                cy="10"
+                                r="9.5"
+                                stroke="#FFB700"
+                              />
+                            </svg>
+                          </AddButton>
                         )}
-                      </div>
-                      {index === majors.length - 1 && (
-                        <AddButton 
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleAddMajor();
-                          }}
-                        >
-                          <svg viewBox="0 0 20 20" fill="none">
-                            <path d="M10 5V15M5 9.90196H15" stroke="#FFB700" strokeWidth="1.5" />
-                            <circle cx="10" cy="10" r="9.5" stroke="#FFB700" />
-                          </svg>
-                        </AddButton>
-                      )}
-                    </MajorInputWrapper>
-                  );
-                })}
-              </MultiInputField>
-            </FormInputWrapper>
+                      </MajorInputWrapper>
+                    );
+                  })}
+                </MultiInputField>
+              </FormInputWrapper>
             </FormField>
 
             {/* Submit Button */}
             <ButtonContainer>
-              <SubmitButton 
-                onClick={handleSubmit}
-                disabled={isCreatingUser}
-              >
-                {isCreatingUser ? '가입 중...' : '가입하기'}
+              <SubmitButton onClick={handleSubmit} disabled={isCreatingUser}>
+                {isCreatingUser ? "가입 중..." : "가입하기"}
               </SubmitButton>
             </ButtonContainer>
           </ModalBody>
@@ -1621,7 +1728,7 @@ export default function SignUpModal({
       <MessageModal
         isOpen={isFailureModalOpen}
         onClose={() => setIsFailureModalOpen(false)}
-        message={failureMessage || '회원가입에 실패했습니다.'}
+        message={failureMessage || "회원가입에 실패했습니다."}
       />
     </>
   );

@@ -549,8 +549,8 @@ export default function ProfileModal({
     const currentCareer = user.careers.find((career) => career.isCurrent);
     if (currentCareer) return currentCareer;
 
-    // isCurrent가 없으면 경력들 중 맨 위(첫 번째) 항목 반환
-    return user.careers[0] || null;
+    // 현재 재직 중인 경력이 없으면 하이라이트 표시하지 않음
+    return null;
   };
 
   // 모달이 열릴 때 body 스크롤 막기 (스크롤바는 유지)
