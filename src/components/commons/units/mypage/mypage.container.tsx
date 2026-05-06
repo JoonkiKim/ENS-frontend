@@ -17,6 +17,7 @@ import CheckModal from "../../modals/checkModal";
 import {
   FETCH_LOGIN_USER,
   FETCH_USER,
+  FETCH_ALL_USERS,
   UPDATE_USER,
   LOGOUT,
   FETCH_ALL_MAJORS,
@@ -173,8 +174,14 @@ export default function MyPage() {
   // 기수 목록 생성 (40기부터 1기까지 역순)
   const generations = Array.from({ length: 40 }, (_, i) => 40 - i);
 
-  // 학번 목록 생성 (2026부터 2019까지 역순)
-  const studentIds = [2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019];
+  // 렌더 시점 연도 (학번 목록 · 경력 연도 선택 등 공통 사용)
+  const currentYear = new Date().getFullYear();
+
+  // 학번 목록 생성 (현재 연도부터 2000년까지 역순)
+  const studentIds = Array.from(
+    { length: currentYear - 2000 + 1 },
+    (_, i) => currentYear - i
+  );
 
   // 이메일 도메인 목록
   const emailDomains = ["gmail.com", "naver.com", "기타"];
@@ -277,13 +284,10 @@ export default function MyPage() {
     data: loginUserData,
     loading: loginLoading,
     error: loginUserError,
-  } = useQuery(
-    FETCH_LOGIN_USER,
-    {
-      skip: !canQueryProtected,
-      fetchPolicy: "network-only",
-    }
-  );
+  } = useQuery(FETCH_LOGIN_USER, {
+    skip: !canQueryProtected,
+    fetchPolicy: "network-only",
+  });
 
   // 사용자 데이터 조회 (userId가 있으면 해당 유저)
   const { data: userData, loading: userLoading } = useQuery(FETCH_USER, {
@@ -305,10 +309,12 @@ export default function MyPage() {
       targetUserId
         ? { query: FETCH_USER, variables: { userId: targetUserId } }
         : { query: FETCH_LOGIN_USER },
+      { query: FETCH_ALL_USERS },
       { query: FETCH_ALL_MAJORS },
       { query: FETCH_ALL_INDUSTRIES },
       { query: FETCH_ALL_POSITION_CATEGORIES },
     ], // 업데이트 후 데이터 다시 불러오기
+    awaitRefetchQueries: true,
   });
 
   // logout mutation (서버 블랙리스트 기록용)
@@ -728,6 +734,20 @@ export default function MyPage() {
     }));
   };
 
+  // 경력 삭제 함수
+  const handleRemoveCareer = (careerIndex: number) => {
+    removeCareer(careerIndex);
+    setCareerDropdownStates((prev) => {
+      const next: typeof prev = {};
+      Object.entries(prev).forEach(([key, value]) => {
+        const index = Number(key);
+        if (index < careerIndex) next[index] = value;
+        if (index > careerIndex) next[index - 1] = value;
+      });
+      return next;
+    });
+  };
+
   // 산업군 드롭다운 토글
   const handleToggleIndustryDropdown = (careerIndex: number) => {
     setIsGenerationDropdownOpen(false);
@@ -829,7 +849,6 @@ export default function MyPage() {
   };
 
   // 연도 목록 생성 (현재 연도부터 50년 전까지)
-  const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 51 }, (_, i) => currentYear - i);
 
   // 월 목록 생성
@@ -1261,7 +1280,9 @@ export default function MyPage() {
         !hasNumber ||
         !hasSpecialChar
       ) {
-        throw new Error("8자리 이상의 대소문자, 숫자, 특수문자를 사용해 주세요.");
+        throw new Error(
+          "8자리 이상의 대소문자, 숫자, 특수문자를 사용해 주세요."
+        );
       }
 
       passwordData = {
@@ -1864,6 +1885,25 @@ export default function MyPage() {
               const dropdownState = careerDropdownStates[careerIndex] || {};
               return (
                 <S.CareerItem key={field.id}>
+                  <S.RemoveButton
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleRemoveCareer(careerIndex);
+                    }}
+                    aria-label="경력 삭제"
+                    style={{ marginTop: "16px" }}
+                  >
+                    <svg viewBox="0 0 20 20" fill="none">
+                      <path
+                        d="M5 9.90196H15"
+                        stroke="#B3B3B3"
+                        strokeWidth="1.5"
+                      />
+                      <circle cx="10" cy="10" r="9.5" stroke="#B3B3B3" />
+                    </svg>
+                  </S.RemoveButton>
                   <S.CareerCard>
                     <S.CareerRow>
                       <S.CareerField>
@@ -2323,7 +2363,17 @@ export default function MyPage() {
       {/* Message Modal */}
       <MessageModal
         isOpen={messageModal.isOpen}
-        onClose={() => setMessageModal({ isOpen: false, message: "" })}
+        onClose={() => {
+          const scrollToTop =
+            messageModal.message === "변경사항이 저장되었습니다.";
+          setMessageModal({ isOpen: false, message: "" });
+          if (scrollToTop) {
+            // MessageModal 닫힘 시 body 스크롤 복원 이후 실행되도록 한 틱 미룸
+            setTimeout(() => {
+              window.scrollTo({ top: 0, behavior: "instant" });
+            }, 0);
+          }
+        }}
         message={messageModal.message}
       />
 

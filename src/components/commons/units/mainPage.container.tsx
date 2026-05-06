@@ -1,34 +1,33 @@
+import { useState } from "react";
+import Head from "next/head";
+import Link from "next/link";
+import { useRecoilValue } from "recoil";
+import { useApolloClient, useMutation, useQuery } from "@apollo/client";
+import * as S from "./mainPage.style";
 
-import { useState } from 'react';
-import Head from 'next/head';
-import Link from 'next/link';
-import { useRecoilValue } from 'recoil';
-import { useApolloClient, useMutation, useQuery } from '@apollo/client';
-import * as S from './mainPage.style';
-
-import { DisclosureButtonIcon } from '../../../commons/libraries/DisclosureButtonIcon';
-import LoginModal from '../modals/loginModal';
-import AgreeModal from '../modals/agreeModal';
-import SignUpModal from '../modals/signUpModal';
-import { accessTokenState, authCheckedState } from '../../../commons/stores';
+import { DisclosureButtonIcon } from "../../../commons/libraries/DisclosureButtonIcon";
+import LoginModal from "../modals/loginModal";
+import AgreeModal from "../modals/agreeModal";
+import SignUpModal from "../modals/signUpModal";
+import { accessTokenState, authCheckedState } from "../../../commons/stores";
 import {
   FETCH_ALL_BOARDS,
   FETCH_LOGIN_USER,
   LOGOUT,
-} from '../../../commons/apis/graphql-queries';
-import { bumpAuthInitEpoch, clearAccessToken } from '../../../commons/libraries/token';
+} from "../../../commons/apis/graphql-queries";
+import {
+  bumpAuthInitEpoch,
+  clearAccessToken,
+} from "../../../commons/libraries/token";
 
 // Global Styles
-
-
-
 
 export default function Dashboard() {
   const apolloClient = useApolloClient();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isAgreeModalOpen, setIsAgreeModalOpen] = useState(false);
   const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
-  
+
   // 로그인 상태 확인
   const accessToken = useRecoilValue(accessTokenState);
   const authChecked = useRecoilValue(authCheckedState);
@@ -38,20 +37,26 @@ export default function Dashboard() {
   const isLoggedIn = authChecked && !!accessToken;
 
   // 게시판 데이터 가져오기
-  const { data: boardsData, loading: boardsLoading } = useQuery(FETCH_ALL_BOARDS, {
-    skip: !isLoggedIn, // 로그인하지 않았으면 쿼리 실행 안 함
-    fetchPolicy: 'cache-and-network',
-  });
+  const { data: boardsData, loading: boardsLoading } = useQuery(
+    FETCH_ALL_BOARDS,
+    {
+      skip: !isLoggedIn, // 로그인하지 않았으면 쿼리 실행 안 함
+      fetchPolicy: "cache-and-network",
+    }
+  );
   const { data: loginUserData } = useQuery(FETCH_LOGIN_USER, {
     skip: !isLoggedIn,
-    fetchPolicy: 'network-only',
+    fetchPolicy: "network-only",
   });
   const [logoutMutation, { loading: logoutLoading }] = useMutation(LOGOUT);
 
   // 최신 게시글 3개 가져오기 (createdAt 기준 내림차순)
   const latestBoards = boardsData?.fetchAllBoards
     ? [...boardsData.fetchAllBoards]
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )
         .slice(0, 3)
     : [];
 
@@ -59,30 +64,32 @@ export default function Dashboard() {
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
     return `${year}.${month}.${day}`;
   };
 
   // 카테고리 매핑
   const categoryMap: Record<string, string> = {
-    'NOTICE': '학회 공지',
-    'RECRUITMENT': '채용 공고',
-    'ETC': '기타',
+    NOTICE: "학회 공지",
+    RECRUITMENT: "채용 공고",
+    ETC: "기타",
   };
 
   const loginUser = loginUserData?.fetchLoginUser;
-  const currentCompany = loginUser?.careers?.find(
-    (career: { isCurrent?: boolean; company?: string }) =>
-      !!career?.isCurrent && !!career?.company?.trim()
-  )?.company?.trim();
+  const currentCompany = loginUser?.careers
+    ?.find(
+      (career: { isCurrent?: boolean; company?: string }) =>
+        !!career?.isCurrent && !!career?.company?.trim()
+    )
+    ?.company?.trim();
 
   const handleLogout = async () => {
     try {
       await logoutMutation();
     } catch (error) {
       // 서버 로그아웃 실패 시에도 클라이언트 상태는 정리
-      console.warn('logout mutation failed:', error);
+      console.warn("logout mutation failed:", error);
     } finally {
       clearAccessToken();
       bumpAuthInitEpoch();
@@ -92,20 +99,28 @@ export default function Dashboard() {
 
   return (
     <>
- 
-     
       <S.Container>
-
-
         {/* Hero Section */}
         <S.Hero>
           <S.HeroContent>
             <S.HeroTitle>SNU ENS Intranet</S.HeroTitle>
-            <S.HeroDescription>ENS 학회원을 위한 네트워킹을 지원합니다.</S.HeroDescription>
+            <S.HeroDescription>
+              ENS 학회원을 위한 네트워킹을 지원합니다.
+            </S.HeroDescription>
             {shouldShowAuthButtons && (
               <S.ButtonGroup>
-                <S.Button variant="secondary" onClick={() => setIsLoginModalOpen(true)}>로그인</S.Button>
-                <S.Button variant="primary" onClick={() => setIsAgreeModalOpen(true)}>회원가입</S.Button>
+                <S.Button
+                  variant="secondary"
+                  onClick={() => setIsLoginModalOpen(true)}
+                >
+                  로그인
+                </S.Button>
+                <S.Button
+                  variant="primary"
+                  onClick={() => setIsAgreeModalOpen(true)}
+                >
+                  회원가입
+                </S.Button>
               </S.ButtonGroup>
             )}
             {isLoggedIn && (
@@ -113,12 +128,14 @@ export default function Dashboard() {
                 <S.CurrentUserCard>
                   <S.UserAvatar />
                   <S.CurrentUserText>
-                    {`${loginUserData?.fetchLoginUser?.generation ?? ''}기 ${loginUserData?.fetchLoginUser?.name ?? ''}`}
+                    {`${loginUserData?.fetchLoginUser?.generation ?? ""}기 ${
+                      loginUserData?.fetchLoginUser?.name ?? ""
+                    }`}
                   </S.CurrentUserText>
                 </S.CurrentUserCard>
-                <S.LogoutActionButton onClick={handleLogout} disabled={logoutLoading}>
+                {/* <S.LogoutActionButton onClick={handleLogout} disabled={logoutLoading}>
                   {logoutLoading ? '로그아웃 중...' : '로그아웃'}
-                </S.LogoutActionButton>
+                </S.LogoutActionButton> */}
               </S.LoggedInPanel>
             )}
           </S.HeroContent>
@@ -136,7 +153,14 @@ export default function Dashboard() {
               <S.CardGrid>
                 {/* Alumni Search Card */}
                 <Link href="/findAlumni">
-                  <a style={{ textDecoration: 'none', color: 'inherit', display: 'flex', height: '100%' }}>
+                  <a
+                    style={{
+                      textDecoration: "none",
+                      color: "inherit",
+                      display: "flex",
+                      height: "100%",
+                    }}
+                  >
                     <S.Card>
                       <S.BoardCardTitleWrapper>
                         <S.CardTitle>알럼나이 찾기</S.CardTitle>
@@ -152,10 +176,12 @@ export default function Dashboard() {
                           />
                         </S.Avatar>
                         <S.UserInfo>
-                          <S.UserName>{loginUser?.name ?? '-'}</S.UserName>
+                          <S.UserName>{loginUser?.name ?? "-"}</S.UserName>
                           <S.UserDetails>
-                            {`ENS ${loginUser?.generation ?? '-'}기`}
-                            {currentCompany ? ` · ${currentCompany} 재직 중` : ''}
+                            {`ENS ${loginUser?.generation ?? "-"}기`}
+                            {currentCompany
+                              ? ` · ${currentCompany} 재직 중`
+                              : ""}
                           </S.UserDetails>
                         </S.UserInfo>
                       </S.AvatarBlock>
@@ -165,7 +191,14 @@ export default function Dashboard() {
 
                 {/* Profile Edit Card */}
                 <Link href="/mypage">
-                  <a style={{ textDecoration: 'none', color: 'inherit', display: 'flex', height: '100%' }}>
+                  <a
+                    style={{
+                      textDecoration: "none",
+                      color: "inherit",
+                      display: "flex",
+                      height: "100%",
+                    }}
+                  >
                     <S.Card>
                       <S.BoardCardTitleWrapper>
                         <S.CardTitle>내 정보 수정</S.CardTitle>
@@ -183,7 +216,14 @@ export default function Dashboard() {
 
               {/* Board Card */}
               <Link href="/boardMain">
-                <a style={{ textDecoration: 'none', color: 'inherit', display: 'flex', height: '100%' }}>
+                <a
+                  style={{
+                    textDecoration: "none",
+                    color: "inherit",
+                    display: "flex",
+                    height: "100%",
+                  }}
+                >
                   <S.BoardCard>
                     <S.BoardCardTitleWrapper>
                       <S.CardTitle>자유 게시판</S.CardTitle>
@@ -202,10 +242,13 @@ export default function Dashboard() {
                         latestBoards.map((board) => (
                           <S.BoardItem key={board.id}>
                             <S.BoardTitle>
-                              <span className="arrow">&gt;</span>
-                              [{categoryMap[board.category] || board.category}] {board.title}
+                              <span className="arrow">&gt;</span>[
+                              {categoryMap[board.category] || board.category}]{" "}
+                              {board.title}
                             </S.BoardTitle>
-                            <S.BoardDate>{formatDate(board.createdAt)}</S.BoardDate>
+                            <S.BoardDate>
+                              {formatDate(board.createdAt)}
+                            </S.BoardDate>
                           </S.BoardItem>
                         ))
                       )}
@@ -220,7 +263,6 @@ export default function Dashboard() {
             </S.LoginRequiredMessage>
           ) : null}
         </S.QuickViewSection>
-
       </S.Container>
 
       <LoginModal
@@ -228,15 +270,15 @@ export default function Dashboard() {
         onClose={() => setIsLoginModalOpen(false)}
         onLogin={(username, password, keepLoggedIn) => {
           // 로그인 처리 로직 추가 가능
-          console.log('Login:', { username, password, keepLoggedIn });
+          console.log("Login:", { username, password, keepLoggedIn });
         }}
         onSignUp={() => {
           // 회원가입 처리 로직 추가 가능
-          console.log('Sign up clicked');
+          console.log("Sign up clicked");
         }}
         onForgotPassword={() => {
           // 비밀번호 찾기 처리 로직 추가 가능
-          console.log('Forgot password clicked');
+          console.log("Forgot password clicked");
         }}
       />
 
@@ -255,7 +297,7 @@ export default function Dashboard() {
         onClose={() => setIsSignUpModalOpen(false)}
         onSubmit={(formData) => {
           // 회원가입 제출 처리 로직 추가 가능
-          console.log('Sign up submitted:', formData);
+          console.log("Sign up submitted:", formData);
           // 모달 닫기는 signUpModal.tsx의 성공 모달이 닫힐 때 처리됨
         }}
       />

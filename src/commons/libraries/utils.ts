@@ -42,3 +42,9 @@ export const formatDate2 = (date: Date | string) =>
 
 /** HH:mm */
 export const formatHM = (date: Date | string) => moment(date).format("HH:mm");
+
+/** 전화번호 UI·다운로드 표시용: 하이픈(-) 제거 */
+export function formatPhoneForDisplay(phone?: string | null): string {
+  if (phone == null) return "";
+  return phone.replace(/-/g, "");
+}

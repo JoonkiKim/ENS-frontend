@@ -132,9 +132,19 @@ export const FETCH_ALL_USERS = gql`
       abroad
       memo
       role
+      executiveRole
       createdAt
       updatedAt
       deletedAt
+      userMajors {
+        userId
+        majorId
+        major {
+          id
+          name
+        }
+        isPrimary
+      }
       careers {
         id
         company

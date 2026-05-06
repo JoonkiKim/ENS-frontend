@@ -537,7 +537,7 @@ export const CareerList = styled.div`
 
 export const CareerItem = styled.div`
   display: flex;
-  gap: 50px;
+  gap: 20px;
 `;
 
 export const CareerCard = styled.div`
@@ -886,7 +886,7 @@ export const CheckboxLabel = styled.label<{ disabled?: boolean }>`
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   color: ${({ disabled }) => (disabled ? "rgba(44, 44, 44, 0.5)" : "#2c2c2c")};
   letter-spacing: -0.28px;
 `;

@@ -8,6 +8,7 @@ import ForceWithdrawSuccessModal from '../../modals/forceWithdrawSuccessModal';
 import MessageModal from '../../modals/messageModal';
 import ExportModal from '../../modals/exportModal';
 import { FETCH_ALL_USERS, UPDATE_USERS_BATCH, DELETE_USER } from '../../../../commons/apis/graphql-queries';
+import { formatPhoneForDisplay } from '../../../../commons/libraries/utils';
 import {
   PageContainer,
   Sidebar,
@@ -61,6 +62,8 @@ interface Member {
   phone: string;
   email: string;
   grade: string;
+  executiveInfo: string;
+  executiveRole: 'PRESIDENT' | 'VICE_PRESIDENT' | null;
   memo: string;
   userId?: string; // 실제 유저 ID (변경사항 추적용)
 }
@@ -72,6 +75,7 @@ interface User {
   phone: string | null;
   email: string | null;
   role: 'MEMBER' | 'ADMIN';
+  executiveRole: 'PRESIDENT' | 'VICE_PRESIDENT' | null;
   memo: string | null;
 }
 
@@ -89,6 +93,7 @@ export default function MembersList() {
   const tableContainerRef = useRef<HTMLDivElement>(null); // 스크롤 컨테이너 ref
   const [isEditMode, setIsEditMode] = useState(false);
   const [openGradeDropdowns, setOpenGradeDropdowns] = useState<{ [key: number]: boolean }>({});
+  const [openExecutiveDropdowns, setOpenExecutiveDropdowns] = useState<{ [key: number]: boolean }>({});
   const [isForceWithdrawModalOpen, setIsForceWithdrawModalOpen] = useState(false);
   const [isForceWithdrawSuccessModalOpen, setIsForceWithdrawSuccessModalOpen] = useState(false);
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
@@ -101,6 +106,7 @@ export default function MembersList() {
   // Batch update mutation
   const [updateUsersBatch] = useMutation(UPDATE_USERS_BATCH, {
     refetchQueries: [{ query: FETCH_ALL_USERS }],
+    awaitRefetchQueries: true,
   });
 
   // Delete user mutation
@@ -125,6 +131,13 @@ export default function MembersList() {
         phone: user.phone ?? '',
         email: user.email ?? '',
         grade: user.role === 'ADMIN' ? '운영진' : '학회원',
+        executiveInfo:
+          user.executiveRole === 'PRESIDENT'
+            ? '학회장'
+            : user.executiveRole === 'VICE_PRESIDENT'
+              ? '부학회장'
+              : '',
+        executiveRole: user.executiveRole ?? null,
         memo: user.memo || '',
         userId: user.id, // 실제 유저 ID 저장
       }));
@@ -193,10 +206,13 @@ export default function MembersList() {
         const email = member.email ?? '';
         const phone = member.phone ?? '';
         const generation = member.generation ?? '';
+        const phoneNorm = formatPhoneForDisplay(phone);
+        const queryNoHyphen = query.replace(/-/g, '');
         return (
           name.toLowerCase().includes(query) ||
           email.toLowerCase().includes(query) ||
-          phone.includes(query) ||
+          phone.toLowerCase().includes(query) ||
+          phoneNorm.toLowerCase().includes(queryNoHyphen) ||
           generation.includes(query)
         );
       }
@@ -229,6 +245,7 @@ export default function MembersList() {
       
       const hasChanges = 
         member.grade !== initial.grade || 
+        member.executiveRole !== initial.executiveRole ||
         member.memo !== initial.memo;
       
       if (hasChanges) {
@@ -240,6 +257,11 @@ export default function MembersList() {
         // 등급 변경
         if (member.grade !== initial.grade) {
           updateUserInput.role = member.grade === '운영진' ? 'ADMIN' : 'MEMBER';
+        }
+
+        // 운영진 정보 변경
+        if (member.executiveRole !== initial.executiveRole) {
+          updateUserInput.executiveRole = member.executiveRole;
         }
         
         // 메모 변경
@@ -318,6 +340,46 @@ export default function MembersList() {
     }));
   };
 
+  const handleExecutiveRoleChange = (
+    id: number,
+    executiveRole: 'PRESIDENT' | 'VICE_PRESIDENT' | null
+  ) => {
+    setMembers(
+      members.map((m) =>
+        m.id === id
+          ? {
+              ...m,
+              executiveRole,
+              executiveInfo:
+                executiveRole === 'PRESIDENT'
+                  ? '학회장'
+                  : executiveRole === 'VICE_PRESIDENT'
+                    ? '부학회장'
+                    : '',
+            }
+          : m
+      )
+    );
+  };
+
+  const handleToggleExecutiveDropdown = (id: number) => {
+    setOpenExecutiveDropdowns((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  const handleSelectExecutiveRole = (
+    id: number,
+    executiveRole: 'PRESIDENT' | 'VICE_PRESIDENT' | null
+  ) => {
+    handleExecutiveRoleChange(id, executiveRole);
+    setOpenExecutiveDropdowns((prev) => ({
+      ...prev,
+      [id]: false,
+    }));
+  };
+
   // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -334,6 +396,23 @@ export default function MembersList() {
       };
     }
   }, [openGradeDropdowns]);
+
+  // 운영진 정보 드롭다운 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('[data-executive-dropdown]')) {
+        setOpenExecutiveDropdowns({});
+      }
+    };
+
+    if (Object.values(openExecutiveDropdowns).some(open => open)) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [openExecutiveDropdowns]);
 
   // 무한스크롤 로직
   useEffect(() => {
@@ -403,8 +482,13 @@ export default function MembersList() {
     const worksheetData = filteredMembers.map(member => {
       const row: { [key: string]: string } = {};
       selectedColumns.forEach(col => {
-        const value = member[col as keyof Member];
-        row[columnLabels[col]] = value ? String(value) : '';
+        if (col === 'phone') {
+          row[columnLabels[col]] =
+            formatPhoneForDisplay(member.phone ?? '') || '';
+        } else {
+          const value = member[col as keyof Member];
+          row[columnLabels[col]] = value ? String(value) : '';
+        }
       });
       return row;
     });
@@ -506,11 +590,12 @@ export default function MembersList() {
                         />
                       </CheckboxWrapper>
                     </TableHeaderCell>
-                    <TableHeaderCell width="80px">그룹</TableHeaderCell>
-                    <TableHeaderCell width="100px">이름</TableHeaderCell>
-                    <TableHeaderCell width="170px">연락처</TableHeaderCell>
+                    <TableHeaderCell width="50px">그룹</TableHeaderCell>
+                    <TableHeaderCell width="60px">이름</TableHeaderCell>
+                    <TableHeaderCell width="110px">연락처</TableHeaderCell>
                     <TableHeaderCell width="170px">메일</TableHeaderCell>
-                    <TableHeaderCell width="100px">등급</TableHeaderCell>
+                    <TableHeaderCell width="110px">등급</TableHeaderCell>
+                    <TableHeaderCell width="120px">운영진 정보</TableHeaderCell>
                     <TableHeaderCell>메모</TableHeaderCell>
                     <TableHeaderCell width="40px"></TableHeaderCell>
                   </TableRow>
@@ -518,19 +603,19 @@ export default function MembersList() {
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={8} style={{ textAlign: 'center', padding: '40px' }}>
+                      <TableCell colSpan={9} style={{ textAlign: 'center', padding: '40px' }}>
                         로딩 중...
                       </TableCell>
                     </TableRow>
                   ) : error ? (
                     <TableRow>
-                      <TableCell colSpan={8} style={{ textAlign: 'center', padding: '40px', color: '#ff4444' }}>
+                      <TableCell colSpan={9} style={{ textAlign: 'center', padding: '40px', color: '#ff4444' }}>
                         데이터를 불러오는 중 오류가 발생했습니다.
                       </TableCell>
                     </TableRow>
                   ) : displayedMembers.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} style={{ textAlign: 'center', padding: '40px' }}>
+                      <TableCell colSpan={9} style={{ textAlign: 'center', padding: '40px' }}>
                         검색 결과가 없습니다.
                       </TableCell>
                     </TableRow>
@@ -548,7 +633,12 @@ export default function MembersList() {
                       </TableCell>
                       <TableCell>{highlightText(member.generation, debouncedSearchQuery)}</TableCell>
                       <TableCell>{highlightText(member.name, debouncedSearchQuery)}</TableCell>
-                      <TableCell>{highlightText(member.phone, debouncedSearchQuery)}</TableCell>
+                      <TableCell>
+                        {highlightText(
+                          formatPhoneForDisplay(member.phone ?? ''),
+                          debouncedSearchQuery.replace(/-/g, '')
+                        )}
+                      </TableCell>
                       <TableCell>{highlightText(member.email, debouncedSearchQuery)}</TableCell>
                       <TableCell>
                         {isEditMode ? (
@@ -587,6 +677,45 @@ export default function MembersList() {
                           </GradeSelectField>
                         ) : (
                           member.grade
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {isEditMode ? (
+                          <GradeSelectField
+                            data-executive-dropdown
+                            onClick={() => handleToggleExecutiveDropdown(member.id)}
+                          >
+                            <GradeValue>{member.executiveInfo}</GradeValue>
+                            <div style={{ position: 'absolute', right: '8px' }}>
+                              <svg width="12" height="8" viewBox="0 0 15 11" fill="none" >
+                                <path d="M1 1L7.5 9L14 1" stroke="#999999" strokeWidth="2" />
+                              </svg>
+                            </div>
+                            {openExecutiveDropdowns[member.id] && (
+                              <GradeDropdown data-executive-dropdown>
+                                <GradeDropdownItem
+                                  data-executive-dropdown
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSelectExecutiveRole(member.id, 'PRESIDENT');
+                                  }}
+                                >
+                                  학회장
+                                </GradeDropdownItem>
+                                <GradeDropdownItem
+                                  data-executive-dropdown
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSelectExecutiveRole(member.id, 'VICE_PRESIDENT');
+                                  }}
+                                >
+                                  부학회장
+                                </GradeDropdownItem>
+                              </GradeDropdown>
+                            )}
+                          </GradeSelectField>
+                        ) : (
+                          member.executiveInfo
                         )}
                       </TableCell>
                       <TableCell>

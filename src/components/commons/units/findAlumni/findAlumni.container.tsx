@@ -7,6 +7,7 @@ import Head from "next/head";
 import ProfileModal from "../../modals/profileModal";
 import SearchFilterModal from "../../modals/searchFilterModal";
 import Filter from "../../../../commons/libraries/filter";
+import { formatPhoneForDisplay } from "../../../../commons/libraries/utils";
 import {
   FETCH_ALL_USERS,
   FETCH_LOGIN_USER,
@@ -34,9 +35,19 @@ interface User {
   abroad?: boolean;
   memo?: string;
   role?: string;
+  executiveRole?: "PRESIDENT" | "VICE_PRESIDENT" | null;
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
+  userMajors?: Array<{
+    userId: string;
+    majorId: string;
+    isPrimary?: boolean;
+    major?: {
+      id: string;
+      name: string;
+    };
+  }>;
   careers?: Array<{
     id: string;
     company: string;
@@ -84,6 +95,7 @@ export default function AlumniSearch() {
     FETCH_ALL_USERS,
     {
       skip: !canQueryProtected,
+      fetchPolicy: "cache-and-network",
     }
   );
 
@@ -172,11 +184,45 @@ export default function AlumniSearch() {
 
   // 필터링된 사용자 목록 (기수 내림차순, 동일 기수는 이름 가나다 역순)
   const users = data?.fetchAllUsers || [];
+  // 검색 인덱스를 미리 만들어 입력 시 반복 연산을 줄임
+  const indexedUsers = useMemo(
+    () =>
+      users.map((user) => {
+        const majorNames =
+          user.userMajors
+            ?.map((userMajor) => userMajor.major?.name ?? "")
+            .filter(Boolean) ?? [];
+        const allCareerCompanies =
+          user.careers?.map((career) => career.company ?? "").filter(Boolean) ??
+          [];
+        const allCareerPositions =
+          user.careers
+            ?.map((career) => career.position ?? "")
+            .filter(Boolean) ?? [];
+
+        const searchText = [
+          user.name ?? "",
+          String(user.generation ?? ""),
+          user.phone ?? "",
+          formatPhoneForDisplay(user.phone),
+          user.email ?? "",
+          ...majorNames,
+          ...allCareerCompanies,
+          ...allCareerPositions,
+        ]
+          .join(" ")
+          .toLowerCase();
+
+        return { user, searchText };
+      }),
+    [users]
+  );
+
   const filteredUsers = useMemo(() => {
     const normalizedQuery = debouncedSearchQuery.trim().toLowerCase();
 
     const listByFilters = appliedFilters
-      ? users.filter((user) => {
+      ? indexedUsers.filter(({ user }) => {
           if (
             user.generation < appliedFilters.generationMin ||
             user.generation > appliedFilters.generationMax
@@ -208,33 +254,23 @@ export default function AlumniSearch() {
 
           return true;
         })
-      : users;
+      : indexedUsers;
 
     const list = normalizedQuery
-      ? listByFilters.filter((user) => {
-          const displayCareer = getDisplayCareer(user);
-          const searchableFields = [
-            user.name ?? "",
-            String(user.generation ?? ""),
-            user.phone ?? "",
-            user.email ?? "",
-            displayCareer?.company ?? "",
-            displayCareer?.position ?? "",
-          ];
-
-          return searchableFields.some((value) =>
-            value.toLowerCase().includes(normalizedQuery)
-          );
+      ? listByFilters.filter(({ searchText }) => {
+          return searchText.includes(normalizedQuery);
         })
       : listByFilters;
 
-    return [...list].sort((a, b) => {
-      if (b.generation !== a.generation) {
-        return b.generation - a.generation;
-      }
-      return b.name.localeCompare(a.name, "ko-KR");
-    });
-  }, [users, appliedFilters, debouncedSearchQuery]);
+    return [...list]
+      .map(({ user }) => user)
+      .sort((a, b) => {
+        if (b.generation !== a.generation) {
+          return b.generation - a.generation;
+        }
+        return b.name.localeCompare(a.name, "ko-KR");
+      });
+  }, [indexedUsers, appliedFilters, debouncedSearchQuery]);
 
   // 표시할 사용자 목록 (무한 스크롤용)
   const displayedUsers = filteredUsers.slice(0, displayCount);
@@ -261,7 +297,7 @@ export default function AlumniSearch() {
       if (user.customId) row["아이디"] = user.customId;
       if (user.name) row["이름"] = user.name;
       if (user.generation) row["기수"] = user.generation;
-      if (user.phone) row["전화번호"] = user.phone;
+      if (user.phone) row["전화번호"] = formatPhoneForDisplay(user.phone);
       if (user.email) row["이메일"] = user.email;
       if (user.entrance) row["입학년도"] = user.entrance;
       if (user.imageUrl) row["프로필 이미지"] = user.imageUrl;
@@ -493,8 +529,30 @@ export default function AlumniSearch() {
               displayedUsers.map((user) => (
                 <S.TableRow key={user.id}>
                   <S.TableCell>{user.generation}</S.TableCell>
-                  <S.TableCell>{user.name}</S.TableCell>
-                  <S.TableCell>{user.phone}</S.TableCell>
+                  <S.TableCell>
+                    {user.executiveRole === "PRESIDENT" ? (
+                      <span style={{ color: "#4C73D9" }}>
+                        {user.name}
+                        <img
+                          src="/images/crown.svg"
+                          alt="학회장"
+                          style={{
+                            width: 12,
+                            height: 12,
+                            marginLeft: 4,
+                            verticalAlign: "middle",
+                          }}
+                        />
+                      </span>
+                    ) : user.executiveRole === "VICE_PRESIDENT" ? (
+                      <span style={{ color: "#4C73D9" }}>{user.name}</span>
+                    ) : (
+                      user.name
+                    )}
+                  </S.TableCell>
+                  <S.TableCell>
+                    {formatPhoneForDisplay(user.phone) || "-"}
+                  </S.TableCell>
                   <S.TableCell>
                     <S.EmailLink href={`mailto:${user.email}`}>
                       {user.email}

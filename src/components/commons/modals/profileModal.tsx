@@ -6,6 +6,7 @@ import {
   FETCH_USER,
   FETCH_LOGIN_USER,
 } from "../../../commons/apis/graphql-queries";
+import { formatPhoneForDisplay } from "../../../commons/libraries/utils";
 
 // Modal Overlay
 const ModalOverlay = styled.div`
@@ -243,13 +244,13 @@ const HighlightLabel = styled.p`
   margin: 0 0 12px 0;
 `;
 
-const HighlightCard = styled.div`
+const HighlightCard = styled.div<{ compact?: boolean }>`
   border: 1px solid #ffd000;
   border-radius: 6px;
   padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: ${({ compact }) => (compact ? "0" : "12px")};
 `;
 
 const HighlightCompany = styled.p`
@@ -638,6 +639,12 @@ export default function ProfileModal({
     }
   };
 
+  const currentCareer = getCurrentCareer();
+  const hasHighlightSection =
+    !!currentCareer || !!user?.noCoffeeChat || !!user?.abroad;
+  const hasOnlyCompanyHighlight =
+    !!currentCareer && !user?.noCoffeeChat && !user?.abroad;
+
   return (
     <>
       <ModalOverlay onClick={handleOverlayClick}>
@@ -709,7 +716,9 @@ export default function ProfileModal({
                       <ContactTitle>Contact</ContactTitle>
                       <ContactRow>
                         <ContactLabel>연락처</ContactLabel>
-                        <ContactValue>{user.phone || "-"}</ContactValue>
+                        <ContactValue>
+                          {formatPhoneForDisplay(user.phone) || "-"}
+                        </ContactValue>
                       </ContactRow>
                       <ContactRow>
                         <ContactLabel>이메일</ContactLabel>
@@ -742,21 +751,27 @@ export default function ProfileModal({
                     </ContactSection>
 
                     {/* Highlight */}
-                    <HighlightSection>
+                    <HighlightSection
+                      style={{
+                        visibility: hasHighlightSection ? "visible" : "hidden",
+                      }}
+                    >
                       <HighlightLabel>Highlight</HighlightLabel>
-                      <HighlightCard>
-                        {getCurrentCareer() && (
+                      <HighlightCard compact={hasOnlyCompanyHighlight}>
+                        {currentCareer && (
                           <HighlightCompany>
-                            {getCurrentCareer()?.company}
+                            {currentCareer.company}
                           </HighlightCompany>
                         )}
                         <HighlightBadges>
-                          <HighlightBadge active={user.noCoffeeChat}>
-                            커피챗은 어려워요
-                          </HighlightBadge>
-                          <HighlightBadge active={user.abroad}>
-                            해외 거주
-                          </HighlightBadge>
+                          {user.noCoffeeChat && (
+                            <HighlightBadge active>
+                              커피챗은 어려워요
+                            </HighlightBadge>
+                          )}
+                          {user.abroad && (
+                            <HighlightBadge active>해외 거주</HighlightBadge>
+                          )}
                         </HighlightBadges>
                       </HighlightCard>
                     </HighlightSection>
