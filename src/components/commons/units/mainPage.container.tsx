@@ -69,6 +69,12 @@ export default function Dashboard() {
     return `${year}.${month}.${day}`;
   };
 
+  // 기수 표기 포맷 (한 자릿수는 앞에 0 추가)
+  const formatGeneration = (generation?: number | null): string => {
+    if (typeof generation !== "number") return "";
+    return `${String(generation).padStart(2, "0")}기`;
+  };
+
   // 카테고리 매핑
   const categoryMap: Record<string, string> = {
     NOTICE: "학회 공지",
@@ -128,7 +134,7 @@ export default function Dashboard() {
                 <S.CurrentUserCard>
                   <S.UserAvatar />
                   <S.CurrentUserText>
-                    {`${loginUserData?.fetchLoginUser?.generation ?? ""}기 ${
+                    {`${formatGeneration(loginUserData?.fetchLoginUser?.generation)} ${
                       loginUserData?.fetchLoginUser?.name ?? ""
                     }`}
                   </S.CurrentUserText>
@@ -178,7 +184,7 @@ export default function Dashboard() {
                         <S.UserInfo>
                           <S.UserName>{loginUser?.name ?? "-"}</S.UserName>
                           <S.UserDetails>
-                            {`ENS ${loginUser?.generation ?? "-"}기`}
+                            {`ENS ${formatGeneration(loginUser?.generation) || "-"}`}
                             {currentCompany
                               ? ` · ${currentCompany} 재직 중`
                               : ""}

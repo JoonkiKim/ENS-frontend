@@ -214,19 +214,17 @@ export default function MyPage() {
       name: major.name,
     })) || [];
 
-  // 산업군 목록 (API에서 불러온 데이터 + '기타')
-  const industries = [
-    ...(industriesData?.fetchAllIndustries?.map((ind) => ind.name) || []),
-    "기타",
-  ];
+  // 산업군 목록 (API에서 불러온 데이터, '기타' 제외)
+  const industries =
+    industriesData?.fetchAllIndustries
+      ?.filter((ind) => ind.name !== "기타")
+      .map((ind) => ind.name) || [];
 
-  // 직무 카테고리 목록 (API에서 불러온 데이터 + '기타')
-  const positionCategories = [
-    ...(positionCategoriesData?.fetchAllPositionCategories?.map(
-      (pc) => pc.name
-    ) || []),
-    "기타",
-  ];
+  // 직무 카테고리 목록 (API에서 불러온 데이터, '기타' 제외)
+  const positionCategories =
+    positionCategoriesData?.fetchAllPositionCategories
+      ?.filter((pc) => pc.name !== "기타")
+      .map((pc) => pc.name) || [];
 
   // 산업군 ID 매핑 (API에서 불러온 데이터로 동적 생성)
   const industryMap: { [key: string]: string } = {};
@@ -1925,17 +1923,7 @@ export default function MyPage() {
                       >
                         <S.CareerLabel>직무 카테고리</S.CareerLabel>
                         <S.RequiredDot />
-                        {career?.positionCategory === "기타" ? (
-                          <S.CareerInput
-                            type="text"
-                            placeholder="카테고리를 입력하세요"
-                            onClick={(e) => e.stopPropagation()}
-                            {...register(
-                              `careers.${careerIndex}.customPositionCategoryName`
-                            )}
-                            style={{ flex: 1 }}
-                          />
-                        ) : career?.positionCategory ? (
+                        {career?.positionCategory ? (
                           <S.CareerValue>
                             {career.positionCategory}
                           </S.CareerValue>
@@ -1969,9 +1957,7 @@ export default function MyPage() {
                                   );
                                 }}
                               >
-                                {positionCategory === "기타"
-                                  ? "직접 입력"
-                                  : positionCategory}
+                                {positionCategory}
                               </S.IndustryDropdownItem>
                             ))}
                           </S.IndustryDropdown>
@@ -1998,17 +1984,7 @@ export default function MyPage() {
                       >
                         <S.CareerLabel>산업군</S.CareerLabel>
                         <S.RequiredDot />
-                        {career?.industry === "기타" ? (
-                          <S.CareerInput
-                            type="text"
-                            placeholder="산업군을 입력하세요"
-                            onClick={(e) => e.stopPropagation()}
-                            {...register(
-                              `careers.${careerIndex}.customIndustryName`
-                            )}
-                            style={{ flex: 1 }}
-                          />
-                        ) : career?.industry ? (
+                        {career?.industry ? (
                           <S.CareerValue>{career.industry}</S.CareerValue>
                         ) : (
                           <S.CareerLabel
@@ -2037,7 +2013,7 @@ export default function MyPage() {
                                   handleSelectIndustry(careerIndex, industry);
                                 }}
                               >
-                                {industry === "기타" ? "직접 입력" : industry}
+                                {industry}
                               </S.IndustryDropdownItem>
                             ))}
                           </S.IndustryDropdown>

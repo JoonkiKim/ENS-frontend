@@ -183,7 +183,9 @@ export default function AlumniSearch() {
   };
 
   // 필터링된 사용자 목록 (기수 내림차순, 동일 기수는 이름 가나다 역순)
-  const users = data?.fetchAllUsers || [];
+  const users = (data?.fetchAllUsers || []).filter(
+    (user) => user.name !== "관리자"
+  );
   // 검색 인덱스를 미리 만들어 입력 시 반복 연산을 줄임
   const indexedUsers = useMemo(
     () =>

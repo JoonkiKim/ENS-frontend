@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import styled from '@emotion/styled';
+import { useState, useEffect } from "react";
+import styled from "@emotion/styled";
 
 // Modal Overlay
 const ModalOverlay = styled.div`
@@ -15,13 +15,13 @@ const ModalOverlay = styled.div`
 // Modal Container
 const ModalContainer = styled.div`
   width: 364px;
-  max-height: 90vh;
+  max-height: 95vh;
   background: white;
   border-radius: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  font-family: 'Inter', 'Noto Sans KR', sans-serif;
+  font-family: "Inter", "Noto Sans KR", sans-serif;
 `;
 
 // Modal Header
@@ -54,10 +54,10 @@ const CloseButton = styled.button`
   background: transparent;
   cursor: pointer;
   padding: 0;
-  
+
   &::before,
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     width: 14px;
     height: 1px;
@@ -65,15 +65,15 @@ const CloseButton = styled.button`
     top: 50%;
     left: 0;
   }
-  
+
   &::before {
     transform: rotate(45deg);
   }
-  
+
   &::after {
     transform: rotate(-45deg);
   }
-  
+
   &:hover::before,
   &:hover::after {
     background: #999;
@@ -90,7 +90,7 @@ const ModalBody = styled.div`
 // Section
 const Section = styled.div`
   margin-bottom: 20px;
-  
+
   &:last-of-type {
     margin-bottom: 0;
   }
@@ -160,7 +160,7 @@ const SliderInput = styled.input`
   background: transparent;
   pointer-events: none;
   appearance: none;
-  
+
   &::-webkit-slider-thumb {
     appearance: none;
     width: 22px;
@@ -172,7 +172,7 @@ const SliderInput = styled.input`
     pointer-events: auto;
     box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.1);
   }
-  
+
   &::-moz-range-thumb {
     width: 22px;
     height: 22px;
@@ -208,15 +208,15 @@ const FilterTag = styled.button<{ active?: boolean }>`
   height: 29px;
   padding: 0 20px;
   border-radius: 100px;
-  border: 1px solid ${({ active }) => (active ? '#ffb700' : '#d9d9d9')};
+  border: 1px solid ${({ active }) => (active ? "#ffb700" : "#d9d9d9")};
   background: white;
   font-size: 13px;
-  font-weight: ${({ active }) => (active ? '500' : '400')};
-  color: ${({ active }) => (active ? '#ffb700' : '#b3b3b3')};
+  font-weight: ${({ active }) => (active ? "500" : "400")};
+  color: ${({ active }) => (active ? "#ffb700" : "#b3b3b3")};
   letter-spacing: -0.26px;
   cursor: pointer;
   transition: all 0.2s;
-  
+
   &:hover {
     border-color: #ffb700;
   }
@@ -236,7 +236,7 @@ const ApplyButton = styled.button`
   cursor: pointer;
   transition: background 0.2s;
   margin-top: 20px;
-  
+
   &:hover {
     background: #e6a500;
   }
@@ -258,26 +258,26 @@ interface FilterState {
 }
 
 const industries = [
-  '게임',
-  '음악',
-  '방송',
-  '웹툰·웹소설',
-  '법조',
-  '스포츠',
-  '공연',
-  '기타',
+  "게임",
+  "음악",
+  "방송",
+  "웹툰·웹소설",
+  "법조",
+  "스포츠",
+  "공연",
+  "기타",
 ];
 
 const positions = [
-  '마케팅',
-  '기획',
-  '콘텐츠',
-  '재무',
-  'HR',
-  '광고',
-  '컨설팅',
-  '법조',
-  '기타',
+  "마케팅",
+  "기획",
+  "콘텐츠",
+  "재무",
+  "HR",
+  "광고",
+  "컨설팅",
+  "법조",
+  "기타",
 ];
 
 export default function SearchFilterModal({
@@ -286,10 +286,18 @@ export default function SearchFilterModal({
   onApply,
   initialFilters,
 }: SearchFilterModalProps) {
-  const [generationMin, setGenerationMin] = useState(initialFilters?.generationMin ?? 1);
-  const [generationMax, setGenerationMax] = useState(initialFilters?.generationMax ?? 40);
-  const [selectedIndustries, setSelectedIndustries] = useState<string[]>(initialFilters?.industries ?? []);
-  const [selectedPositions, setSelectedPositions] = useState<string[]>(initialFilters?.positions ?? []);
+  const [generationMin, setGenerationMin] = useState(
+    initialFilters?.generationMin ?? 1
+  );
+  const [generationMax, setGenerationMax] = useState(
+    initialFilters?.generationMax ?? 40
+  );
+  const [selectedIndustries, setSelectedIndustries] = useState<string[]>(
+    initialFilters?.industries ?? []
+  );
+  const [selectedPositions, setSelectedPositions] = useState<string[]>(
+    initialFilters?.positions ?? []
+  );
 
   // 모달이 열릴 때 initialFilters로 state 업데이트
   useEffect(() => {
@@ -311,28 +319,28 @@ export default function SearchFilterModal({
   useEffect(() => {
     if (isOpen) {
       const scrollY = window.scrollY;
-      document.body.style.overflowY = 'scroll';
-      document.body.style.position = 'fixed';
+      document.body.style.overflowY = "scroll";
+      document.body.style.position = "fixed";
       document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
+      document.body.style.width = "100%";
 
       const preventScroll = (e: Event) => {
         e.preventDefault();
         window.scrollTo(0, scrollY);
       };
 
-      window.addEventListener('scroll', preventScroll, { passive: false });
-      document.addEventListener('wheel', preventScroll, { passive: false });
-      document.addEventListener('touchmove', preventScroll, { passive: false });
+      window.addEventListener("scroll", preventScroll, { passive: false });
+      document.addEventListener("wheel", preventScroll, { passive: false });
+      document.addEventListener("touchmove", preventScroll, { passive: false });
 
       return () => {
-        window.removeEventListener('scroll', preventScroll);
-        document.removeEventListener('wheel', preventScroll);
-        document.removeEventListener('touchmove', preventScroll);
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
-        document.body.style.overflowY = '';
+        window.removeEventListener("scroll", preventScroll);
+        document.removeEventListener("wheel", preventScroll);
+        document.removeEventListener("touchmove", preventScroll);
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.width = "";
+        document.body.style.overflowY = "";
         window.scrollTo(0, scrollY);
       };
     }
