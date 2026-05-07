@@ -1,14 +1,18 @@
-import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import Link from 'next/link';
-import { useQuery, useMutation } from '@apollo/client';
-import * as XLSX from 'xlsx';
-import ForceWithdrawModal from '../../modals/forceWithdrawModal';
-import ForceWithdrawSuccessModal from '../../modals/forceWithdrawSuccessModal';
-import MessageModal from '../../modals/messageModal';
-import ExportModal from '../../modals/exportModal';
-import { FETCH_ALL_USERS, UPDATE_USERS_BATCH, DELETE_USER } from '../../../../commons/apis/graphql-queries';
-import { formatPhoneForDisplay } from '../../../../commons/libraries/utils';
+import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/router";
+import Link from "next/link";
+import { useQuery, useMutation } from "@apollo/client";
+import * as XLSX from "xlsx";
+import ForceWithdrawModal from "../../modals/forceWithdrawModal";
+import ForceWithdrawSuccessModal from "../../modals/forceWithdrawSuccessModal";
+import MessageModal from "../../modals/messageModal";
+import ExportModal from "../../modals/exportModal";
+import {
+  FETCH_ALL_USERS,
+  UPDATE_USERS_BATCH,
+  DELETE_USER,
+} from "../../../../commons/apis/graphql-queries";
+import { formatPhoneForDisplay } from "../../../../commons/libraries/utils";
 import {
   PageContainer,
   Sidebar,
@@ -27,7 +31,6 @@ import {
   FilterLabel,
   TableSection,
   SearchFilterBar,
-
   SearchInput,
   ButtonGroup,
   Button,
@@ -53,7 +56,7 @@ import {
   EditButton,
   Pagination,
   PaginationInfo,
-} from './adminComponent.style';
+} from "./adminComponent.style";
 
 interface Member {
   id: number;
@@ -63,7 +66,7 @@ interface Member {
   email: string;
   grade: string;
   executiveInfo: string;
-  executiveRole: 'PRESIDENT' | 'VICE_PRESIDENT' | null;
+  executiveRole: "PRESIDENT" | "VICE_PRESIDENT" | null;
   memo: string;
   userId?: string; // 실제 유저 ID (변경사항 추적용)
 }
@@ -74,8 +77,8 @@ interface User {
   generation: number;
   phone: string | null;
   email: string | null;
-  role: 'MEMBER' | 'ADMIN';
-  executiveRole: 'PRESIDENT' | 'VICE_PRESIDENT' | null;
+  role: "MEMBER" | "ADMIN";
+  executiveRole: "PRESIDENT" | "VICE_PRESIDENT" | null;
   memo: string | null;
 }
 
@@ -85,23 +88,35 @@ export default function MembersList() {
   const router = useRouter();
   const [selectedMembers, setSelectedMembers] = useState<number[]>([]);
   const [selectedGenerations, setSelectedGenerations] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [displayCount, setDisplayCount] = useState(20); // 무한스크롤용 표시 개수
-  const [selectedMemo, setSelectedMemo] = useState<{ id: number; memo: string; position: { top: number; left: number } } | null>(null);
+  const [selectedMemo, setSelectedMemo] = useState<{
+    id: number;
+    memo: string;
+    position: { top: number; left: number };
+  } | null>(null);
   const memoCellRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
   const tableContainerRef = useRef<HTMLDivElement>(null); // 스크롤 컨테이너 ref
   const [isEditMode, setIsEditMode] = useState(false);
-  const [openGradeDropdowns, setOpenGradeDropdowns] = useState<{ [key: number]: boolean }>({});
-  const [openExecutiveDropdowns, setOpenExecutiveDropdowns] = useState<{ [key: number]: boolean }>({});
-  const [isForceWithdrawModalOpen, setIsForceWithdrawModalOpen] = useState(false);
-  const [isForceWithdrawSuccessModalOpen, setIsForceWithdrawSuccessModalOpen] = useState(false);
+  const [openGradeDropdowns, setOpenGradeDropdowns] = useState<{
+    [key: number]: boolean;
+  }>({});
+  const [openExecutiveDropdowns, setOpenExecutiveDropdowns] = useState<{
+    [key: number]: boolean;
+  }>({});
+  const [isForceWithdrawModalOpen, setIsForceWithdrawModalOpen] =
+    useState(false);
+  const [isForceWithdrawSuccessModalOpen, setIsForceWithdrawSuccessModalOpen] =
+    useState(false);
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
-  const [messageModalMessage, setMessageModalMessage] = useState('');
+  const [messageModalMessage, setMessageModalMessage] = useState("");
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   // 사용자 데이터 조회
-  const { data, loading, error } = useQuery<{ fetchAllUsers: User[] }>(FETCH_ALL_USERS);
+  const { data, loading, error } = useQuery<{ fetchAllUsers: User[] }>(
+    FETCH_ALL_USERS
+  );
 
   // Batch update mutation
   const [updateUsersBatch] = useMutation(UPDATE_USERS_BATCH, {
@@ -127,28 +142,28 @@ export default function MembersList() {
       const convertedMembers = data.fetchAllUsers.map((user, index) => ({
         id: index + 1,
         generation: `${user.generation}기`,
-        name: user.name ?? '',
-        phone: user.phone ?? '',
-        email: user.email ?? '',
-        grade: user.role === 'ADMIN' ? '운영진' : '학회원',
+        name: user.name ?? "",
+        phone: user.phone ?? "",
+        email: user.email ?? "",
+        grade: user.role === "ADMIN" ? "운영진" : "학회원",
         executiveInfo:
-          user.executiveRole === 'PRESIDENT'
-            ? '학회장'
-            : user.executiveRole === 'VICE_PRESIDENT'
-              ? '부학회장'
-              : '',
+          user.executiveRole === "PRESIDENT"
+            ? "학회장"
+            : user.executiveRole === "VICE_PRESIDENT"
+            ? "부학회장"
+            : "",
         executiveRole: user.executiveRole ?? null,
-        memo: user.memo || '',
+        memo: user.memo || "",
         userId: user.id, // 실제 유저 ID 저장
       }));
-      
+
       // 유저 ID 매핑 생성
       const newUserMap = new Map<number, User>();
       data.fetchAllUsers.forEach((user, index) => {
         newUserMap.set(index + 1, user);
       });
       setUserMap(newUserMap);
-      
+
       setMembers(convertedMembers);
       setInitialMembers(convertedMembers); // 초기 데이터 저장
     }
@@ -165,22 +180,28 @@ export default function MembersList() {
   }, [searchQuery]);
 
   const handleSelectAll = () => {
-    const displayedIds = displayedMembers.map(m => m.id);
-    const allSelected = displayedIds.length > 0 && displayedIds.every(id => selectedMembers.includes(id));
-    
+    const displayedIds = displayedMembers.map((m) => m.id);
+    const allSelected =
+      displayedIds.length > 0 &&
+      displayedIds.every((id) => selectedMembers.includes(id));
+
     if (allSelected) {
       // 현재 표시된 항목들만 선택 해제
-      setSelectedMembers(selectedMembers.filter(id => !displayedIds.includes(id)));
+      setSelectedMembers(
+        selectedMembers.filter((id) => !displayedIds.includes(id))
+      );
     } else {
       // 현재 표시된 항목들 모두 선택 (기존 선택 유지)
-      const newSelected = Array.from(new Set([...selectedMembers, ...displayedIds]));
+      const newSelected = Array.from(
+        new Set([...selectedMembers, ...displayedIds])
+      );
       setSelectedMembers(newSelected);
     }
   };
 
   const handleSelectMember = (id: number) => {
     if (selectedMembers.includes(id)) {
-      setSelectedMembers(selectedMembers.filter(m => m !== id));
+      setSelectedMembers(selectedMembers.filter((m) => m !== id));
     } else {
       setSelectedMembers([...selectedMembers, id]);
     }
@@ -188,7 +209,7 @@ export default function MembersList() {
 
   const handleSelectGeneration = (gen: string) => {
     if (selectedGenerations.includes(gen)) {
-      setSelectedGenerations(selectedGenerations.filter(g => g !== gen));
+      setSelectedGenerations(selectedGenerations.filter((g) => g !== gen));
     } else {
       setSelectedGenerations([...selectedGenerations, gen]);
     }
@@ -197,17 +218,20 @@ export default function MembersList() {
   // 필터링 후 정렬: 기수 내림차순, 동일 기수는 이름 가나다 역순
   const filteredMembers = members
     .filter((member) => {
-      if (selectedGenerations.length > 0 && !selectedGenerations.includes(member.generation)) {
+      if (
+        selectedGenerations.length > 0 &&
+        !selectedGenerations.includes(member.generation)
+      ) {
         return false;
       }
       if (debouncedSearchQuery.trim()) {
         const query = debouncedSearchQuery.toLowerCase();
-        const name = member.name ?? '';
-        const email = member.email ?? '';
-        const phone = member.phone ?? '';
-        const generation = member.generation ?? '';
+        const name = member.name ?? "";
+        const email = member.email ?? "";
+        const phone = member.phone ?? "";
+        const generation = member.generation ?? "";
         const phoneNorm = formatPhoneForDisplay(phone);
-        const queryNoHyphen = query.replace(/-/g, '');
+        const queryNoHyphen = query.replace(/-/g, "");
         return (
           name.toLowerCase().includes(query) ||
           email.toLowerCase().includes(query) ||
@@ -222,7 +246,7 @@ export default function MembersList() {
       const genA = parseInt(a.generation, 10) || 0;
       const genB = parseInt(b.generation, 10) || 0;
       if (genB !== genA) return genB - genA;
-      return (b.name ?? '').localeCompare(a.name ?? '', 'ko-KR');
+      return (b.name ?? "").localeCompare(a.name ?? "", "ko-KR");
     });
 
   // 표시할 멤버 계산
@@ -238,51 +262,51 @@ export default function MembersList() {
   const handleSave = async () => {
     // 변경사항이 있는 유저만 찾기
     const updates: Array<{ userId: string; updateUserInput: any }> = [];
-    
+
     members.forEach((member, index) => {
       const initial = initialMembers[index];
       if (!initial) return;
-      
-      const hasChanges = 
-        member.grade !== initial.grade || 
+
+      const hasChanges =
+        member.grade !== initial.grade ||
         member.executiveRole !== initial.executiveRole ||
         member.memo !== initial.memo;
-      
+
       if (hasChanges) {
         const user = userMap.get(member.id);
         if (!user) return;
-        
+
         const updateUserInput: any = {};
-        
+
         // 등급 변경
         if (member.grade !== initial.grade) {
-          updateUserInput.role = member.grade === '운영진' ? 'ADMIN' : 'MEMBER';
+          updateUserInput.role = member.grade === "운영진" ? "ADMIN" : "MEMBER";
         }
 
         // 운영진 정보 변경
         if (member.executiveRole !== initial.executiveRole) {
           updateUserInput.executiveRole = member.executiveRole;
         }
-        
+
         // 메모 변경
         if (member.memo !== initial.memo) {
           updateUserInput.memo = member.memo || null;
         }
-        
+
         updates.push({
           userId: user.id,
           updateUserInput,
         });
       }
     });
-    
+
     if (updates.length === 0) {
-      setMessageModalMessage('변경사항이 없습니다.');
+      setMessageModalMessage("변경사항이 없습니다.");
       setIsMessageModalOpen(true);
       setIsEditMode(false);
       return;
     }
-    
+
     try {
       // 단일 요청으로 모든 변경사항 전송
       const result = await updateUsersBatch({
@@ -292,19 +316,21 @@ export default function MembersList() {
           },
         },
       });
-      
+
       if (result.errors) {
         throw new Error(result.errors[0].message);
       }
-      
+
       // 성공 처리
       setIsEditMode(false);
       setInitialMembers([...members]); // 초기 데이터 업데이트
-      setMessageModalMessage(`${updates.length}명의 변경사항이 저장되었습니다.`);
+      setMessageModalMessage(
+        `${updates.length}명의 변경사항이 저장되었습니다.`
+      );
       setIsMessageModalOpen(true);
     } catch (error: any) {
-      console.error('저장 중 오류:', error);
-      setMessageModalMessage(error.message || '저장 중 오류가 발생했습니다.');
+      console.error("저장 중 오류:", error);
+      setMessageModalMessage(error.message || "저장 중 오류가 발생했습니다.");
       setIsMessageModalOpen(true);
     }
   };
@@ -318,31 +344,33 @@ export default function MembersList() {
   };
 
   const handleGradeChange = (id: number, newGrade: string) => {
-    setMembers(members.map(m => m.id === id ? { ...m, grade: newGrade } : m));
+    setMembers(
+      members.map((m) => (m.id === id ? { ...m, grade: newGrade } : m))
+    );
   };
 
   const handleMemoChange = (id: number, newMemo: string) => {
-    setMembers(members.map(m => m.id === id ? { ...m, memo: newMemo } : m));
+    setMembers(members.map((m) => (m.id === id ? { ...m, memo: newMemo } : m)));
   };
 
   const handleToggleGradeDropdown = (id: number) => {
-    setOpenGradeDropdowns(prev => ({
+    setOpenGradeDropdowns((prev) => ({
       ...prev,
-      [id]: !prev[id]
+      [id]: !prev[id],
     }));
   };
 
   const handleSelectGrade = (id: number, grade: string) => {
     handleGradeChange(id, grade);
-    setOpenGradeDropdowns(prev => ({
+    setOpenGradeDropdowns((prev) => ({
       ...prev,
-      [id]: false
+      [id]: false,
     }));
   };
 
   const handleExecutiveRoleChange = (
     id: number,
-    executiveRole: 'PRESIDENT' | 'VICE_PRESIDENT' | null
+    executiveRole: "PRESIDENT" | "VICE_PRESIDENT" | null
   ) => {
     setMembers(
       members.map((m) =>
@@ -351,11 +379,11 @@ export default function MembersList() {
               ...m,
               executiveRole,
               executiveInfo:
-                executiveRole === 'PRESIDENT'
-                  ? '학회장'
-                  : executiveRole === 'VICE_PRESIDENT'
-                    ? '부학회장'
-                    : '',
+                executiveRole === "PRESIDENT"
+                  ? "학회장"
+                  : executiveRole === "VICE_PRESIDENT"
+                  ? "부학회장"
+                  : "",
             }
           : m
       )
@@ -371,7 +399,7 @@ export default function MembersList() {
 
   const handleSelectExecutiveRole = (
     id: number,
-    executiveRole: 'PRESIDENT' | 'VICE_PRESIDENT' | null
+    executiveRole: "PRESIDENT" | "VICE_PRESIDENT" | null
   ) => {
     handleExecutiveRoleChange(id, executiveRole);
     setOpenExecutiveDropdowns((prev) => ({
@@ -384,15 +412,15 @@ export default function MembersList() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      if (!target.closest('[data-grade-dropdown]')) {
+      if (!target.closest("[data-grade-dropdown]")) {
         setOpenGradeDropdowns({});
       }
     };
 
-    if (Object.values(openGradeDropdowns).some(open => open)) {
-      document.addEventListener('mousedown', handleClickOutside);
+    if (Object.values(openGradeDropdowns).some((open) => open)) {
+      document.addEventListener("mousedown", handleClickOutside);
       return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener("mousedown", handleClickOutside);
       };
     }
   }, [openGradeDropdowns]);
@@ -401,15 +429,15 @@ export default function MembersList() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      if (!target.closest('[data-executive-dropdown]')) {
+      if (!target.closest("[data-executive-dropdown]")) {
         setOpenExecutiveDropdowns({});
       }
     };
 
-    if (Object.values(openExecutiveDropdowns).some(open => open)) {
-      document.addEventListener('mousedown', handleClickOutside);
+    if (Object.values(openExecutiveDropdowns).some((open) => open)) {
+      document.addEventListener("mousedown", handleClickOutside);
       return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener("mousedown", handleClickOutside);
       };
     }
   }, [openExecutiveDropdowns]);
@@ -429,30 +457,36 @@ export default function MembersList() {
 
     const container = tableContainerRef.current;
     if (container) {
-      container.addEventListener('scroll', handleScroll);
+      container.addEventListener("scroll", handleScroll);
     }
 
     return () => {
       if (container) {
-        container.removeEventListener('scroll', handleScroll);
+        container.removeEventListener("scroll", handleScroll);
       }
     };
   }, [hasMore]);
 
   // 검색어 하이라이트 함수
-  const highlightText = (text: string | null | undefined, query: string): React.ReactNode => {
-    const safeText = text ?? '';
+  const highlightText = (
+    text: string | null | undefined,
+    query: string
+  ): React.ReactNode => {
+    const safeText = text ?? "";
     if (!query.trim()) {
       return safeText;
     }
 
-    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    const regex = new RegExp(
+      `(${query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`,
+      "gi"
+    );
     const parts = safeText.split(regex);
 
     return parts.map((part, index) => {
       if (regex.test(part)) {
         return (
-          <span key={index} style={{ color: '#ffb700', fontWeight: 600 }}>
+          <span key={index} style={{ color: "#ffb700", fontWeight: 600 }}>
             {part}
           </span>
         );
@@ -465,29 +499,29 @@ export default function MembersList() {
   const handleExportToExcel = (selectedColumns: string[]) => {
     // 필터링된 멤버들 전체를 다운로드
     if (filteredMembers.length === 0) {
-      setMessageModalMessage('다운로드할 회원이 없습니다.');
+      setMessageModalMessage("다운로드할 회원이 없습니다.");
       setIsMessageModalOpen(true);
       return;
     }
 
     // 선택된 열만 포함하는 데이터 생성
     const columnLabels: { [key: string]: string } = {
-      generation: '그룹',
-      name: '이름',
-      phone: '연락처',
-      email: '메일',
-      memo: '메모',
+      generation: "그룹",
+      name: "이름",
+      phone: "연락처",
+      email: "메일",
+      memo: "메모",
     };
 
-    const worksheetData = filteredMembers.map(member => {
+    const worksheetData = filteredMembers.map((member) => {
       const row: { [key: string]: string } = {};
-      selectedColumns.forEach(col => {
-        if (col === 'phone') {
+      selectedColumns.forEach((col) => {
+        if (col === "phone") {
           row[columnLabels[col]] =
-            formatPhoneForDisplay(member.phone ?? '') || '';
+            formatPhoneForDisplay(member.phone ?? "") || "";
         } else {
           const value = member[col as keyof Member];
-          row[columnLabels[col]] = value ? String(value) : '';
+          row[columnLabels[col]] = value ? String(value) : "";
         }
       });
       return row;
@@ -496,10 +530,10 @@ export default function MembersList() {
     // 워크북 생성
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(worksheetData);
-    XLSX.utils.book_append_sheet(wb, ws, '회원 목록');
+    XLSX.utils.book_append_sheet(wb, ws, "회원 목록");
 
     // 파일 다운로드
-    const fileName = `회원목록_${new Date().toISOString().split('T')[0]}.xlsx`;
+    const fileName = `회원목록_${new Date().toISOString().split("T")[0]}.xlsx`;
     XLSX.writeFile(wb, fileName);
 
     setIsExportModalOpen(false);
@@ -550,30 +584,30 @@ export default function MembersList() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-           <ButtonGroup>
-  <Button onClick={handleEditAll}>
-    {isEditMode ? '저장하기' : '전체 수정'}
-  </Button>
-  <Button 
-    variant={isEditMode ? 'danger' : undefined}
-    onClick={() => {
-      if (isEditMode) {
-        // 먼저 선택된 유저가 있는지 확인
-        if (selectedMembers.length === 0) {
-          setMessageModalMessage('삭제할 유저가 없습니다.');
-          setIsMessageModalOpen(true);
-          return;
-        }
-        setIsForceWithdrawModalOpen(true);
-      } else {
-        // 내보내기 모달 열기
-        setIsExportModalOpen(true);
-      }
-    }}
-  >
-    {isEditMode ? '강제 탈퇴' : '내보내기'}
-  </Button>
-</ButtonGroup>
+              <ButtonGroup>
+                <Button onClick={handleEditAll}>
+                  {isEditMode ? "저장하기" : "전체 수정"}
+                </Button>
+                <Button
+                  variant={isEditMode ? "danger" : undefined}
+                  onClick={() => {
+                    if (isEditMode) {
+                      // 먼저 선택된 유저가 있는지 확인
+                      if (selectedMembers.length === 0) {
+                        setMessageModalMessage("삭제할 유저가 없습니다.");
+                        setIsMessageModalOpen(true);
+                        return;
+                      }
+                      setIsForceWithdrawModalOpen(true);
+                    } else {
+                      // 내보내기 모달 열기
+                      setIsExportModalOpen(true);
+                    }
+                  }}
+                >
+                  {isEditMode ? "강제 탈퇴" : "내보내기"}
+                </Button>
+              </ButtonGroup>
             </SearchFilterBar>
 
             <TableContainer ref={tableContainerRef}>
@@ -584,16 +618,20 @@ export default function MembersList() {
                       <CheckboxWrapper>
                         <TableCheckbox
                           type="checkbox"
-                          checked={selectedMembers.length === displayedMembers.length && displayedMembers.length > 0}
+                          checked={
+                            selectedMembers.length ===
+                              displayedMembers.length &&
+                            displayedMembers.length > 0
+                          }
                           onChange={handleSelectAll}
                           id="header-checkbox"
                         />
                       </CheckboxWrapper>
                     </TableHeaderCell>
                     <TableHeaderCell width="50px">그룹</TableHeaderCell>
-                    <TableHeaderCell width="60px">이름</TableHeaderCell>
+                    <TableHeaderCell width="90px">이름</TableHeaderCell>
                     <TableHeaderCell width="110px">연락처</TableHeaderCell>
-                    <TableHeaderCell width="170px">메일</TableHeaderCell>
+                    <TableHeaderCell width="150px">메일</TableHeaderCell>
                     <TableHeaderCell width="110px">등급</TableHeaderCell>
                     <TableHeaderCell width="120px">운영진 정보</TableHeaderCell>
                     <TableHeaderCell>메모</TableHeaderCell>
@@ -603,190 +641,258 @@ export default function MembersList() {
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={9} style={{ textAlign: 'center', padding: '40px' }}>
+                      <TableCell
+                        colSpan={9}
+                        style={{ textAlign: "center", padding: "40px" }}
+                      >
                         로딩 중...
                       </TableCell>
                     </TableRow>
                   ) : error ? (
                     <TableRow>
-                      <TableCell colSpan={9} style={{ textAlign: 'center', padding: '40px', color: '#ff4444' }}>
+                      <TableCell
+                        colSpan={9}
+                        style={{
+                          textAlign: "center",
+                          padding: "40px",
+                          color: "#ff4444",
+                        }}
+                      >
                         데이터를 불러오는 중 오류가 발생했습니다.
                       </TableCell>
                     </TableRow>
                   ) : displayedMembers.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={9} style={{ textAlign: 'center', padding: '40px' }}>
+                      <TableCell
+                        colSpan={9}
+                        style={{ textAlign: "center", padding: "40px" }}
+                      >
                         검색 결과가 없습니다.
                       </TableCell>
                     </TableRow>
                   ) : (
                     displayedMembers.map((member) => (
-                    <TableRow key={member.id}>
-                      <TableCell>
-                        <CheckboxWrapper>
-                          <TableCheckbox
-                            type="checkbox"
-                            checked={selectedMembers.includes(member.id)}
-                            onChange={() => handleSelectMember(member.id)}
-                          />
-                        </CheckboxWrapper>
-                      </TableCell>
-                      <TableCell>{highlightText(member.generation, debouncedSearchQuery)}</TableCell>
-                      <TableCell>{highlightText(member.name, debouncedSearchQuery)}</TableCell>
-                      <TableCell>
-                        {highlightText(
-                          formatPhoneForDisplay(member.phone ?? ''),
-                          debouncedSearchQuery.replace(/-/g, '')
-                        )}
-                      </TableCell>
-                      <TableCell>{highlightText(member.email, debouncedSearchQuery)}</TableCell>
-                      <TableCell>
-                        {isEditMode ? (
-                          <GradeSelectField
-                            data-grade-dropdown
-                            onClick={() => handleToggleGradeDropdown(member.id)}
-                          >
-                            <GradeValue>{member.grade}</GradeValue>
-                            <div style={{ position: 'absolute', right: '8px',  }}>
-                              <svg width="12" height="8" viewBox="0 0 15 11" fill="none" >
-                                <path d="M1 1L7.5 9L14 1" stroke="#999999" strokeWidth="2" />
-                              </svg>
-                            </div>
-                            {openGradeDropdowns[member.id] && (
-                              <GradeDropdown data-grade-dropdown>
-                                <GradeDropdownItem 
-                                  data-grade-dropdown
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleSelectGrade(member.id, '운영진');
-                                  }}
-                                >
-                                  운영진
-                                </GradeDropdownItem>
-                                <GradeDropdownItem 
-                                  data-grade-dropdown
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleSelectGrade(member.id, '학회원');
-                                  }}
-                                >
-                                  학회원
-                                </GradeDropdownItem>
-                              </GradeDropdown>
-                            )}
-                          </GradeSelectField>
-                        ) : (
-                          member.grade
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {isEditMode ? (
-                          <GradeSelectField
-                            data-executive-dropdown
-                            onClick={() => handleToggleExecutiveDropdown(member.id)}
-                          >
-                            <GradeValue>{member.executiveInfo}</GradeValue>
-                            <div style={{ position: 'absolute', right: '8px' }}>
-                              <svg width="12" height="8" viewBox="0 0 15 11" fill="none" >
-                                <path d="M1 1L7.5 9L14 1" stroke="#999999" strokeWidth="2" />
-                              </svg>
-                            </div>
-                            {openExecutiveDropdowns[member.id] && (
-                              <GradeDropdown data-executive-dropdown>
-                                <GradeDropdownItem
-                                  data-executive-dropdown
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleSelectExecutiveRole(member.id, 'PRESIDENT');
-                                  }}
-                                >
-                                  학회장
-                                </GradeDropdownItem>
-                                <GradeDropdownItem
-                                  data-executive-dropdown
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleSelectExecutiveRole(member.id, 'VICE_PRESIDENT');
-                                  }}
-                                >
-                                  부학회장
-                                </GradeDropdownItem>
-                              </GradeDropdown>
-                            )}
-                          </GradeSelectField>
-                        ) : (
-                          member.executiveInfo
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {isEditMode ? (
-                          <MemoInput
-                            type="text"
-                            value={member.memo}
-                            onChange={(e) => handleMemoChange(member.id, e.target.value)}
-                            placeholder="메모를 입력해주세요"
-                          />
-                        ) : (
-                          <MemoCell 
-                            ref={(el) => {
-                              if (el) {
-                                memoCellRefs.current[member.id] = el;
+                      <TableRow key={member.id}>
+                        <TableCell>
+                          <CheckboxWrapper>
+                            <TableCheckbox
+                              type="checkbox"
+                              checked={selectedMembers.includes(member.id)}
+                              onChange={() => handleSelectMember(member.id)}
+                            />
+                          </CheckboxWrapper>
+                        </TableCell>
+                        <TableCell>
+                          {highlightText(
+                            member.generation,
+                            debouncedSearchQuery
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {highlightText(member.name, debouncedSearchQuery)}
+                        </TableCell>
+                        <TableCell>
+                          {highlightText(
+                            formatPhoneForDisplay(member.phone ?? ""),
+                            debouncedSearchQuery.replace(/-/g, "")
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {highlightText(member.email, debouncedSearchQuery)}
+                        </TableCell>
+                        <TableCell>
+                          {isEditMode ? (
+                            <GradeSelectField
+                              data-grade-dropdown
+                              onClick={() =>
+                                handleToggleGradeDropdown(member.id)
                               }
-                            }}
-                            onDoubleClick={() => {
-                              if (member.memo && member.memo.trim()) {
-                                const cellElement = memoCellRefs.current[member.id];
-                                if (cellElement) {
-                                  const rect = cellElement.getBoundingClientRect();
-                                  setSelectedMemo({ 
-                                    id: member.id, 
-                                    memo: member.memo,
-                                    position: {
-                                      top: rect.bottom + window.scrollY,
-                                      left: rect.left + window.scrollX
-                                    }
-                                  });
+                            >
+                              <GradeValue>{member.grade}</GradeValue>
+                              <div
+                                style={{ position: "absolute", right: "8px" }}
+                              >
+                                <svg
+                                  width="12"
+                                  height="8"
+                                  viewBox="0 0 15 11"
+                                  fill="none"
+                                >
+                                  <path
+                                    d="M1 1L7.5 9L14 1"
+                                    stroke="#999999"
+                                    strokeWidth="2"
+                                  />
+                                </svg>
+                              </div>
+                              {openGradeDropdowns[member.id] && (
+                                <GradeDropdown data-grade-dropdown>
+                                  <GradeDropdownItem
+                                    data-grade-dropdown
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleSelectGrade(member.id, "운영진");
+                                    }}
+                                  >
+                                    운영진
+                                  </GradeDropdownItem>
+                                  <GradeDropdownItem
+                                    data-grade-dropdown
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleSelectGrade(member.id, "학회원");
+                                    }}
+                                  >
+                                    학회원
+                                  </GradeDropdownItem>
+                                </GradeDropdown>
+                              )}
+                            </GradeSelectField>
+                          ) : (
+                            member.grade
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {isEditMode ? (
+                            <GradeSelectField
+                              data-executive-dropdown
+                              onClick={() =>
+                                handleToggleExecutiveDropdown(member.id)
+                              }
+                            >
+                              <GradeValue>{member.executiveInfo}</GradeValue>
+                              <div
+                                style={{ position: "absolute", right: "8px" }}
+                              >
+                                <svg
+                                  width="12"
+                                  height="8"
+                                  viewBox="0 0 15 11"
+                                  fill="none"
+                                >
+                                  <path
+                                    d="M1 1L7.5 9L14 1"
+                                    stroke="#999999"
+                                    strokeWidth="2"
+                                  />
+                                </svg>
+                              </div>
+                              {openExecutiveDropdowns[member.id] && (
+                                <GradeDropdown data-executive-dropdown>
+                                  <GradeDropdownItem
+                                    data-executive-dropdown
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleSelectExecutiveRole(
+                                        member.id,
+                                        "PRESIDENT"
+                                      );
+                                    }}
+                                  >
+                                    학회장
+                                  </GradeDropdownItem>
+                                  <GradeDropdownItem
+                                    data-executive-dropdown
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleSelectExecutiveRole(
+                                        member.id,
+                                        "VICE_PRESIDENT"
+                                      );
+                                    }}
+                                  >
+                                    부학회장
+                                  </GradeDropdownItem>
+                                </GradeDropdown>
+                              )}
+                            </GradeSelectField>
+                          ) : (
+                            member.executiveInfo
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {isEditMode ? (
+                            <MemoInput
+                              type="text"
+                              value={member.memo}
+                              onChange={(e) =>
+                                handleMemoChange(member.id, e.target.value)
+                              }
+                              placeholder="메모를 입력해주세요"
+                            />
+                          ) : (
+                            <MemoCell
+                              ref={(el) => {
+                                if (el) {
+                                  memoCellRefs.current[member.id] = el;
                                 }
-                              }
+                              }}
+                              onDoubleClick={() => {
+                                if (member.memo && member.memo.trim()) {
+                                  const cellElement =
+                                    memoCellRefs.current[member.id];
+                                  if (cellElement) {
+                                    const rect =
+                                      cellElement.getBoundingClientRect();
+                                    setSelectedMemo({
+                                      id: member.id,
+                                      memo: member.memo,
+                                      position: {
+                                        top: rect.bottom + window.scrollY,
+                                        left: rect.left + window.scrollX,
+                                      },
+                                    });
+                                  }
+                                }
+                              }}
+                              style={{
+                                cursor:
+                                  member.memo && member.memo.trim()
+                                    ? "pointer"
+                                    : "default",
+                              }}
+                            >
+                              {member.memo}
+                            </MemoCell>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <EditButton
+                            onClick={() => {
+                              if (!member.userId) return;
+                              void router.push({
+                                pathname: "/mypage",
+                                query: { userId: member.userId },
+                              });
                             }}
-                            style={{ cursor: member.memo && member.memo.trim() ? 'pointer' : 'default' }}
                           >
-                            {member.memo}
-                          </MemoCell>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <EditButton
-                          onClick={() => {
-                            if (!member.userId) return;
-                            void router.push({
-                              pathname: '/mypage',
-                              query: { userId: member.userId },
-                            });
-                          }}
-                        >
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <path
-                              d="M11.333 2.00004C11.5081 1.82494 11.716 1.68605 11.9447 1.59129C12.1735 1.49653 12.4187 1.44775 12.6663 1.44775C12.914 1.44775 13.1592 1.49653 13.3879 1.59129C13.6167 1.68605 13.8246 1.82494 13.9997 2.00004C14.1748 2.17513 14.3137 2.383 14.4084 2.61178C14.5032 2.84055 14.552 3.08575 14.552 3.33337C14.552 3.58099 14.5032 3.82619 14.4084 4.05497C14.3137 4.28374 14.1748 4.49161 13.9997 4.66671L5.33301 13.3334L1.99967 14.3334L2.99967 11L11.333 2.00004Z"
-                              stroke="#71717A"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                            {/* 스크롤바 가로 직선 */}
-                            <line
-                              x1="10"
-                              y1="13.5"
-                              x2="14"
-                              y2="13.5"
-                              stroke="#71717A"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                            />
-                          </svg>
-                        </EditButton>
-                      </TableCell>
-                    </TableRow>
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 16 16"
+                              fill="none"
+                            >
+                              <path
+                                d="M11.333 2.00004C11.5081 1.82494 11.716 1.68605 11.9447 1.59129C12.1735 1.49653 12.4187 1.44775 12.6663 1.44775C12.914 1.44775 13.1592 1.49653 13.3879 1.59129C13.6167 1.68605 13.8246 1.82494 13.9997 2.00004C14.1748 2.17513 14.3137 2.383 14.4084 2.61178C14.5032 2.84055 14.552 3.08575 14.552 3.33337C14.552 3.58099 14.5032 3.82619 14.4084 4.05497C14.3137 4.28374 14.1748 4.49161 13.9997 4.66671L5.33301 13.3334L1.99967 14.3334L2.99967 11L11.333 2.00004Z"
+                                stroke="#71717A"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                              {/* 스크롤바 가로 직선 */}
+                              <line
+                                x1="10"
+                                y1="13.5"
+                                x2="14"
+                                y2="13.5"
+                                stroke="#71717A"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                              />
+                            </svg>
+                          </EditButton>
+                        </TableCell>
+                      </TableRow>
                     ))
                   )}
                 </TableBody>
@@ -795,18 +901,19 @@ export default function MembersList() {
 
             <Pagination>
               <PaginationInfo>
-                {selectedMembers.length} of {filteredMembers.length} row(s) selected.
+                {selectedMembers.length} of {filteredMembers.length} row(s)
+                selected.
               </PaginationInfo>
             </Pagination>
           </TableSection>
         </ContentWrapper>
       </MainContent>
-      
+
       {/* Memo Modal */}
       {selectedMemo && (
         <>
           <MemoModalOverlay onClick={() => setSelectedMemo(null)} />
-          <MemoModalContainer 
+          <MemoModalContainer
             top={selectedMemo.position.top}
             left={selectedMemo.position.left}
             onClick={(e) => e.stopPropagation()}
@@ -825,21 +932,21 @@ export default function MembersList() {
           try {
             // 선택된 멤버들의 userId 가져오기
             const userIdsToDelete = selectedMembers
-              .map(memberId => {
-                const member = members.find(m => m.id === memberId);
+              .map((memberId) => {
+                const member = members.find((m) => m.id === memberId);
                 return member?.userId;
               })
               .filter((userId): userId is string => userId !== undefined);
 
             if (userIdsToDelete.length === 0) {
               setIsForceWithdrawModalOpen(false);
-              setMessageModalMessage('삭제할 유저가 없습니다.');
+              setMessageModalMessage("삭제할 유저가 없습니다.");
               setIsMessageModalOpen(true);
               return;
             }
 
             // 모든 유저 삭제 요청 (병렬 처리)
-            const deletePromises = userIdsToDelete.map(userId =>
+            const deletePromises = userIdsToDelete.map((userId) =>
               deleteUser({
                 variables: { userId },
               })
@@ -853,9 +960,11 @@ export default function MembersList() {
             setIsEditMode(false); // edit 모드 종료
             setIsForceWithdrawSuccessModalOpen(true);
           } catch (error: any) {
-            console.error('강제 탈퇴 중 오류:', error);
+            console.error("강제 탈퇴 중 오류:", error);
             setIsForceWithdrawModalOpen(false);
-            setMessageModalMessage(error.message || '강제 탈퇴 중 오류가 발생했습니다.');
+            setMessageModalMessage(
+              error.message || "강제 탈퇴 중 오류가 발생했습니다."
+            );
             setIsMessageModalOpen(true);
           }
         }}
