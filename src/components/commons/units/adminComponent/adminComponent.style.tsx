@@ -1,11 +1,11 @@
-import styled from '@emotion/styled';
+import styled from "@emotion/styled";
 
 // Page Container
 export const PageContainer = styled.div`
   display: flex;
   min-height: 100vh;
   background: #ffffff;
-  font-family: 'Inter', 'Noto Sans KR', sans-serif;
+  font-family: "Inter", "Noto Sans KR", sans-serif;
 `;
 
 // Sidebar
@@ -36,13 +36,12 @@ export const NavMenu = styled.nav`
 export const NavItem = styled.div<{ active?: boolean }>`
   padding: 10px 20px;
   font-size: 14px;
-  font-weight: ${({ active }) => (active ? '600' : '400')};
-  color: ${({ active }) => (active ? '#ffffff' : '#09090b')};
+  font-weight: ${({ active }) => (active ? "600" : "400")};
+  color: ${({ active }) => (active ? "#ffffff" : "#09090b")};
   cursor: pointer;
   transition: all 0.2s;
-  background: ${({ active }) => (active ? '#ffb700' : 'transparent')};
+  background: ${({ active }) => (active ? "#ffb700" : "transparent")};
 
-  
   &:hover {
     background: #f4f4f5;
     color: #09090b;
@@ -82,7 +81,7 @@ export const ContentWrapper = styled.div`
 
 // Filter Sidebar
 export const FilterSidebar = styled.aside`
-//   width: 250px;
+  //   width: 250px;
   min-width: 180px;
   background: white;
   border: 1px solid #e4e4e7;
@@ -123,7 +122,6 @@ export const FilterList = styled.div`
   /* ✅ Chrome / Edge / Safari */
   &::-webkit-scrollbar {
     width: 5px;
-
   }
 
   &::-webkit-scrollbar-track {
@@ -162,7 +160,7 @@ export const FilterCheckbox = styled.input`
   border-radius: 4px;
   cursor: pointer;
   accent-color: #ffb700;
-  
+
   &:checked {
     background: #ffb700;
     border-color: #ffb700;
@@ -206,11 +204,11 @@ export const SearchInput = styled.input`
   font-size: 14px;
   color: #09090b;
   box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.05);
-  
+
   &::placeholder {
     color: #71717a;
   }
-  
+
   &:focus {
     outline: none;
     border-color: #ffb700;
@@ -222,15 +220,15 @@ export const ButtonGroup = styled.div`
   gap: 6px;
 `;
 
-export const Button = styled.button<{ variant?: 'danger' }>`
+export const Button = styled.button<{ variant?: "danger" }>`
   height: 36px;
   padding: 8px 16px;
-  background: ${({ variant }) => (variant === 'danger' ? '#EF4444' : 'white')};
+  background: ${({ variant }) => (variant === "danger" ? "#EF4444" : "white")};
   border: 1px solid #e4e4e7;
   border-radius: 6px;
   font-size: 14px;
   font-weight: 500;
-  color: ${({ variant }) => (variant === 'danger' ? '#FAFAFA' : '#18181b')};
+  color: ${({ variant }) => (variant === "danger" ? "#FAFAFA" : "#18181b")};
   cursor: pointer;
   box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.05);
   transition: all 0.2s;
@@ -239,13 +237,15 @@ export const Button = styled.button<{ variant?: 'danger' }>`
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  
+
   &:hover {
-    background: ${({ variant }) => (variant === 'danger' ? '#DC2626' : '#f4f4f5')};
+    background: ${({ variant }) =>
+      variant === "danger" ? "#DC2626" : "#f4f4f5"};
   }
-  
+
   &:active {
-    background: ${({ variant }) => (variant === 'danger' ? '#B91C1C' : '#e4e4e7')};
+    background: ${({ variant }) =>
+      variant === "danger" ? "#B91C1C" : "#e4e4e7"};
   }
 `;
 
@@ -259,7 +259,7 @@ export const TableContainer = styled.div`
   display: flex;
   flex-direction: column;
   min-height: 0;
-  max-height: 700px;
+  max-height: 500px;
   overflow-y: auto;
   overflow-x: hidden;
 
@@ -298,11 +298,11 @@ export const TableHeader = styled.thead`
 
 export const TableRow = styled.tr`
   border-bottom: 1px solid #e4e4e7;
-  
+
   &:last-child {
     border-bottom: none;
   }
-  
+
   &:hover {
     background: #fafafa;
   }
@@ -314,9 +314,9 @@ export const TableHeaderCell = styled.th<{ width?: string }>`
   font-size: 12px;
   font-weight: 500;
   color: #71717a;
-  width: ${({ width }) => width || 'auto'};
+  width: ${({ width }) => width || "auto"};
   height: 40px;
-// vertical-align: middle; // 이 줄 추가
+  // vertical-align: middle; // 이 줄 추가
 `;
 
 export const TableBody = styled.tbody``;
@@ -349,7 +349,7 @@ export const GradeSelectField = styled.div`
   position: relative;
   background: white;
   cursor: pointer;
-  
+
   &:focus-within {
     border-color: #ffb700;
   }
@@ -382,15 +382,15 @@ export const GradeDropdownItem = styled.div`
   letter-spacing: -0.28px;
   cursor: pointer;
   transition: background-color 0.2s;
-  
+
   &:hover {
     background-color: #e5e5e5;
   }
-  
+
   &:first-of-type {
     border-radius: 3px 3px 0 0;
   }
-  
+
   &:last-of-type {
     border-radius: 0 0 3px 3px;
   }
@@ -406,11 +406,11 @@ export const MemoInput = styled.input`
   font-size: 14px;
   color: #09090b;
   font-family: inherit;
-  
+
   &::placeholder {
     color: #71717a;
   }
-  
+
   &:focus {
     outline: none;
     border-color: #ffb700;
@@ -455,21 +455,21 @@ export const MemoModalCloseButton = styled.button`
   align-items: center;
   justify-content: center;
   z-index: 10;
-  
+
   &::before,
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     width: 10px;
     height: 1px;
     background: #71717a;
     border-radius: 1px;
   }
-  
+
   &::before {
     transform: rotate(45deg);
   }
-  
+
   &::after {
     transform: rotate(-45deg);
   }
@@ -492,7 +492,7 @@ export const TableCheckbox = styled.input`
   border-radius: 4px;
   cursor: pointer;
   accent-color: #ffb700;
-  
+
   &:checked {
     background: #ffb700;
     border-color: #ffb700;
@@ -518,11 +518,11 @@ export const EditButton = styled.button`
   justify-content: center;
   border-radius: 4px;
   transition: background 0.2s;
-  
+
   &:hover {
     background: #f4f4f5;
   }
-  
+
   svg {
     display: block;
   }
@@ -564,7 +564,7 @@ export const Select = styled.select`
   font-size: 14px;
   color: #09090b;
   cursor: pointer;
-  
+
   &:focus {
     outline: none;
     border-color: #ffb700;
@@ -594,11 +594,11 @@ export const PaginationButton = styled.button`
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
-  
+
   &:hover:not(:disabled) {
     background: #f4f4f5;
   }
-  
+
   &:disabled {
     color: #d4d4d8;
     cursor: not-allowed;
