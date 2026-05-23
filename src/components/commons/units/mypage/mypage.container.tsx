@@ -1298,9 +1298,10 @@ export default function MyPage() {
       linkedin: formData.linkedin || undefined,
       noCoffeeChat: formData.noCoffeeChat || false,
       abroad: formData.abroad || false,
-      memo: formData.adminNotes || undefined,
-      userMajors: userMajors.length > 0 ? userMajors : undefined,
-      careers: careers.length > 0 ? careers : undefined,
+      // 운영진만 memo 전송 (빈 문자열도 전송해 삭제 반영)
+      ...(isAdmin ? { memo: formData.adminNotes } : {}),
+      userMajors,
+      careers,
       ...passwordData,
     };
   };

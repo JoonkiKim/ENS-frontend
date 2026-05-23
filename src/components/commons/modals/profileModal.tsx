@@ -375,6 +375,38 @@ const CareerPeriod = styled.span`
   letter-spacing: -0.34px;
 `;
 
+const AdminNotesSection = styled.div`
+  padding: 0 51px 40px;
+`;
+
+const AdminNotesTitle = styled.h2`
+  font-size: 26px;
+  font-weight: 600;
+  color: black;
+  letter-spacing: -0.52px;
+  margin: 0 0 20px 0;
+`;
+
+const AdminNotesContent = styled.div`
+  width: 100%;
+  min-height: 120px;
+  padding: 18px;
+  border: 1px solid #d9d9d9;
+  border-radius: 3px;
+  font-size: 14px;
+  color: #2c2c2c;
+  letter-spacing: -0.28px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  box-sizing: border-box;
+  background: white;
+
+  &.empty {
+    color: #b3b3b3;
+  }
+`;
+
 const EditButton = styled.button`
   padding: 8px 20px;
   background: #ffb700;
@@ -437,6 +469,7 @@ interface User {
   entrance: number | null;
   noCoffeeChat: boolean;
   abroad: boolean;
+  memo: string | null;
   userMajors: UserMajor[] | null;
   careers: Career[] | null;
 }
@@ -827,6 +860,20 @@ export default function ProfileModal({
                   )}
                 </CareerList>
               </CareerSection>
+            )}
+
+            {user && isAdmin && (
+              <>
+                <Divider />
+                <AdminNotesSection>
+                  <AdminNotesTitle>운영진 참고 사항</AdminNotesTitle>
+                  <AdminNotesContent
+                    className={user.memo?.trim() ? undefined : "empty"}
+                  >
+                    {user.memo?.trim() || "등록된 참고 사항이 없습니다."}
+                  </AdminNotesContent>
+                </AdminNotesSection>
+              </>
             )}
           </ModalBody>
         </ModalContainer>

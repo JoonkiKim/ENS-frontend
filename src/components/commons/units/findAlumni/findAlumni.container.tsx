@@ -63,15 +63,54 @@ interface User {
     };
     startDate?: string | null;
     endDate?: string | null;
+    createdAt?: string | null;
   }>;
 }
 
-/** 표시용 경력: 현재 재직 중인 경력만 사용 */
-function getDisplayCareer(user: User) {
-  const list = user.careers;
+type UserCareer = NonNullable<User["careers"]>[number];
+
+function hasCompanyOrPosition(career: UserCareer): boolean {
+  return !!(career.company?.trim() || career.position?.trim());
+}
+
+function hasEmploymentPeriod(career: UserCareer): boolean {
+  return !!career.startDate;
+}
+
+/** createdAt 기준 최신 경력 1건 선택 (동일 시 배열 뒤쪽 = 마지막 추가 우선) */
+function pickLatestCareer(careers: UserCareer[]): UserCareer | undefined {
+  if (!careers.length) return undefined;
+
+  return [...careers]
+    .map((career, index) => ({ career, index }))
+    .sort((a, b) => {
+      const aTime = a.career.createdAt
+        ? new Date(a.career.createdAt).getTime()
+        : 0;
+      const bTime = b.career.createdAt
+        ? new Date(b.career.createdAt).getTime()
+        : 0;
+      if (bTime !== aTime) return bTime - aTime;
+      return b.index - a.index;
+    })[0].career;
+}
+
+/**
+ * 표시용 경력
+ * 1. 재직 중(isCurrent) — 여러 건이면 최신
+ * 2. 재직기간(입사년월) 미설정 — 여러 건이면 최신
+ */
+function getDisplayCareer(user: User): UserCareer | undefined {
+  const list = user.careers?.filter(hasCompanyOrPosition);
   if (!list?.length) return undefined;
 
-  return list.find((c) => c.isCurrent);
+  const currentJobs = list.filter((c) => c.isCurrent);
+  if (currentJobs.length) return pickLatestCareer(currentJobs);
+
+  const withoutPeriod = list.filter((c) => !hasEmploymentPeriod(c));
+  if (withoutPeriod.length) return pickLatestCareer(withoutPeriod);
+
+  return undefined;
 }
 
 export default function AlumniSearch() {
@@ -528,8 +567,16 @@ export default function AlumniSearch() {
                 </S.TableCell>
               </S.TableRow>
             ) : (
-              displayedUsers.map((user) => (
-                <S.TableRow key={user.id}>
+              displayedUsers.map((user, index) => {
+                const nextUser = filteredUsers[index + 1];
+                const isGenerationBoundary =
+                  nextUser != null && user.generation !== nextUser.generation;
+
+                return (
+                <S.TableRow
+                  key={user.id}
+                  $isGenerationBoundary={isGenerationBoundary}
+                >
                   <S.TableCell>{user.generation}</S.TableCell>
                   <S.TableCell>
                     {user.executiveRole === "PRESIDENT" ? (
@@ -574,7 +621,8 @@ export default function AlumniSearch() {
                     </S.ProfileLink>
                   </S.TableCell>
                 </S.TableRow>
-              ))
+                );
+              })
             )}
           </S.TableScrollContainer>
 

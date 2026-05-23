@@ -152,6 +152,7 @@ export const FETCH_ALL_USERS = gql`
         startDate
         endDate
         isCurrent
+        createdAt
         positionCategory {
           id
           name

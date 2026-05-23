@@ -460,7 +460,7 @@ export const TableHeader = styled.div`
   }
 `;
 
-export const TableRow = styled.div`
+export const TableRow = styled.div<{ $isGenerationBoundary?: boolean }>`
   display: grid;
   grid-template-columns: 70px 140px 180px 200px 120px 140px 100px;
   gap: 10px;
@@ -469,7 +469,8 @@ export const TableRow = styled.div`
   font-weight: 500;
   color: #2c2c2c;
   letter-spacing: -0.26px;
-  border-bottom: 1px solid #d9d9d9;
+  border-bottom: ${({ $isGenerationBoundary }) =>
+    $isGenerationBoundary ? "1px solid #757575" : "1px solid #d9d9d9"};
   transition: background-color 0.2s;
 
   &:hover {
