@@ -30,6 +30,10 @@ import {
   LoadingOverlay,
 } from "../../../../commons/libraries/loadingOverlay";
 
+/** API 마스터 '기타'는 드롭다운에서 숨기고, UI에는 이 라벨로 직접 입력 유도 */
+const CAREER_DIRECT_INPUT_LABEL = "직접입력";
+const CAREER_CUSTOM_VALUE = "기타";
+
 interface MajorField {
   id: number;
   value: string;
@@ -167,6 +171,17 @@ export default function MyPage() {
         searchQuery: string;
         isDropdownOpen: boolean;
         filteredMajors: Array<{ id: string; name: string }>;
+      }
+    >
+  >({});
+
+  // 경력 산업군·직무 카테고리 직접 입력 모드 (careerIndex 기준)
+  const [careerCustomStates, setCareerCustomStates] = useState<
+    Record<
+      number,
+      {
+        isIndustryCustom?: boolean;
+        isPositionCustom?: boolean;
       }
     >
   >({});
@@ -503,16 +518,23 @@ export default function MyPage() {
             : null;
           const endDate = career.endDate ? new Date(career.endDate) : null;
 
-          // 산업군 처리: 백엔드에서 받은 데이터는 ID를 사용
-          // 사용자가 '직접 입력'을 선택한 경우에만 custom 필드 사용
           let industryName = career.industry?.name;
           let customIndustryName: string | undefined = undefined;
-          // 백엔드에서 받은 커스텀 데이터는 ID가 있으므로 ID 사용
-          // 사용자가 '직접 입력'을 선택한 경우에만 '기타'로 표시하고 custom 필드 사용
+          if (career.industry?.isCustom) {
+            industryName = CAREER_CUSTOM_VALUE;
+            customIndustryName = career.industry.name;
+          } else if (industryName === CAREER_CUSTOM_VALUE) {
+            customIndustryName = "";
+          }
 
-          // 직무 카테고리 처리: 백엔드에서 받은 데이터는 ID를 사용
           let positionCategoryName = career.positionCategory?.name;
           let customPositionCategoryName: string | undefined = undefined;
+          if (career.positionCategory?.isCustom) {
+            positionCategoryName = CAREER_CUSTOM_VALUE;
+            customPositionCategoryName = career.positionCategory.name;
+          } else if (positionCategoryName === CAREER_CUSTOM_VALUE) {
+            customPositionCategoryName = "";
+          }
 
           return {
             id: index + 1,
@@ -532,6 +554,26 @@ export default function MyPage() {
             leaveMonth: endDate ? endDate.getMonth() + 1 : undefined,
           };
         });
+
+        const customStates: Record<
+          number,
+          { isIndustryCustom?: boolean; isPositionCustom?: boolean }
+        > = {};
+        user.careers.forEach((career, index) => {
+          customStates[index] = {
+            isIndustryCustom: !!(
+              career.industry?.isCustom ||
+              career.industry?.name === CAREER_CUSTOM_VALUE
+            ),
+            isPositionCustom: !!(
+              career.positionCategory?.isCustom ||
+              career.positionCategory?.name === CAREER_CUSTOM_VALUE
+            ),
+          };
+        });
+        setCareerCustomStates(customStates);
+      } else {
+        setCareerCustomStates({});
       }
 
       // 폼 데이터 리셋
@@ -698,6 +740,7 @@ export default function MyPage() {
 
   // 경력 추가 함수
   const handleAddCareer = () => {
+    const newCareerIndex = careerFields.length;
     const newId =
       careerFields.length > 0
         ? Math.max(
@@ -719,7 +762,7 @@ export default function MyPage() {
     });
     setCareerDropdownStates((prev) => ({
       ...prev,
-      [newId]: {
+      [newCareerIndex]: {
         isIndustryDropdownOpen: false,
         isPositionDropdownOpen: false,
         isDatePickerOpen: false,
@@ -730,20 +773,29 @@ export default function MyPage() {
         isLeaveMonthDropdownOpen: false,
       },
     }));
+    setCareerCustomStates((prev) => ({
+      ...prev,
+      [newCareerIndex]: {
+        isIndustryCustom: false,
+        isPositionCustom: false,
+      },
+    }));
   };
 
   // 경력 삭제 함수
   const handleRemoveCareer = (careerIndex: number) => {
     removeCareer(careerIndex);
-    setCareerDropdownStates((prev) => {
-      const next: typeof prev = {};
+    const reindexCareerState = <T,>(prev: Record<number, T>) => {
+      const next: Record<number, T> = {};
       Object.entries(prev).forEach(([key, value]) => {
         const index = Number(key);
         if (index < careerIndex) next[index] = value;
         if (index > careerIndex) next[index - 1] = value;
       });
       return next;
-    });
+    };
+    setCareerDropdownStates(reindexCareerState);
+    setCareerCustomStates(reindexCareerState);
   };
 
   // 산업군 드롭다운 토글
@@ -777,15 +829,26 @@ export default function MyPage() {
   // 산업군 선택
   const handleSelectIndustry = (careerIndex: number, industry: string) => {
     setValue(`careers.${careerIndex}.industry`, industry);
-    // '기타'가 아닌 경우 ID 설정
-    if (industry !== "기타") {
+    if (industry !== CAREER_CUSTOM_VALUE) {
+      setValue(`careers.${careerIndex}.customIndustryName`, undefined);
       const industryId = industryMap[industry];
       if (industryId) {
         setValue(`careers.${careerIndex}.industryId`, industryId);
       }
+      setCareerCustomStates((prev) => ({
+        ...prev,
+        [careerIndex]: { ...prev[careerIndex], isIndustryCustom: false },
+      }));
     } else {
-      // '기타'인 경우 ID 제거
       setValue(`careers.${careerIndex}.industryId`, undefined);
+      setValue(
+        `careers.${careerIndex}.customIndustryName`,
+        careers[careerIndex]?.customIndustryName ?? ""
+      );
+      setCareerCustomStates((prev) => ({
+        ...prev,
+        [careerIndex]: { ...prev[careerIndex], isIndustryCustom: true },
+      }));
     }
     setCareerDropdownStates((prev) => ({
       ...prev,
@@ -827,8 +890,8 @@ export default function MyPage() {
     positionCategory: string
   ) => {
     setValue(`careers.${careerIndex}.positionCategory`, positionCategory);
-    // '기타'가 아닌 경우 ID 설정
-    if (positionCategory !== "기타") {
+    if (positionCategory !== CAREER_CUSTOM_VALUE) {
+      setValue(`careers.${careerIndex}.customPositionCategoryName`, undefined);
       const positionCategoryId = positionCategoryMap[positionCategory];
       if (positionCategoryId) {
         setValue(
@@ -836,9 +899,20 @@ export default function MyPage() {
           positionCategoryId
         );
       }
+      setCareerCustomStates((prev) => ({
+        ...prev,
+        [careerIndex]: { ...prev[careerIndex], isPositionCustom: false },
+      }));
     } else {
-      // '기타'인 경우 ID 제거
       setValue(`careers.${careerIndex}.positionCategoryId`, undefined);
+      setValue(
+        `careers.${careerIndex}.customPositionCategoryName`,
+        careers[careerIndex]?.customPositionCategoryName ?? ""
+      );
+      setCareerCustomStates((prev) => ({
+        ...prev,
+        [careerIndex]: { ...prev[careerIndex], isPositionCustom: true },
+      }));
     }
     setCareerDropdownStates((prev) => ({
       ...prev,
@@ -1208,7 +1282,7 @@ export default function MyPage() {
         let customPositionCategoryName: string | null = null;
         if (career.positionCategory) {
           if (
-            career.positionCategory === "기타" &&
+            career.positionCategory === CAREER_CUSTOM_VALUE &&
             career.customPositionCategoryName
           ) {
             // 사용자가 '직접 입력'을 선택하고 커스텀 이름을 입력한 경우
@@ -1217,7 +1291,7 @@ export default function MyPage() {
           } else if (career.positionCategoryId) {
             // 백엔드에서 받은 ID가 있는 경우 (커스텀 데이터 포함)
             positionCategoryId = career.positionCategoryId;
-          } else if (career.positionCategory !== "기타") {
+          } else if (career.positionCategory !== CAREER_CUSTOM_VALUE) {
             // 드롭다운에서 선택한 경우 ID 매핑에서 찾기
             positionCategoryId =
               positionCategoryMap[career.positionCategory] || null;
@@ -1228,13 +1302,16 @@ export default function MyPage() {
         let industryId: string | null = null;
         let customIndustryName: string | null = null;
         if (career.industry) {
-          if (career.industry === "기타" && career.customIndustryName) {
+          if (
+            career.industry === CAREER_CUSTOM_VALUE &&
+            career.customIndustryName
+          ) {
             // 사용자가 '직접 입력'을 선택하고 커스텀 이름을 입력한 경우
             customIndustryName = career.customIndustryName.trim() || null;
           } else if (career.industryId) {
             // 백엔드에서 받은 ID가 있는 경우 (커스텀 데이터 포함)
             industryId = career.industryId;
-          } else if (career.industry !== "기타") {
+          } else if (career.industry !== CAREER_CUSTOM_VALUE) {
             // 드롭다운에서 선택한 경우 ID 매핑에서 찾기
             industryId = industryMap[career.industry] || null;
           }
@@ -1882,6 +1959,9 @@ export default function MyPage() {
             {careerFields.map((field, careerIndex) => {
               const career = careers[careerIndex];
               const dropdownState = careerDropdownStates[careerIndex] || {};
+              const customState = careerCustomStates[careerIndex] || {};
+              const isPositionCustom = !!customState.isPositionCustom;
+              const isIndustryCustom = !!customState.isIndustryCustom;
               return (
                 <S.CareerItem key={field.id}>
                   <S.RemoveButton
@@ -1924,7 +2004,18 @@ export default function MyPage() {
                       >
                         <S.CareerLabel>직무 카테고리</S.CareerLabel>
                         <S.RequiredDot />
-                        {career?.positionCategory ? (
+                        {isPositionCustom ? (
+                          <S.CareerInput
+                            type="text"
+                            placeholder="직무 카테고리를 입력하세요"
+                            alt="직무 카테고리 직접입력"
+                            onClick={(e) => e.stopPropagation()}
+                            {...register(
+                              `careers.${careerIndex}.customPositionCategoryName`
+                            )}
+                          />
+                        ) : career?.positionCategory &&
+                          career.positionCategory !== CAREER_CUSTOM_VALUE ? (
                           <S.CareerValue>
                             {career.positionCategory}
                           </S.CareerValue>
@@ -1961,6 +2052,19 @@ export default function MyPage() {
                                 {positionCategory}
                               </S.IndustryDropdownItem>
                             ))}
+                            <S.IndustryDropdownItem
+                              key="position-direct-input"
+                              data-dropdown-item
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSelectPosition(
+                                  careerIndex,
+                                  CAREER_CUSTOM_VALUE
+                                );
+                              }}
+                            >
+                              {CAREER_DIRECT_INPUT_LABEL}
+                            </S.IndustryDropdownItem>
                           </S.IndustryDropdown>
                         )}
                       </S.CareerField>
@@ -1985,7 +2089,18 @@ export default function MyPage() {
                       >
                         <S.CareerLabel>산업군</S.CareerLabel>
                         <S.RequiredDot />
-                        {career?.industry ? (
+                        {isIndustryCustom ? (
+                          <S.CareerInput
+                            type="text"
+                            placeholder="산업군을 입력하세요"
+                            alt="산업군 직접입력"
+                            onClick={(e) => e.stopPropagation()}
+                            {...register(
+                              `careers.${careerIndex}.customIndustryName`
+                            )}
+                          />
+                        ) : career?.industry &&
+                          career.industry !== CAREER_CUSTOM_VALUE ? (
                           <S.CareerValue>{career.industry}</S.CareerValue>
                         ) : (
                           <S.CareerLabel
@@ -2017,6 +2132,19 @@ export default function MyPage() {
                                 {industry}
                               </S.IndustryDropdownItem>
                             ))}
+                            <S.IndustryDropdownItem
+                              key="industry-direct-input"
+                              data-dropdown-item
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSelectIndustry(
+                                  careerIndex,
+                                  CAREER_CUSTOM_VALUE
+                                );
+                              }}
+                            >
+                              {CAREER_DIRECT_INPUT_LABEL}
+                            </S.IndustryDropdownItem>
                           </S.IndustryDropdown>
                         )}
                       </S.CareerField>
