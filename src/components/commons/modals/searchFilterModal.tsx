@@ -84,7 +84,7 @@ const CloseButton = styled.button`
 const ModalBody = styled.div`
   overflow-y: auto;
   flex: 1;
-  padding: 20px 25px 20px;
+  padding: 10px 25px 20px;
 `;
 
 // Section
@@ -104,11 +104,15 @@ const SectionTitle = styled.h3`
   margin: 0 0 16px 0;
 `;
 
+const GenerationSectionTitle = styled(SectionTitle)`
+  margin: 0;
+`;
+
 const Divider = styled.div`
   height: 8px;
   background: rgba(217, 217, 217, 0.1);
   box-shadow: inset 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
-  margin: 0 -25px 24px;
+  margin: 0 -25px 10px;
 `;
 
 // Range Slider
@@ -258,19 +262,19 @@ interface FilterState {
 }
 
 const industries = [
-  "게임",
   "음악",
-  "방송",
+  "방송·언론",
+  "게임",
   "웹툰·웹소설",
-  "법조",
   "스포츠",
-  "공연",
+  "법조",
+  "금융",
   "기타",
 ];
 
 const positions = [
   "마케팅",
-  "기획",
+  "전략·기획",
   "콘텐츠",
   "재무",
   "HR",
@@ -412,7 +416,7 @@ export default function SearchFilterModal({
             <ModalBody>
               {/* 기수 */}
               <Section>
-                <SectionTitle>기수</SectionTitle>
+                <GenerationSectionTitle>기수</GenerationSectionTitle>
                 <RangeDisplay>
                   <RangeText>
                     {generationMin}기 ~ {generationMax}기

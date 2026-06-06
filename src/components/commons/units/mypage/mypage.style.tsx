@@ -635,6 +635,7 @@ export const CareerDivider = styled.div`
 
 export const CareerLabel = styled.span`
   font-size: 14px;
+  line-height: 14px;
   color: #b3b3b3;
   letter-spacing: -0.28px;
   white-space: nowrap;
@@ -643,6 +644,7 @@ export const CareerLabel = styled.span`
 
 export const CareerValue = styled.span`
   font-size: 14px;
+  line-height: 14px;
   color: #2c2c2c;
   letter-spacing: -0.28px;
   opacity: 0.77;
@@ -651,17 +653,21 @@ export const CareerValue = styled.span`
 export const CareerInput = styled.input`
   flex: 1;
   min-width: 0;
-  height: 100%;
+  height: auto;
+  align-self: center;
   border: none;
   outline: none;
   background: transparent;
   font-size: 14px;
+  line-height: 14px;
   color: #2c2c2c;
   letter-spacing: -0.28px;
   padding: 0;
+  margin: 0;
 
   &::placeholder {
     color: #b3b3b3;
+    line-height: 14px;
   }
 
   &:focus {

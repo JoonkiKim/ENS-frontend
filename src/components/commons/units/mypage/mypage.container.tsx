@@ -34,6 +34,17 @@ import {
 const CAREER_DIRECT_INPUT_LABEL = "직접입력";
 const CAREER_CUSTOM_VALUE = "기타";
 
+/** 산업군 드롭다운 표시 순서 (API '기타' 제외, 맨 아래 '직접입력' 별도) */
+const INDUSTRY_DISPLAY_ORDER = [
+  "음악",
+  "방송·언론",
+  "게임",
+  "웹툰·웹소설",
+  "스포츠",
+  "법조",
+  "금융",
+];
+
 interface MajorField {
   id: number;
   value: string;
@@ -229,11 +240,19 @@ export default function MyPage() {
       name: major.name,
     })) || [];
 
-  // 산업군 목록 (API에서 불러온 데이터, '기타' 제외)
-  const industries =
+  // 산업군 목록: 고정 순서 → 순서에 없는 API 항목(직접입력 바로 위) → '직접입력'은 JSX에서 별도
+  const apiIndustryNames =
     industriesData?.fetchAllIndustries
       ?.filter((ind) => ind.name !== "기타")
       .map((ind) => ind.name) || [];
+  const apiIndustryNameSet = new Set(apiIndustryNames);
+  const orderedIndustries = INDUSTRY_DISPLAY_ORDER.filter((name) =>
+    apiIndustryNameSet.has(name)
+  );
+  const extraIndustries = apiIndustryNames
+    .filter((name) => !INDUSTRY_DISPLAY_ORDER.includes(name))
+    .sort((a, b) => a.localeCompare(b, "ko"));
+  const industries = [...orderedIndustries, ...extraIndustries];
 
   // 직무 카테고리 목록 (API에서 불러온 데이터, '기타' 제외)
   const positionCategories =

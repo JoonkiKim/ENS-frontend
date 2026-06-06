@@ -438,23 +438,14 @@ export default function AlumniSearch() {
                     handleOpenFilterModal();
                   }}
                 >
-                  <S.SearchIcon viewBox="0 0 16 16" fill="none">
-                    <circle
-                      cx="8"
-                      cy="8"
-                      r="7.25"
-                      stroke="white"
-                      strokeWidth="1.5"
-                    />
-                    <line
-                      x1="13.5"
-                      y1="13.5"
-                      x2="15.5"
-                      y2="15.5"
-                      stroke="white"
-                      strokeWidth="1.5"
-                    />
-                  </S.SearchIcon>
+                  <S.FilterIcon
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path d="M2 3.5H14L8 11Z" fill="white" />
+                    <rect x="7.25" y="9" width="1.5" height="6" fill="white" />
+                  </S.FilterIcon>
                 </S.SearchButton>
               </S.SearchBox>
             </S.SearchContainer>
@@ -573,54 +564,54 @@ export default function AlumniSearch() {
                   nextUser != null && user.generation !== nextUser.generation;
 
                 return (
-                <S.TableRow
-                  key={user.id}
-                  $isGenerationBoundary={isGenerationBoundary}
-                >
-                  <S.TableCell>{user.generation}</S.TableCell>
-                  <S.TableCell>
-                    {user.executiveRole === "PRESIDENT" ? (
-                      <span style={{ color: "#4C73D9" }}>
-                        {user.name}
-                        <img
-                          src="/images/crown.svg"
-                          alt="학회장"
-                          style={{
-                            width: 12,
-                            height: 12,
-                            marginLeft: 4,
-                            verticalAlign: "middle",
-                          }}
-                        />
-                      </span>
-                    ) : user.executiveRole === "VICE_PRESIDENT" ? (
-                      <span style={{ color: "#4C73D9" }}>{user.name}</span>
-                    ) : (
-                      user.name
-                    )}
-                  </S.TableCell>
-                  <S.TableCell>
-                    {formatPhoneForDisplay(user.phone) || "-"}
-                  </S.TableCell>
-                  <S.TableCell>
-                    <S.EmailLink href={`mailto:${user.email}`}>
-                      {user.email}
-                    </S.EmailLink>
-                  </S.TableCell>
-                  <S.TableCell>{getCurrentCompany(user)}</S.TableCell>
-                  <S.TableCell>{getPositionInfo(user)}</S.TableCell>
-                  <S.TableCell>
-                    <S.ProfileLink
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleOpenModal(user.id);
-                      }}
-                    >
-                      더보기
-                    </S.ProfileLink>
-                  </S.TableCell>
-                </S.TableRow>
+                  <S.TableRow
+                    key={user.id}
+                    $isGenerationBoundary={isGenerationBoundary}
+                  >
+                    <S.TableCell>{user.generation}</S.TableCell>
+                    <S.TableCell>
+                      {user.executiveRole === "PRESIDENT" ? (
+                        <span style={{ color: "#4C73D9" }}>
+                          {user.name}
+                          <img
+                            src="/images/crown.svg"
+                            alt="학회장"
+                            style={{
+                              width: 12,
+                              height: 12,
+                              marginLeft: 4,
+                              verticalAlign: "middle",
+                            }}
+                          />
+                        </span>
+                      ) : user.executiveRole === "VICE_PRESIDENT" ? (
+                        <span style={{ color: "#4C73D9" }}>{user.name}</span>
+                      ) : (
+                        user.name
+                      )}
+                    </S.TableCell>
+                    <S.TableCell>
+                      {formatPhoneForDisplay(user.phone) || "-"}
+                    </S.TableCell>
+                    <S.TableCell>
+                      <S.EmailLink href={`mailto:${user.email}`}>
+                        {user.email}
+                      </S.EmailLink>
+                    </S.TableCell>
+                    <S.TableCell>{getCurrentCompany(user)}</S.TableCell>
+                    <S.TableCell>{getPositionInfo(user)}</S.TableCell>
+                    <S.TableCell>
+                      <S.ProfileLink
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleOpenModal(user.id);
+                        }}
+                      >
+                        더보기
+                      </S.ProfileLink>
+                    </S.TableCell>
+                  </S.TableRow>
                 );
               })
             )}

@@ -1,11 +1,12 @@
-import styled from '@emotion/styled';
+import styled from "@emotion/styled";
 
 export const Container = styled.div`
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
   background-color: white;
-  font-family: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: "Inter", "Noto Sans KR", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
 `;
 
 // Header Styles
@@ -68,7 +69,7 @@ export const NavItem = styled.a`
 export const Hero = styled.section`
   position: relative;
   height: 586px;
-  background-image: url('/images/findalumni-background-real.png');
+  background-image: url("/images/findalumni-background-real.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -79,7 +80,9 @@ export const Hero = styled.section`
   overflow: hidden;
 `;
 
-export const BlurCircle = styled.div<{ variant?: 'blur-1' | 'blur-2' | 'blur-3' }>`
+export const BlurCircle = styled.div<{
+  variant?: "blur-1" | "blur-2" | "blur-3";
+}>`
   position: absolute;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.8);
@@ -88,21 +91,21 @@ export const BlurCircle = styled.div<{ variant?: 'blur-1' | 'blur-2' | 'blur-3' 
 
   ${({ variant }) => {
     switch (variant) {
-      case 'blur-1':
+      case "blur-1":
         return `
           width: 225px;
           height: 220px;
           top: 104px;
           right: 87px;
         `;
-      case 'blur-2':
+      case "blur-2":
         return `
           width: 131px;
           height: 126px;
           top: 261px;
           right: 31px;
         `;
-      case 'blur-3':
+      case "blur-3":
         return `
           width: 433px;
           height: 302px;
@@ -110,13 +113,13 @@ export const BlurCircle = styled.div<{ variant?: 'blur-1' | 'blur-2' | 'blur-3' 
           right: -70px;
         `;
       default:
-        return '';
+        return "";
     }
   }}
 `;
 
 export const HeroTitle = styled.h1`
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: "Noto Sans KR", sans-serif;
   font-size: 72px;
   font-weight: 700;
   color: #303030;
@@ -134,7 +137,7 @@ export const HeroTitle = styled.h1`
 `;
 
 export const HeroDescription = styled.p`
-  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 16px;
   color: black;
   text-align: center;
@@ -152,8 +155,7 @@ export const HeroDescription = styled.p`
 
 // Search Section Styles
 export const SearchSection = styled.section`
-
-width: 80%;
+  width: 80%;
   position: relative;
   // padding: 90px 50px 60px;
   background: transparent;
@@ -182,7 +184,7 @@ export const SearchLabelWrapper = styled.div`
 `;
 
 export const SearchLabel = styled.div`
-  font-family: 'Pretendard', sans-serif;
+  font-family: "Pretendard", sans-serif;
   font-size: 20px;
   font-weight: 800;
   color: black;
@@ -283,9 +285,10 @@ export const SearchButton = styled.button`
   }
 `;
 
-export const SearchIcon = styled.svg`
-  width: 20px;
-  height: 20px;
+export const FilterIcon = styled.svg`
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
 `;
 
 // Results Section Styles
@@ -313,7 +316,7 @@ export const FilterIconWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   button {
     width: 24px;
     height: 24px;
@@ -321,16 +324,16 @@ export const FilterIconWrapper = styled.div`
     border: none;
     padding: 0;
     cursor: default;
-    
+
     &:hover {
       background: transparent;
       border: none;
     }
-    
+
     &:active {
       background: transparent;
     }
-    
+
     svg {
       width: 24px;
       height: 24px;
@@ -367,7 +370,7 @@ export const FilterTagText = styled.div`
   align-items: center;
   justify-content: center;
   text-align: center;
-  line-height: 1;  // 추가: FilterTagRemove와 동일하게
+  line-height: 1; // 추가: FilterTagRemove와 동일하게
 `;
 
 export const FilterTagRemove = styled.button`
@@ -384,7 +387,7 @@ export const FilterTagRemove = styled.button`
   color: white;
   font-size: 14px;
   line-height: 1;
-  
+
   &:hover {
     opacity: 0.7;
   }
@@ -416,12 +419,10 @@ export const TableScrollContainer = styled.div`
 
   &::-webkit-scrollbar-track {
     background: #f1f1f1;
-
   }
 
   &::-webkit-scrollbar-thumb {
     background: #d9d9d9;
-   
 
     &:hover {
       background: #b3b3b3;
@@ -535,8 +536,8 @@ export const PageNav = styled.span`
 `;
 
 export const PageNumber = styled.span<{ active?: boolean }>`
-  color: ${({ active }) => (active ? '#ffb700' : '#b3b3b3')};
-  font-weight: ${({ active }) => (active ? '600' : 'normal')};
+  color: ${({ active }) => (active ? "#ffb700" : "#b3b3b3")};
+  font-weight: ${({ active }) => (active ? "600" : "normal")};
   cursor: pointer;
   transition: color 0.2s;
 
