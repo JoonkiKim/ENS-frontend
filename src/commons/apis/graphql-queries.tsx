@@ -152,6 +152,7 @@ export const FETCH_ALL_USERS = gql`
         startDate
         endDate
         isCurrent
+        adminOnly
         createdAt
         positionCategory {
           id
@@ -196,6 +197,7 @@ export const FETCH_USER = gql`
         startDate
         endDate
         isCurrent
+        adminOnly
         positionCategory {
           id
           name

@@ -17,7 +17,6 @@ import CheckModal from "../../modals/checkModal";
 import {
   FETCH_LOGIN_USER,
   FETCH_USER,
-  FETCH_ALL_USERS,
   UPDATE_USER,
   LOGOUT,
   FETCH_ALL_MAJORS,
@@ -325,6 +324,7 @@ export default function MyPage() {
   const { data: userData, loading: userLoading } = useQuery(FETCH_USER, {
     variables: { userId: targetUserId || "" },
     skip: !canQueryProtected || !targetUserId, // userId 없거나 인증 전이면 실행하지 않음
+    fetchPolicy: "network-only",
   });
 
   // 데이터 통합
@@ -341,11 +341,10 @@ export default function MyPage() {
       targetUserId
         ? { query: FETCH_USER, variables: { userId: targetUserId } }
         : { query: FETCH_LOGIN_USER },
-      { query: FETCH_ALL_USERS },
       { query: FETCH_ALL_MAJORS },
       { query: FETCH_ALL_INDUSTRIES },
       { query: FETCH_ALL_POSITION_CATEGORIES },
-    ], // 업데이트 후 데이터 다시 불러오기
+    ], // 업데이트 후 사용자·마스터 데이터만 refetch (FETCH_ALL_USERS는 adminOnly 캐시 오염 방지)
     awaitRefetchQueries: true,
   });
 
@@ -558,7 +557,7 @@ export default function MyPage() {
           return {
             id: index + 1,
             isCurrentJob: career.isCurrent || false,
-            isPrivate: career.adminOnly || false,
+            isPrivate: !!career.adminOnly,
             company: career.company || "",
             position: career.position || "",
             industry: industryName,
