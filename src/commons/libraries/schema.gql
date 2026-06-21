@@ -63,6 +63,8 @@ type User {
   phone: String
   imageUrl: String
   email: String
+  phoneAdminOnly: Boolean!
+  emailAdminOnly: Boolean!
   entrance: Int!
   userMajors: [UserMajor!]
   linkedin: String
@@ -162,6 +164,8 @@ input UpdateUserInput {
   email: String
   password: String
   phone: String
+  phoneAdminOnly: Boolean
+  emailAdminOnly: Boolean
   generation: Int
   entrance: Int
   imageUrl: String

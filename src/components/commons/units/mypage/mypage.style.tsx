@@ -341,6 +341,11 @@ export const FormInputWrapper = styled.div`
   max-width: 413px;
 `;
 
+export const ContactFormInputWrapper = styled(FormInputWrapper)`
+  max-width: none;
+  width: fit-content;
+`;
+
 export const Input = styled.input<{ active?: boolean }>`
   width: 100%;
   height: 51px;
@@ -878,6 +883,23 @@ export const RequiredDot = styled.span`
   background: #ffb700;
   border-radius: 50%;
   flex-shrink: 0;
+`;
+
+export const ContactInputRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+`;
+
+export const ContactInputGroup = styled.div`
+  width: 413px;
+  max-width: 413px;
+  flex-shrink: 0;
+`;
+
+export const ContactAdminOnly = styled.div`
+  flex-shrink: 0;
+  white-space: nowrap;
 `;
 
 export const CareerCheckboxes = styled.div`

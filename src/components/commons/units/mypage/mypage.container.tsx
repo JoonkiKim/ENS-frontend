@@ -71,8 +71,10 @@ interface CareerField {
 interface FormData {
   name: string;
   phone: string;
+  phoneAdminOnly: boolean;
   emailLocal: string;
   emailDomain: string;
+  emailAdminOnly: boolean;
   linkedin: string;
   generation?: number;
   studentId?: number;
@@ -123,8 +125,10 @@ export default function MyPage() {
       defaultValues: {
         name: "",
         phone: "",
+        phoneAdminOnly: false,
         emailLocal: "",
         emailDomain: "",
+        emailAdminOnly: false,
         linkedin: "",
         generation: undefined,
         studentId: undefined,
@@ -598,8 +602,10 @@ export default function MyPage() {
       reset({
         name: user.name || "",
         phone: user.phone || "",
+        phoneAdminOnly: user.phoneAdminOnly || false,
         emailLocal,
         emailDomain,
+        emailAdminOnly: user.emailAdminOnly || false,
         linkedin: user.linkedin || "",
         generation: user.generation,
         studentId: user.entrance,
@@ -1156,6 +1162,14 @@ export default function MyPage() {
     setValue(`careers.${careerIndex}.isPrivate`, !currentValue);
   };
 
+  const handleTogglePhoneAdminOnly = () => {
+    setValue("phoneAdminOnly", !watch("phoneAdminOnly"));
+  };
+
+  const handleToggleEmailAdminOnly = () => {
+    setValue("emailAdminOnly", !watch("emailAdminOnly"));
+  };
+
   // 재직 중 체크박스 토글
   const handleToggleCurrentJob = (careerIndex: number) => {
     const currentValue = careers[careerIndex]?.isCurrentJob || false;
@@ -1387,7 +1401,9 @@ export default function MyPage() {
     return {
       name: formData.name || undefined,
       phone: formData.phone || undefined,
+      phoneAdminOnly: formData.phoneAdminOnly || false,
       email: email || undefined,
+      emailAdminOnly: formData.emailAdminOnly || false,
       generation: formData.generation || undefined,
       entrance: formData.studentId || undefined,
       linkedin: formData.linkedin || undefined,
@@ -1881,13 +1897,23 @@ export default function MyPage() {
             <S.FormLabelWrapper>
               <S.FormLabel className="required">전화번호</S.FormLabel>
             </S.FormLabelWrapper>
-            <S.FormInputWrapper>
-              <S.Input
-                type="tel"
-                placeholder="전화번호를 입력하세요"
-                {...register("phone")}
-              />
-            </S.FormInputWrapper>
+            <S.ContactFormInputWrapper>
+              <S.ContactInputRow>
+                <S.ContactInputGroup>
+                  <S.Input
+                    type="tel"
+                    placeholder="전화번호를 입력하세요"
+                    {...register("phone")}
+                  />
+                </S.ContactInputGroup>
+                <S.ContactAdminOnly>
+                  <S.CheckboxLabel onClick={handleTogglePhoneAdminOnly}>
+                    <S.CheckboxBox checked={watch("phoneAdminOnly")} />
+                    <span>운영진에게만 공개</span>
+                  </S.CheckboxLabel>
+                </S.ContactAdminOnly>
+              </S.ContactInputRow>
+            </S.ContactFormInputWrapper>
           </S.FormField>
 
           {/* 이메일 */}
@@ -1895,61 +1921,71 @@ export default function MyPage() {
             <S.FormLabelWrapper>
               <S.FormLabel className="required">이메일</S.FormLabel>
             </S.FormLabelWrapper>
-            <S.FormInputWrapper>
-              <S.EmailField>
-                <S.EmailInput type="text" {...register("emailLocal")} />
-                <S.EmailAt>@</S.EmailAt>
-                <S.EmailDomainSelectField
-                  isClickable={true}
-                  onClick={handleToggleEmailDomainDropdown}
-                  data-dropdown-field
-                >
-                  {isEmailDomainCustom ||
-                  (emailDomain &&
-                    emailDomain !== "gmail.com" &&
-                    emailDomain !== "naver.com") ? (
-                    <S.EmailInput
-                      type="text"
-                      placeholder="도메인을 입력하세요"
-                      onClick={(e) => e.stopPropagation()}
-                      {...register("emailDomain")}
-                      style={{ border: "none", padding: 0, width: "100%" }}
-                    />
-                  ) : emailDomain ? (
-                    <S.GenerationValue>{emailDomain}</S.GenerationValue>
-                  ) : (
-                    <S.GenerationPlaceholder></S.GenerationPlaceholder>
-                  )}
-                  <S.DropdownIcon
-                    style={{ position: "absolute", right: "5px" }}
-                  >
-                    <svg viewBox="0 0 15 11" fill="none">
-                      <path
-                        d="M1 1L7.5 9L14 1"
-                        stroke="#999999"
-                        strokeWidth="2"
-                      />
-                    </svg>
-                  </S.DropdownIcon>
-                  {isEmailDomainDropdownOpen && (
-                    <S.IndustryDropdown data-dropdown-container>
-                      {emailDomains.map((domain) => (
-                        <S.IndustryDropdownItem
-                          key={domain}
-                          data-dropdown-item
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSelectEmailDomain(domain);
-                          }}
-                        >
-                          {domain === "기타" ? "직접 입력" : domain}
-                        </S.IndustryDropdownItem>
-                      ))}
-                    </S.IndustryDropdown>
-                  )}
-                </S.EmailDomainSelectField>
-              </S.EmailField>
-            </S.FormInputWrapper>
+            <S.ContactFormInputWrapper>
+              <S.ContactInputRow>
+                <S.ContactInputGroup>
+                  <S.EmailField>
+                    <S.EmailInput type="text" {...register("emailLocal")} />
+                    <S.EmailAt>@</S.EmailAt>
+                    <S.EmailDomainSelectField
+                      isClickable={true}
+                      onClick={handleToggleEmailDomainDropdown}
+                      data-dropdown-field
+                    >
+                      {isEmailDomainCustom ||
+                      (emailDomain &&
+                        emailDomain !== "gmail.com" &&
+                        emailDomain !== "naver.com") ? (
+                        <S.EmailInput
+                          type="text"
+                          placeholder="도메인을 입력하세요"
+                          onClick={(e) => e.stopPropagation()}
+                          {...register("emailDomain")}
+                          style={{ border: "none", padding: 0, width: "100%" }}
+                        />
+                      ) : emailDomain ? (
+                        <S.GenerationValue>{emailDomain}</S.GenerationValue>
+                      ) : (
+                        <S.GenerationPlaceholder></S.GenerationPlaceholder>
+                      )}
+                      <S.DropdownIcon
+                        style={{ position: "absolute", right: "5px" }}
+                      >
+                        <svg viewBox="0 0 15 11" fill="none">
+                          <path
+                            d="M1 1L7.5 9L14 1"
+                            stroke="#999999"
+                            strokeWidth="2"
+                          />
+                        </svg>
+                      </S.DropdownIcon>
+                      {isEmailDomainDropdownOpen && (
+                        <S.IndustryDropdown data-dropdown-container>
+                          {emailDomains.map((domain) => (
+                            <S.IndustryDropdownItem
+                              key={domain}
+                              data-dropdown-item
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSelectEmailDomain(domain);
+                              }}
+                            >
+                              {domain === "기타" ? "직접 입력" : domain}
+                            </S.IndustryDropdownItem>
+                          ))}
+                        </S.IndustryDropdown>
+                      )}
+                    </S.EmailDomainSelectField>
+                  </S.EmailField>
+                </S.ContactInputGroup>
+                <S.ContactAdminOnly>
+                  <S.CheckboxLabel onClick={handleToggleEmailAdminOnly}>
+                    <S.CheckboxBox checked={watch("emailAdminOnly")} />
+                    <span>운영진에게만 공개</span>
+                  </S.CheckboxLabel>
+                </S.ContactAdminOnly>
+              </S.ContactInputRow>
+            </S.ContactFormInputWrapper>
           </S.FormField>
 
           {/* 링크드인 */}

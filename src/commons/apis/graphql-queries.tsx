@@ -70,6 +70,8 @@ export const FETCH_LOGIN_USER = gql`
       name
       email
       phone
+      phoneAdminOnly
+      emailAdminOnly
       generation
       entrance
       imageUrl
@@ -175,6 +177,8 @@ export const FETCH_USER = gql`
       generation
       phone
       email
+      phoneAdminOnly
+      emailAdminOnly
       imageUrl
       linkedin
       entrance
@@ -219,6 +223,8 @@ export const UPDATE_USER = gql`
       name
       email
       phone
+      phoneAdminOnly
+      emailAdminOnly
       generation
       entrance
       imageUrl
