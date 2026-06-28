@@ -29,11 +29,10 @@ import {
   LoadingOverlay,
 } from "../../../../commons/libraries/loadingOverlay";
 
-/** API 마스터 '기타'는 드롭다운에서 숨기고, UI에는 이 라벨로 직접 입력 유도 */
-const CAREER_DIRECT_INPUT_LABEL = "직접입력";
-const CAREER_CUSTOM_VALUE = "기타";
+/** 산업군·직무 '기타' 마스터 값 (드롭다운 맨 아래 선택지로 노출) */
+const ETC_VALUE = "기타";
 
-/** 산업군 드롭다운 표시 순서 (API '기타' 제외, 맨 아래 '직접입력' 별도) */
+/** 산업군 드롭다운 표시 순서 ('기타'는 항상 맨 아래에 별도로 추가) */
 const INDUSTRY_DISPLAY_ORDER = [
   "음악",
   "방송·언론",
@@ -58,10 +57,8 @@ interface CareerField {
   position?: string;
   industry?: string;
   industryId?: string;
-  customIndustryName?: string;
   positionCategory?: string;
   positionCategoryId?: string;
-  customPositionCategoryName?: string;
   joinYear?: number;
   joinMonth?: number;
   leaveYear?: number;
@@ -189,17 +186,6 @@ export default function MyPage() {
     >
   >({});
 
-  // 경력 산업군·직무 카테고리 직접 입력 모드 (careerIndex 기준)
-  const [careerCustomStates, setCareerCustomStates] = useState<
-    Record<
-      number,
-      {
-        isIndustryCustom?: boolean;
-        isPositionCustom?: boolean;
-      }
-    >
-  >({});
-
   // 기수 목록 생성 (40기부터 1기까지 역순)
   const generations = Array.from({ length: 40 }, (_, i) => 40 - i);
 
@@ -243,11 +229,15 @@ export default function MyPage() {
       name: major.name,
     })) || [];
 
-  // 산업군 목록: 고정 순서 → 순서에 없는 API 항목(직접입력 바로 위) → '직접입력'은 JSX에서 별도
-  const apiIndustryNames =
+  // 산업군 목록: 커스텀(isCustom) 데이터 제외 → 고정 순서 → 나머지 → '기타'는 항상 맨 아래
+  const standardIndustryNames =
     industriesData?.fetchAllIndustries
-      ?.filter((ind) => ind.name !== "기타")
+      ?.filter((ind) => !ind.isCustom || ind.name === ETC_VALUE)
       .map((ind) => ind.name) || [];
+  const hasEtcIndustry = standardIndustryNames.includes(ETC_VALUE);
+  const apiIndustryNames = standardIndustryNames.filter(
+    (name) => name !== ETC_VALUE
+  );
   const apiIndustryNameSet = new Set(apiIndustryNames);
   const orderedIndustries = INDUSTRY_DISPLAY_ORDER.filter((name) =>
     apiIndustryNameSet.has(name)
@@ -255,13 +245,22 @@ export default function MyPage() {
   const extraIndustries = apiIndustryNames
     .filter((name) => !INDUSTRY_DISPLAY_ORDER.includes(name))
     .sort((a, b) => a.localeCompare(b, "ko"));
-  const industries = [...orderedIndustries, ...extraIndustries];
+  const industries = [
+    ...orderedIndustries,
+    ...extraIndustries,
+    ...(hasEtcIndustry ? [ETC_VALUE] : []),
+  ];
 
-  // 직무 카테고리 목록 (API에서 불러온 데이터, '기타' 제외)
-  const positionCategories =
+  // 직무 카테고리 목록: 커스텀(isCustom) 데이터 제외, '기타'는 항상 맨 아래
+  const standardPositionCategoryNames =
     positionCategoriesData?.fetchAllPositionCategories
-      ?.filter((pc) => pc.name !== "기타")
+      ?.filter((pc) => !pc.isCustom || pc.name === ETC_VALUE)
       .map((pc) => pc.name) || [];
+  const hasEtcPosition = standardPositionCategoryNames.includes(ETC_VALUE);
+  const positionCategories = [
+    ...standardPositionCategoryNames.filter((name) => name !== ETC_VALUE),
+    ...(hasEtcPosition ? [ETC_VALUE] : []),
+  ];
 
   // 산업군 ID 매핑 (API에서 불러온 데이터로 동적 생성)
   const industryMap: { [key: string]: string } = {};
@@ -540,23 +539,13 @@ export default function MyPage() {
             : null;
           const endDate = career.endDate ? new Date(career.endDate) : null;
 
-          let industryName = career.industry?.name;
-          let customIndustryName: string | undefined = undefined;
-          if (career.industry?.isCustom) {
-            industryName = CAREER_CUSTOM_VALUE;
-            customIndustryName = career.industry.name;
-          } else if (industryName === CAREER_CUSTOM_VALUE) {
-            customIndustryName = "";
-          }
-
-          let positionCategoryName = career.positionCategory?.name;
-          let customPositionCategoryName: string | undefined = undefined;
-          if (career.positionCategory?.isCustom) {
-            positionCategoryName = CAREER_CUSTOM_VALUE;
-            customPositionCategoryName = career.positionCategory.name;
-          } else if (positionCategoryName === CAREER_CUSTOM_VALUE) {
-            customPositionCategoryName = "";
-          }
+          // 기존 커스텀(직접입력) 데이터는 '기타'로 치환하여 표시
+          const industryName = career.industry?.isCustom
+            ? ETC_VALUE
+            : career.industry?.name;
+          const positionCategoryName = career.positionCategory?.isCustom
+            ? ETC_VALUE
+            : career.positionCategory?.name;
 
           return {
             id: index + 1,
@@ -566,36 +555,14 @@ export default function MyPage() {
             position: career.position || "",
             industry: industryName,
             industryId: career.industry?.id, // 백엔드에서 받은 ID 사용
-            customIndustryName: customIndustryName, // 초기에는 undefined, 사용자가 직접 입력한 경우에만 값 설정
             positionCategory: positionCategoryName,
             positionCategoryId: career.positionCategory?.id, // 백엔드에서 받은 ID 사용
-            customPositionCategoryName: customPositionCategoryName, // 초기에는 undefined, 사용자가 직접 입력한 경우에만 값 설정
             joinYear: startDate ? startDate.getFullYear() : undefined,
             joinMonth: startDate ? startDate.getMonth() + 1 : undefined,
             leaveYear: endDate ? endDate.getFullYear() : undefined,
             leaveMonth: endDate ? endDate.getMonth() + 1 : undefined,
           };
         });
-
-        const customStates: Record<
-          number,
-          { isIndustryCustom?: boolean; isPositionCustom?: boolean }
-        > = {};
-        user.careers.forEach((career, index) => {
-          customStates[index] = {
-            isIndustryCustom: !!(
-              career.industry?.isCustom ||
-              career.industry?.name === CAREER_CUSTOM_VALUE
-            ),
-            isPositionCustom: !!(
-              career.positionCategory?.isCustom ||
-              career.positionCategory?.name === CAREER_CUSTOM_VALUE
-            ),
-          };
-        });
-        setCareerCustomStates(customStates);
-      } else {
-        setCareerCustomStates({});
       }
 
       // 폼 데이터 리셋
@@ -797,13 +764,6 @@ export default function MyPage() {
         isLeaveMonthDropdownOpen: false,
       },
     }));
-    setCareerCustomStates((prev) => ({
-      ...prev,
-      [newCareerIndex]: {
-        isIndustryCustom: false,
-        isPositionCustom: false,
-      },
-    }));
   };
 
   // 경력 삭제 함수
@@ -819,7 +779,6 @@ export default function MyPage() {
       return next;
     };
     setCareerDropdownStates(reindexCareerState);
-    setCareerCustomStates(reindexCareerState);
   };
 
   // 산업군 드롭다운 토글
@@ -853,27 +812,7 @@ export default function MyPage() {
   // 산업군 선택
   const handleSelectIndustry = (careerIndex: number, industry: string) => {
     setValue(`careers.${careerIndex}.industry`, industry);
-    if (industry !== CAREER_CUSTOM_VALUE) {
-      setValue(`careers.${careerIndex}.customIndustryName`, undefined);
-      const industryId = industryMap[industry];
-      if (industryId) {
-        setValue(`careers.${careerIndex}.industryId`, industryId);
-      }
-      setCareerCustomStates((prev) => ({
-        ...prev,
-        [careerIndex]: { ...prev[careerIndex], isIndustryCustom: false },
-      }));
-    } else {
-      setValue(`careers.${careerIndex}.industryId`, undefined);
-      setValue(
-        `careers.${careerIndex}.customIndustryName`,
-        careers[careerIndex]?.customIndustryName ?? ""
-      );
-      setCareerCustomStates((prev) => ({
-        ...prev,
-        [careerIndex]: { ...prev[careerIndex], isIndustryCustom: true },
-      }));
-    }
+    setValue(`careers.${careerIndex}.industryId`, industryMap[industry]);
     setCareerDropdownStates((prev) => ({
       ...prev,
       [careerIndex]: { ...prev[careerIndex], isIndustryDropdownOpen: false },
@@ -914,30 +853,10 @@ export default function MyPage() {
     positionCategory: string
   ) => {
     setValue(`careers.${careerIndex}.positionCategory`, positionCategory);
-    if (positionCategory !== CAREER_CUSTOM_VALUE) {
-      setValue(`careers.${careerIndex}.customPositionCategoryName`, undefined);
-      const positionCategoryId = positionCategoryMap[positionCategory];
-      if (positionCategoryId) {
-        setValue(
-          `careers.${careerIndex}.positionCategoryId`,
-          positionCategoryId
-        );
-      }
-      setCareerCustomStates((prev) => ({
-        ...prev,
-        [careerIndex]: { ...prev[careerIndex], isPositionCustom: false },
-      }));
-    } else {
-      setValue(`careers.${careerIndex}.positionCategoryId`, undefined);
-      setValue(
-        `careers.${careerIndex}.customPositionCategoryName`,
-        careers[careerIndex]?.customPositionCategoryName ?? ""
-      );
-      setCareerCustomStates((prev) => ({
-        ...prev,
-        [careerIndex]: { ...prev[careerIndex], isPositionCustom: true },
-      }));
-    }
+    setValue(
+      `careers.${careerIndex}.positionCategoryId`,
+      positionCategoryMap[positionCategory]
+    );
     setCareerDropdownStates((prev) => ({
       ...prev,
       [careerIndex]: { ...prev[careerIndex], isPositionDropdownOpen: false },
@@ -1309,53 +1228,29 @@ export default function MyPage() {
           endDate = date.toISOString();
         }
 
-        // 직무 카테고리 처리
+        // 직무 카테고리 처리 (ID 매핑만, 직접입력 제거)
         let positionCategoryId: string | null = null;
-        let customPositionCategoryName: string | null = null;
         if (career.positionCategory) {
-          if (
-            career.positionCategory === CAREER_CUSTOM_VALUE &&
-            career.customPositionCategoryName
-          ) {
-            // 사용자가 '직접 입력'을 선택하고 커스텀 이름을 입력한 경우
-            customPositionCategoryName =
-              career.customPositionCategoryName.trim() || null;
-          } else if (career.positionCategoryId) {
-            // 백엔드에서 받은 ID가 있는 경우 (커스텀 데이터 포함)
-            positionCategoryId = career.positionCategoryId;
-          } else if (career.positionCategory !== CAREER_CUSTOM_VALUE) {
-            // 드롭다운에서 선택한 경우 ID 매핑에서 찾기
-            positionCategoryId =
-              positionCategoryMap[career.positionCategory] || null;
-          }
+          positionCategoryId =
+            career.positionCategoryId ||
+            positionCategoryMap[career.positionCategory] ||
+            null;
         }
 
-        // 산업군 처리
+        // 산업군 처리 (ID 매핑만, 직접입력 제거)
         let industryId: string | null = null;
-        let customIndustryName: string | null = null;
         if (career.industry) {
-          if (
-            career.industry === CAREER_CUSTOM_VALUE &&
-            career.customIndustryName
-          ) {
-            // 사용자가 '직접 입력'을 선택하고 커스텀 이름을 입력한 경우
-            customIndustryName = career.customIndustryName.trim() || null;
-          } else if (career.industryId) {
-            // 백엔드에서 받은 ID가 있는 경우 (커스텀 데이터 포함)
-            industryId = career.industryId;
-          } else if (career.industry !== CAREER_CUSTOM_VALUE) {
-            // 드롭다운에서 선택한 경우 ID 매핑에서 찾기
-            industryId = industryMap[career.industry] || null;
-          }
+          industryId =
+            career.industryId || industryMap[career.industry] || null;
         }
 
         return {
           company: career.company!.trim(),
           position: career.position!.trim(),
           positionCategoryId: positionCategoryId,
-          customPositionCategoryName: customPositionCategoryName,
+          customPositionCategoryName: null,
           industryId: industryId,
-          customIndustryName: customIndustryName,
+          customIndustryName: null,
           startDate: startDate || null,
           endDate: endDate || null,
           isCurrent: career.isCurrentJob || false,
@@ -2013,9 +1908,6 @@ export default function MyPage() {
             {careerFields.map((field, careerIndex) => {
               const career = careers[careerIndex];
               const dropdownState = careerDropdownStates[careerIndex] || {};
-              const customState = careerCustomStates[careerIndex] || {};
-              const isPositionCustom = !!customState.isPositionCustom;
-              const isIndustryCustom = !!customState.isIndustryCustom;
               return (
                 <S.CareerItem key={field.id}>
                   <S.RemoveButton
@@ -2058,18 +1950,7 @@ export default function MyPage() {
                       >
                         <S.CareerLabel>직무 카테고리</S.CareerLabel>
                         <S.RequiredDot />
-                        {isPositionCustom ? (
-                          <S.CareerInput
-                            type="text"
-                            placeholder="직무 카테고리를 입력하세요"
-                            alt="직무 카테고리 직접입력"
-                            onClick={(e) => e.stopPropagation()}
-                            {...register(
-                              `careers.${careerIndex}.customPositionCategoryName`
-                            )}
-                          />
-                        ) : career?.positionCategory &&
-                          career.positionCategory !== CAREER_CUSTOM_VALUE ? (
+                        {career?.positionCategory ? (
                           <S.CareerValue>
                             {career.positionCategory}
                           </S.CareerValue>
@@ -2106,19 +1987,6 @@ export default function MyPage() {
                                 {positionCategory}
                               </S.IndustryDropdownItem>
                             ))}
-                            <S.IndustryDropdownItem
-                              key="position-direct-input"
-                              data-dropdown-item
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleSelectPosition(
-                                  careerIndex,
-                                  CAREER_CUSTOM_VALUE
-                                );
-                              }}
-                            >
-                              {CAREER_DIRECT_INPUT_LABEL}
-                            </S.IndustryDropdownItem>
                           </S.IndustryDropdown>
                         )}
                       </S.CareerField>
@@ -2143,18 +2011,7 @@ export default function MyPage() {
                       >
                         <S.CareerLabel>산업군</S.CareerLabel>
                         <S.RequiredDot />
-                        {isIndustryCustom ? (
-                          <S.CareerInput
-                            type="text"
-                            placeholder="산업군을 입력하세요"
-                            alt="산업군 직접입력"
-                            onClick={(e) => e.stopPropagation()}
-                            {...register(
-                              `careers.${careerIndex}.customIndustryName`
-                            )}
-                          />
-                        ) : career?.industry &&
-                          career.industry !== CAREER_CUSTOM_VALUE ? (
+                        {career?.industry ? (
                           <S.CareerValue>{career.industry}</S.CareerValue>
                         ) : (
                           <S.CareerLabel
@@ -2186,19 +2043,6 @@ export default function MyPage() {
                                 {industry}
                               </S.IndustryDropdownItem>
                             ))}
-                            <S.IndustryDropdownItem
-                              key="industry-direct-input"
-                              data-dropdown-item
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleSelectIndustry(
-                                  careerIndex,
-                                  CAREER_CUSTOM_VALUE
-                                );
-                              }}
-                            >
-                              {CAREER_DIRECT_INPUT_LABEL}
-                            </S.IndustryDropdownItem>
                           </S.IndustryDropdown>
                         )}
                       </S.CareerField>
@@ -2513,10 +2357,11 @@ export default function MyPage() {
             </S.AdminNotesSection>
           )}
 
-          <S.SaveButton onClick={handleSave} disabled={updateLoading}>
-            {updateLoading ? "저장 중..." : "변경사항 저장"}
-          </S.SaveButton>
         </S.ButtonWrapper>
+
+        <S.SaveButton onClick={handleSave} disabled={updateLoading}>
+          {updateLoading ? "저장 중..." : "변경사항 저장"}
+        </S.SaveButton>
       </S.Container>
 
       {/* Message Modal */}

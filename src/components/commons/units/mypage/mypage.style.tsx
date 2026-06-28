@@ -972,21 +972,29 @@ export const AddCareerButton = styled.button`
 `;
 
 export const SaveButton = styled.button`
-  width: calc(100% - 106px);
-  height: 45px;
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+  height: 44px;
   display: block;
   border: none;
-  border-radius: 3px;
+  border-radius: 0;
   background: #ffb700;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: white;
   letter-spacing: -0.28px;
   cursor: pointer;
   transition: background 0.2s;
-  margin: 0 53px;
+  z-index: 1000;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
 
   &:hover {
     background: #e6a500;
+  }
+
+  &:disabled {
+    background: #d9d9d9;
+    cursor: not-allowed;
   }
 `;
