@@ -703,7 +703,7 @@ export const IndustryDropdown = styled.div`
   margin-top: 4px;
   max-height: 400px;
   overflow-y: auto;
-  z-index: 100;
+  z-index: 1100;
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
 `;
 
@@ -739,7 +739,7 @@ export const DatePickerPopover = styled.div`
   border-radius: 3px;
   margin-top: 4px;
   padding: 20px;
-  z-index: 100;
+  z-index: 1100;
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
 `;
@@ -801,7 +801,7 @@ export const YearDropdown = styled.div`
   margin-top: 4px;
   max-height: 200px;
   overflow-y: auto;
-  z-index: 101;
+  z-index: 1101;
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
   border: 1px solid #d9d9d9;
 `;
@@ -837,7 +837,7 @@ export const MonthDropdown = styled.div`
   margin-top: 4px;
   max-height: 200px;
   overflow-y: auto;
-  z-index: 101;
+  z-index: 1101;
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
   border: 1px solid #d9d9d9;
 `;
