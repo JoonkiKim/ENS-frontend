@@ -224,8 +224,8 @@ export const DeleteButton = styled.button`
 
 export const PostBody = styled.div`
   font-size: 15px;
-  font-weight: 500;
-  color: rgba(44, 44, 44, 0.6);
+  font-weight: 400;
+  color: rgba(44, 44, 44, 0.8);
   letter-spacing: -0.3px;
   line-height: 1.2;
   margin-bottom: 32px;
@@ -233,6 +233,12 @@ export const PostBody = styled.div`
   
   p {
     margin: 0 0 12px 0;
+  }
+
+  strong,
+  b {
+    font-weight: 700;
+    color: rgba(44, 44, 44, 0.95);
   }
   
   a {
