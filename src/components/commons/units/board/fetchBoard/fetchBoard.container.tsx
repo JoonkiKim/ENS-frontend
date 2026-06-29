@@ -32,6 +32,7 @@ export default function BoardView({ boardId }: BoardViewProps) {
   const categoryMap: Record<string, string> = {
     'NOTICE': '학회 공지',
     'RECRUITMENT': '채용 공고',
+    'INFO_SHARE': '정보 공유',
     'ETC': '기타',
   };
 

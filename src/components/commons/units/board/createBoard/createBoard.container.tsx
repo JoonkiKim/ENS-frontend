@@ -61,12 +61,13 @@ export default function BoardCreate({ isEdit = false, boardId }: BoardCreateProp
   const [updateBoardMutation, { loading: isUpdating }] = useMutation(UPDATE_BOARD);
   const isSubmitting = isCreating || isUpdating;
 
-  const categories = ['학회 공지', '채용 공고', '기타'];
+  const categories = ['학회 공지', '채용 공고', '정보 공유', '기타'];
 
   // 카테고리 매핑 (프론트엔드 표시명 -> 백엔드 enum)
   const categoryMap: Record<string, string> = {
     '학회 공지': 'NOTICE',
     '채용 공고': 'RECRUITMENT',
+    '정보 공유': 'INFO_SHARE',
     '기타': 'ETC',
   };
 
@@ -74,6 +75,7 @@ export default function BoardCreate({ isEdit = false, boardId }: BoardCreateProp
   const reverseCategoryMap: Record<string, string> = {
     'NOTICE': '학회 공지',
     'RECRUITMENT': '채용 공고',
+    'INFO_SHARE': '정보 공유',
     'ETC': '기타',
   };
 

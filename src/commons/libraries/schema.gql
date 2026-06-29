@@ -102,6 +102,7 @@ type Board {
 enum BoardCategory {
   NOTICE
   RECRUITMENT
+  INFO_SHARE
   ETC
 }
 

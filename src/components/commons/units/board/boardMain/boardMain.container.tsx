@@ -47,12 +47,13 @@ export default function FreeBoard() {
     fetchPolicy: 'cache-and-network', // 캐시와 네트워크 모두 확인하여 최신 데이터 보장
   });
 
-  const categories = ['전체', '학회 공지', '채용 공고', '기타'];
+  const categories = ['전체', '학회 공지', '채용 공고', '정보 공유', '기타'];
 
   // 카테고리 매핑 (백엔드 enum -> 프론트엔드 표시명)
   const categoryMap: Record<string, string> = {
     'NOTICE': '학회 공지',
     'RECRUITMENT': '채용 공고',
+    'INFO_SHARE': '정보 공유',
     'ETC': '기타',
   };
 
