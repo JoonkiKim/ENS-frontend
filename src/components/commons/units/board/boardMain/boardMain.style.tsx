@@ -1,4 +1,4 @@
-import styled from '@emotion/styled';
+import styled from "@emotion/styled";
 
 export const Container = styled.div`
   width: 1200px;
@@ -6,7 +6,7 @@ export const Container = styled.div`
   background: white;
   margin: 0 auto;
   position: relative;
-  font-family: 'Inter', 'Noto Sans KR', sans-serif;
+  font-family: "Inter", "Noto Sans KR", sans-serif;
 `;
 
 export const Header = styled.header`
@@ -26,14 +26,14 @@ export const Logo = styled.div`
   height: 60px;
   display: flex;
   align-items: center;
-  
+
   span {
     font-size: 36px;
     font-weight: 700;
     color: #ffb700;
     letter-spacing: -1.08px;
   }
-  
+
   span:last-child {
     font-size: 24px;
     font-weight: 400;
@@ -57,7 +57,7 @@ export const NavItem = styled.button`
   color: #1e1e1e;
   cursor: pointer;
   transition: background 0.2s;
-  
+
   &:hover {
     background: rgba(0, 0, 0, 0.05);
   }
@@ -71,7 +71,7 @@ export const HeroSection = styled.section`
   align-items: center;
   justify-content: center;
   position: relative;
-  background-image: url('/images/free-board-bg.png');
+  background-image: url("/images/free-board-bg.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -88,30 +88,29 @@ export const HeroTitle = styled.h1`
 `;
 
 export const HeroDescription = styled.div`
-
   font-size: 16px;
   color: #2c2c2c;
   text-align: center;
   line-height: 1.4;
   margin-bottom: 40px;
-  
+
   p {
     margin: 0;
     font-weight: 300;
   }
-  
+
   strong {
     font-weight: 600;
   }
 `;
 
 export const CategoryBox = styled.div`
-width: 60%;
+  width: 60%;
 
   background: white;
   border-radius: 8px;
-  padding: 24px 32px;
-//   max-width: 485px;
+  padding: 24px 10px;
+  //   max-width: 485px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 `;
 
@@ -122,11 +121,11 @@ export const CategoryItem = styled.p`
   color: #4e4e4e;
   margin-left: 10%;
   margin-right: 10%;
-  
+
   &:last-child {
     margin-bottom: 0;
   }
-  
+
   strong {
     font-weight: 500;
     color: #ffb700;
@@ -147,33 +146,33 @@ export const TableHeader = styled.div`
   grid-template-columns: 60px 120px 1fr 150px 100px;
   gap: 20px;
   padding: 12px 35px;
-//   border-top: 1px solid #d9d9d9;
-//   border-bottom: 1px solid #d9d9d9;
+  //   border-top: 1px solid #d9d9d9;
+  //   border-bottom: 1px solid #d9d9d9;
   align-items: center;
   background-color: rgba(217, 217, 217, 0.3);
 `;
 
 export const TableHeaderCell = styled.div`
   font-size: 13px;
-  color: #2C2C2C;
-//   opacity: 0.75;
+  color: #2c2c2c;
+  //   opacity: 0.75;
   letter-spacing: -0.26px;
   margin: 0;
   display: flex;
   align-items: center;
   gap: 8px;
-  
+
   &:first-of-type {
     justify-content: center;
   }
-  
+
   &:nth-of-type(2) {
     justify-content: center;
   }
   &:nth-of-type(3) {
     justify-content: center;
   }
-  
+
   &:nth-of-type(4),
   &:nth-of-type(5) {
     justify-content: center;
@@ -210,15 +209,15 @@ export const CategoryDropdownItem = styled.div`
   letter-spacing: -0.26px;
   cursor: pointer;
   transition: background-color 0.2s;
-  
+
   &:hover {
     background-color: #e5e5e5;
   }
-  
+
   &:first-of-type {
     border-radius: 3px 3px 0 0;
   }
-  
+
   &:last-of-type {
     border-radius: 0 0 3px 3px;
   }
@@ -231,7 +230,7 @@ export const SortIcon = styled.div`
   align-items: center;
   justify-content: center;
   transform: scaleY(-1);
-  
+
   svg {
     width: 100%;
     height: 100%;
@@ -245,11 +244,12 @@ export const TableRow = styled.div<{ clickable?: boolean }>`
   padding: 16px 35px;
   border-bottom: 1px solid #d9d9d9;
   align-items: center;
-  cursor: ${({ clickable }) => (clickable ? 'pointer' : 'default')};
+  cursor: ${({ clickable }) => (clickable ? "pointer" : "default")};
   transition: background 0.2s;
-  
+
   &:hover {
-    background: ${({ clickable }) => (clickable ? 'rgba(255, 183, 0, 0.05)' : 'transparent')};
+    background: ${({ clickable }) =>
+      clickable ? "rgba(255, 183, 0, 0.05)" : "transparent"};
   }
 `;
 
@@ -259,11 +259,11 @@ export const TableCell = styled.p`
   letter-spacing: -0.26px;
   margin: 0;
   font-weight: 500;
-  
+
   &:first-of-type {
     text-align: center;
   }
-  
+
   &:nth-of-type(4),
   &:nth-of-type(5) {
     text-align: center;
@@ -295,16 +295,16 @@ export const PageButton = styled.button<{ active?: boolean }>`
   background: transparent;
   border: none;
   font-size: 13px;
-  font-weight: ${({ active }) => (active ? '600' : '400')};
-  color: ${({ active }) => (active ? '#ffb700' : '#b3b3b3')};
+  font-weight: ${({ active }) => (active ? "600" : "400")};
+  color: ${({ active }) => (active ? "#ffb700" : "#b3b3b3")};
   cursor: pointer;
   padding: 4px 8px;
   letter-spacing: 3.9px;
-  
+
   &:hover {
     color: #ffb700;
   }
-  
+
   &:disabled {
     cursor: not-allowed;
     opacity: 0.5;
@@ -317,7 +317,7 @@ export const WriteButton = styled.button`
   right: 50px;
   padding: 12px 24px;
   background: white;
-  border: 1px solid #FFB700;
+  border: 1px solid #ffb700;
   border-radius: 4px;
   font-size: 14px;
   font-weight: 500;
@@ -325,7 +325,7 @@ export const WriteButton = styled.button`
   letter-spacing: -0.28px;
   cursor: pointer;
   transition: all 0.2s;
-  
+
   &:hover {
     background: #ffb700;
     color: white;
