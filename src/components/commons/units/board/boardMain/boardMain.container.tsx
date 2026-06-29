@@ -1,12 +1,15 @@
-import  { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { useQuery } from '@apollo/client';
-import { useRecoilValue } from 'recoil';
-import { FETCH_ALL_BOARDS } from '../../../../../commons/apis/graphql-queries';
-import { accessTokenState, authCheckedState } from '../../../../../commons/stores';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { useQuery } from "@apollo/client";
+import { useRecoilValue } from "recoil";
+import { FETCH_ALL_BOARDS } from "../../../../../commons/apis/graphql-queries";
+import {
+  accessTokenState,
+  authCheckedState,
+} from "../../../../../commons/stores";
 
-import * as S from './boardMain.style';
+import * as S from "./boardMain.style";
 
 interface Board {
   id: string;
@@ -44,38 +47,39 @@ export default function FreeBoard() {
   // GraphQL 쿼리로 게시판 데이터 가져오기
   const { data, loading, error, refetch } = useQuery(FETCH_ALL_BOARDS, {
     skip: !canQueryProtected,
-    fetchPolicy: 'cache-and-network', // 캐시와 네트워크 모두 확인하여 최신 데이터 보장
+    fetchPolicy: "cache-and-network", // 캐시와 네트워크 모두 확인하여 최신 데이터 보장
   });
 
-  const categories = ['전체', '학회 공지', '채용 공고', '정보 공유', '기타'];
+  const categories = ["전체", "학회 공지", "채용 공고", "정보 공유", "기타"];
 
   // 카테고리 매핑 (백엔드 enum -> 프론트엔드 표시명)
   const categoryMap: Record<string, string> = {
-    'NOTICE': '학회 공지',
-    'RECRUITMENT': '채용 공고',
-    'INFO_SHARE': '정보 공유',
-    'ETC': '기타',
+    NOTICE: "학회 공지",
+    RECRUITMENT: "채용 공고",
+    INFO_SHARE: "정보 공유",
+    ETC: "기타",
   };
 
   // 날짜 포맷팅 함수
   const formatDate = (dateString: string) => {
-    if (!dateString) return '';
+    if (!dateString) return "";
     const date = new Date(dateString);
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   };
 
   // Board 데이터를 Post 형식으로 변환
-  const posts: Post[] = data?.fetchAllBoards?.map((board: Board) => ({
-    id: board.id,
-    number: board.number,
-    category: categoryMap[board.category] || board.category,
-    title: board.title,
-    date: formatDate(board.createdAt),
-    author: board.user?.name || '',
-  })) || [];
+  const posts: Post[] =
+    data?.fetchAllBoards?.map((board: Board) => ({
+      id: board.id,
+      number: board.number,
+      category: categoryMap[board.category] || board.category,
+      title: board.title,
+      date: formatDate(board.createdAt),
+      author: board.user?.name || "",
+    })) || [];
 
   // 선택된 카테고리에 따라 게시물 필터링
   const filteredPosts = selectedCategory
@@ -84,14 +88,12 @@ export default function FreeBoard() {
 
   const totalPages = Math.ceil(filteredPosts.length / 10) || 1;
 
-
-
   const handlePageClick = (page: number) => {
     setCurrentPage(page);
   };
 
   const handleCategoryClick = (category: string) => {
-    if (category === '전체') {
+    if (category === "전체") {
       setSelectedCategory(null);
     } else {
       setSelectedCategory(category);
@@ -104,12 +106,12 @@ export default function FreeBoard() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      
-      const isDropdownElement = 
-        target.closest('[data-dropdown-container]') ||
-        target.closest('[data-dropdown-item]') ||
-        target.closest('[data-dropdown-field]');
-      
+
+      const isDropdownElement =
+        target.closest("[data-dropdown-container]") ||
+        target.closest("[data-dropdown-item]") ||
+        target.closest("[data-dropdown-field]");
+
       if (!isDropdownElement) {
         if (isCategoryDropdownOpen) {
           setIsCategoryDropdownOpen(false);
@@ -118,11 +120,11 @@ export default function FreeBoard() {
     };
 
     if (isCategoryDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isCategoryDropdownOpen]);
 
@@ -156,19 +158,19 @@ export default function FreeBoard() {
 
   return (
     <>
-    
       <S.Container>
-
- 
-
         {/* Hero Section */}
         <S.HeroSection>
           <S.HeroTitle>자유 게시판</S.HeroTitle>
           <S.HeroDescription>
             <p>
-              ENS 구성원 간의 <strong>정보 공유와 네트워킹을 위한 자유 게시판</strong>입니다.
+              ENS 구성원 간의{" "}
+              <strong>정보 공유와 네트워킹을 위한 자유 게시판</strong>입니다.
             </p>
-            <p>학회 공지, 채용 공고, 기타 소식을 카테고리별로 확인하고 자유롭게 소통할 수 있습니다.</p>
+            <p>
+              학회 공지, 채용 공고, 기타 소식을 카테고리별로 확인하고 자유롭게
+              소통할 수 있습니다.
+            </p>
           </S.HeroDescription>
 
           <S.CategoryBox>
@@ -176,10 +178,15 @@ export default function FreeBoard() {
               <strong>학회 공지 |</strong> ENS의 공식 일정과 주요 소식 공유
             </S.CategoryItem>
             <S.CategoryItem>
-              <strong>채용 공고 |</strong> 운영진 및 알럼나이가 공유하는 채용·커리어 관련 공고 확인
+              <strong>채용 공고 |</strong> 운영진 및 알럼나이가 공유하는
+              채용·커리어 관련 공고 확인
             </S.CategoryItem>
             <S.CategoryItem>
-              <strong>기타 |</strong> 학회원 누구나 자유롭게 의견과 정보 공유
+              <strong>정보 공유 |</strong> 알럼나이의 취업 후기, 커피챗 정보 등
+              진로·커리어 관련 경험과 정보 교류
+            </S.CategoryItem>
+            <S.CategoryItem>
+              <strong>기타 |</strong> 학회원 누구나 자유롭게 의견과 질문 공유
             </S.CategoryItem>
           </S.CategoryBox>
         </S.HeroSection>
@@ -201,7 +208,10 @@ export default function FreeBoard() {
                   카테고리
                   <S.SortIcon>
                     <svg viewBox="0 0 6.9282 5.25" fill="none">
-                      <path d="M3.4641 0L6.9282 5.25H0L3.4641 0Z" fill="#5F5F5F" />
+                      <path
+                        d="M3.4641 0L6.9282 5.25H0L3.4641 0Z"
+                        fill="#5F5F5F"
+                      />
                     </svg>
                   </S.SortIcon>
                 </S.TableHeaderCell>
@@ -229,9 +239,9 @@ export default function FreeBoard() {
 
             {/* Table Rows */}
             {filteredPosts.map((post, index) => (
-              <S.TableRow 
-                key={`${post.id}-${index}`} 
-                clickable 
+              <S.TableRow
+                key={`${post.id}-${index}`}
+                clickable
                 onClick={() => router.push(`/boardMain/boardView/${post.id}`)}
               >
                 <S.TableCell>{post.number}</S.TableCell>
@@ -247,13 +257,27 @@ export default function FreeBoard() {
 
           {/* Pagination */}
           <S.Pagination>
-            <S.PageButton onClick={() => handlePageClick(Math.max(1, currentPage - 1))}>{'<'}</S.PageButton>
+            <S.PageButton
+              onClick={() => handlePageClick(Math.max(1, currentPage - 1))}
+            >
+              {"<"}
+            </S.PageButton>
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <S.PageButton key={page} active={currentPage === page} onClick={() => handlePageClick(page)}>
+              <S.PageButton
+                key={page}
+                active={currentPage === page}
+                onClick={() => handlePageClick(page)}
+              >
                 {page}
               </S.PageButton>
             ))}
-            <S.PageButton onClick={() => handlePageClick(Math.min(totalPages, currentPage + 1))}>{'>'}</S.PageButton>
+            <S.PageButton
+              onClick={() =>
+                handlePageClick(Math.min(totalPages, currentPage + 1))
+              }
+            >
+              {">"}
+            </S.PageButton>
           </S.Pagination>
 
           {/* Write Button */}
