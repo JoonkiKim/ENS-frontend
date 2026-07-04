@@ -1364,6 +1364,9 @@ export default function SignUpModal({
                 value={formData.username}
                 onChange={(e) => handleInputChange("username", e.target.value)}
               />
+              <HelpText>
+                동일 기수에 동명이인이 있을 경우, 00기_홍길동(경영)
+              </HelpText>
             </FormField>
 
             {/* 비밀번호 */}

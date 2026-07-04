@@ -175,18 +175,49 @@ export default function FreeBoard() {
 
           <S.CategoryBox>
             <S.CategoryItem>
-              <strong>학회 공지 |</strong> ENS의 공식 일정과 주요 소식 공유
+              <S.CategoryLabel>
+                <S.LabelWords>
+                  <span>학회</span>
+                  <span>공지</span>
+                </S.LabelWords>
+                |
+              </S.CategoryLabel>
+              <span>ENS의 공식 일정과 주요 소식 공유</span>
             </S.CategoryItem>
             <S.CategoryItem>
-              <strong>채용 공고 |</strong> 운영진 및 알럼나이가 공유하는
-              채용·커리어 관련 공고 확인
+              <S.CategoryLabel>
+                <S.LabelWords>
+                  <span>채용</span>
+                  <span>공고</span>
+                </S.LabelWords>
+                |
+              </S.CategoryLabel>
+              <span>
+                운영진 및 알럼나이가 공유하는 채용·커리어 관련 공고 확인
+              </span>
             </S.CategoryItem>
             <S.CategoryItem>
-              <strong>정보 공유 |</strong> 알럼나이의 취업 후기, 커피챗 정보 등
-              진로·커리어 관련 경험과 정보 교류
+              <S.CategoryLabel>
+                <S.LabelWords>
+                  <span>정보</span>
+                  <span>공유</span>
+                </S.LabelWords>
+                |
+              </S.CategoryLabel>
+              <span>
+                알럼나이의 취업 후기, 커피챗 정보 등 진로·커리어 관련 경험과
+                정보 교류
+              </span>
             </S.CategoryItem>
             <S.CategoryItem>
-              <strong>기타 |</strong> 학회원 누구나 자유롭게 의견과 질문 공유
+              <S.CategoryLabel>
+                <S.LabelWords>
+                  <span>기</span>
+                  <span>타</span>
+                </S.LabelWords>
+                |
+              </S.CategoryLabel>
+              <span>학회원 누구나 자유롭게 의견과 질문 공유</span>
             </S.CategoryItem>
           </S.CategoryBox>
         </S.HeroSection>

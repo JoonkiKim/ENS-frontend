@@ -115,6 +115,8 @@ export const CategoryBox = styled.div`
 `;
 
 export const CategoryItem = styled.p`
+  display: flex;
+  gap: 8px;
   font-size: 16px;
   line-height: 23px;
   margin: 0 0 8px 0;
@@ -125,11 +127,22 @@ export const CategoryItem = styled.p`
   &:last-child {
     margin-bottom: 0;
   }
+`;
 
-  strong {
-    font-weight: 500;
-    color: #ffb700;
-  }
+export const CategoryLabel = styled.strong`
+  flex-shrink: 0;
+  width: 70px;
+  display: inline-flex;
+  align-items: center;
+  font-weight: 500;
+  color: #ffb700;
+`;
+
+export const LabelWords = styled.span`
+  display: inline-flex;
+  justify-content: space-between;
+  flex: 1;
+  margin-right: 4px;
 `;
 
 export const BoardSection = styled.section`
