@@ -407,7 +407,7 @@ export const CountNumber = styled.span`
 `;
 
 export const TableScrollContainer = styled.div`
-  max-height: 780px;
+  max-height: 700px;
   overflow-y: auto;
   overflow-x: hidden;
   border: none;
