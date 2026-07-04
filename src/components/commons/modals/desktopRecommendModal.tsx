@@ -181,7 +181,8 @@ export default function DesktopRecommendModal() {
           <IconWrapper aria-hidden="true">💻</IconWrapper>
           <Title id="desktop-recommend-title">PC 접속을 권장합니다</Title>
           <Description>
-            ENS 인트라넷은 PC 환경에 최적화되어 있습니다. 원활한 이용을 위해
+            ENS 인트라넷은 PC 환경에 최적화되어 있습니다. <br />
+            원활한 이용을 위해
             <br />
             PC 브라우저에서 접속해 주세요.
           </Description>
