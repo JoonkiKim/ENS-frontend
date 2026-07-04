@@ -113,6 +113,32 @@ function getDisplayCareer(user: User): UserCareer | undefined {
   return undefined;
 }
 
+function renderUserName(user: User) {
+  if (user.executiveRole === "PRESIDENT") {
+    return (
+      <span style={{ color: "#4C73D9" }}>
+        {user.name}
+        <img
+          src="/images/crown.svg"
+          alt="학회장"
+          style={{
+            width: 12,
+            height: 12,
+            marginLeft: 4,
+            verticalAlign: "middle",
+          }}
+        />
+      </span>
+    );
+  }
+
+  if (user.executiveRole === "VICE_PRESIDENT") {
+    return <span style={{ color: "#4C73D9" }}>{user.name}</span>;
+  }
+
+  return user.name;
+}
+
 export default function AlumniSearch() {
   const accessToken = useRecoilValue(accessTokenState);
   const authChecked = useRecoilValue(authCheckedState);
@@ -380,21 +406,22 @@ export default function AlumniSearch() {
 
   // 무한 스크롤 처리
   useEffect(() => {
+    if (!hasMore) return;
+
+    const loadMore = () => {
+      setDisplayCount((prev) => Math.min(prev + 20, filteredUsers.length));
+    };
+
     const tableContainer = tableContainerRef.current;
-    if (!tableContainer || !hasMore) return;
+    if (!tableContainer) return;
 
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = tableContainer;
-      // 하단에서 100px 전에 도달하면 다음 데이터 로드
-      if (scrollHeight - scrollTop - clientHeight < 100) {
-        setDisplayCount((prev) => Math.min(prev + 20, filteredUsers.length));
-      }
+      if (scrollHeight - scrollTop - clientHeight < 100) loadMore();
     };
 
     tableContainer.addEventListener("scroll", handleScroll);
-    return () => {
-      tableContainer.removeEventListener("scroll", handleScroll);
-    };
+    return () => tableContainer.removeEventListener("scroll", handleScroll);
   }, [hasMore, filteredUsers.length, displayCount]);
 
   return (
@@ -508,7 +535,6 @@ export default function AlumniSearch() {
 
           {/* Table Container with Infinite Scroll */}
           <S.TableScrollContainer ref={tableContainerRef}>
-            {/* Table Header */}
             <S.TableHeader>
               <div>기수</div>
               <div>성명</div>
@@ -519,7 +545,6 @@ export default function AlumniSearch() {
               <div>프로필</div>
             </S.TableHeader>
 
-            {/* Table Rows */}
             {loading ? (
               <S.TableRow>
                 <S.TableCell
@@ -559,7 +584,7 @@ export default function AlumniSearch() {
               </S.TableRow>
             ) : (
               displayedUsers.map((user, index) => {
-                const nextUser = filteredUsers[index + 1];
+                const nextUser = displayedUsers[index + 1];
                 const isGenerationBoundary =
                   nextUser != null && user.generation !== nextUser.generation;
 
@@ -569,27 +594,7 @@ export default function AlumniSearch() {
                     $isGenerationBoundary={isGenerationBoundary}
                   >
                     <S.TableCell>{user.generation}</S.TableCell>
-                    <S.TableCell>
-                      {user.executiveRole === "PRESIDENT" ? (
-                        <span style={{ color: "#4C73D9" }}>
-                          {user.name}
-                          <img
-                            src="/images/crown.svg"
-                            alt="학회장"
-                            style={{
-                              width: 12,
-                              height: 12,
-                              marginLeft: 4,
-                              verticalAlign: "middle",
-                            }}
-                          />
-                        </span>
-                      ) : user.executiveRole === "VICE_PRESIDENT" ? (
-                        <span style={{ color: "#4C73D9" }}>{user.name}</span>
-                      ) : (
-                        user.name
-                      )}
-                    </S.TableCell>
+                    <S.TableCell>{renderUserName(user)}</S.TableCell>
                     <S.TableCell>
                       {formatPhoneForDisplay(user.phone) || "-"}
                     </S.TableCell>

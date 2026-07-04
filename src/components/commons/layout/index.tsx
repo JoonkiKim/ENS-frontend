@@ -2,6 +2,7 @@ import { useRouter } from "next/router";
 import styled from "@emotion/styled";
 import LayoutNavigation from "./navigation";
 import LayoutHeader from "./header";
+import DesktopRecommendModal from "../modals/desktopRecommendModal";
 
 const LayoutWrapper = styled.div`
   display: flex;
@@ -43,6 +44,7 @@ export default function Layout(props: ILayoutProps): JSX.Element {
 
   return (
     <LayoutWrapper>
+      <DesktopRecommendModal />
       {!isAdminPath && <LayoutHeader />}
       <ContentWrapper>
         {props.children}

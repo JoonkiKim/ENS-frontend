@@ -448,17 +448,6 @@ export const TableHeader = styled.div`
   & > div {
     text-align: center;
   }
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    text-align: left;
-    gap: 5px;
-
-    & > div {
-      text-align: left;
-      padding: 5px 0;
-    }
-  }
 `;
 
 export const TableRow = styled.div<{ $isGenerationBoundary?: boolean }>`
@@ -483,18 +472,6 @@ export const TableRow = styled.div<{ $isGenerationBoundary?: boolean }>`
     display: flex;
     align-items: center;
     justify-content: center;
-  }
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    text-align: left;
-    gap: 5px;
-
-    & > div {
-      text-align: left;
-      justify-content: flex-start;
-      padding: 5px 0;
-    }
   }
 `;
 
