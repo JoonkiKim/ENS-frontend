@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "outDir": "public", // 변환된 JS 파일 저장 위치
-    "target": "es5",
+    "target": "es2015",
     "lib": ["dom", "dom.iterable", "esnext", "WebWorker"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -11,7 +11,7 @@
     "incremental": true,
     "esModuleInterop": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
@@ -20,6 +20,7 @@
   },
   "include": [
     "next-env.d.ts",
+    "types/**/*.d.ts",
     "**/*.ts",
     "**/*.tsx",
     ".eslintrc.js",

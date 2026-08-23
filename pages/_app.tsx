@@ -4,6 +4,7 @@ import { RecoilRoot } from "recoil";
 import Layout from "../src/components/commons/layout";
 import "../styles/globals.css";
 import Head from "next/head";
+import Script from "next/script";
 import { Router, useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
@@ -17,7 +18,48 @@ import { ApolloProvider } from "@apollo/client";
 import { apolloClient } from "../src/commons/apis/apollo-client";
 import { useImagePreload } from "../src/commons/hooks/useImagePreload";
 
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+const isGaEnabled =
+  process.env.NODE_ENV === "production" && Boolean(GA_MEASUREMENT_ID);
+
+function sendPageview(url: string) {
+  if (!isGaEnabled || typeof window === "undefined") return;
+
+  const gtag = (window as { gtag?: (...args: unknown[]) => void }).gtag;
+  if (!gtag) return;
+
+  gtag("config", GA_MEASUREMENT_ID, {
+    page_path: url,
+  });
+}
+
+function GoogleAnalyticsScripts() {
+  if (!isGaEnabled) return null;
+
+  return (
+    <>
+      <Script
+        strategy="afterInteractive"
+        src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+      />
+      <Script
+        id="google-analytics"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_MEASUREMENT_ID}', { send_page_view: false });
+          `,
+        }}
+      />
+    </>
+  );
+}
+
 function MyApp({ Component, pageProps }) {
+  const router = useRouter();
   const { imagesLoaded, loadingProgress } = useImagePreload();
 
   // console.log("분기 합침 테스트");
@@ -124,6 +166,21 @@ function MyApp({ Component, pageProps }) {
     };
   }, []);
 
+  useEffect(() => {
+    if (!isGaEnabled || !router.isReady) return;
+
+    const handleRouteChange = (url: string) => {
+      sendPageview(url);
+    };
+
+    handleRouteChange(router.asPath);
+
+    router.events.on("routeChangeComplete", handleRouteChange);
+    return () => {
+      router.events.off("routeChangeComplete", handleRouteChange);
+    };
+  }, [router.isReady]);
+
   // 이미지가 로드되지 않았으면 로딩 화면 표시
   if (!imagesLoaded) {
     return (
@@ -134,6 +191,7 @@ function MyApp({ Component, pageProps }) {
           <link rel="manifest" href="/manifest.json" />
           <meta name="theme-color" content="#000000" />
         </Head>
+        <GoogleAnalyticsScripts />
         <Global styles={globalStyles} />
         <LoadingOverlay visible={true}>
           <LoadingIcon spin fontSize={48} />
@@ -152,6 +210,7 @@ function MyApp({ Component, pageProps }) {
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#000000" />
       </Head>
+      <GoogleAnalyticsScripts />
       <Global styles={globalStyles} />
       <RecoilRoot>
         <ApolloProvider client={apolloClient}>
